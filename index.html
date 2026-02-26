@@ -11,7 +11,8 @@
   <meta property="og:url" content="https://climaiq.tech">
   <meta property="og:image" content="https://climaiq.tech/assets/og-image.png">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" href="assets/favicon.ico">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,7 +32,8 @@
       <ul class="nav-links" id="navLinks">
         <li><a href="#crisis">The Crisis</a></li>
         <li><a href="#platform">Platform</a></li>
-        <li><a href="#ai-engine">AI Engine</a></li>
+        <li><a href="#platform-apps">Portals</a></li>
+        <li><a href="#dashboards">Dashboards</a></li>
         <li><a href="#metrics">Metrics</a></li>
         <li><a href="#validation">Validation</a></li>
         <li><a href="#contact" class="nav-cta">Get In Touch</a></li>
@@ -157,6 +159,119 @@
             <span class="metric-label">alert delivery</span>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3b: Platform Apps -->
+  <section class="section platform-apps" id="platform-apps">
+    <div class="container">
+      <div class="section-label reveal">Live Platform</div>
+      <h2 class="section-title reveal">5 Role-Based Interfaces.<br>One Unified System.</h2>
+      <p class="section-subtitle reveal">Each stakeholder gets a purpose-built interface — from fire chiefs commanding real-time operations to data scientists training ML models.</p>
+      <div class="apps-grid">
+        <a href="platform/index.html" class="app-card reveal">
+          <div class="app-card-icon" style="background:rgba(255,107,53,0.1);color:#ff6b35;">&#x1F310;</div>
+          <div class="app-card-title">Platform Portal</div>
+          <div class="app-card-desc">Central hub connecting all 14 microservices — storage, ingestion, ML, monitoring, and analytics in one view.</div>
+          <div class="app-card-status"><span class="app-status-dot"></span>All Services Healthy</div>
+          <span class="app-card-btn">Open Portal &rarr;</span>
+        </a>
+        <a href="platform/fire-chief.html" class="app-card reveal">
+          <div class="app-card-icon" style="background:rgba(242,73,92,0.1);color:#f2495c;">&#x1F692;</div>
+          <div class="app-card-title">Fire Chief Dashboard</div>
+          <div class="app-card-desc">Real-time command interface with interactive fire maps, resource tracking, weather alerts, and incident management.</div>
+          <div class="app-card-status"><span class="app-status-dot"></span>Live Monitoring</div>
+          <span class="app-card-btn">Open Dashboard &rarr;</span>
+        </a>
+        <a href="platform/analyst-portal.html" class="app-card reveal">
+          <div class="app-card-icon" style="background:rgba(87,148,242,0.1);color:#5794f2;">&#x1F4CA;</div>
+          <div class="app-card-title">Analyst Portal</div>
+          <div class="app-card-desc">Advanced analytics with 4 chart types, predictive modeling, geospatial intelligence, and custom report builder.</div>
+          <div class="app-card-status"><span class="app-status-dot"></span>2.4M Data Points</div>
+          <span class="app-card-btn">Open Portal &rarr;</span>
+        </a>
+        <a href="platform/scientist-workbench.html" class="app-card reveal">
+          <div class="app-card-icon" style="background:rgba(0,188,212,0.1);color:#00bcd4;">&#x1F52C;</div>
+          <div class="app-card-title">Scientist Workbench</div>
+          <div class="app-card-desc">ML pipeline with code editor, experiment notebooks, 7 research datasets, and Google FireBench integration.</div>
+          <div class="app-card-status"><span class="app-status-dot"></span>47 Active Experiments</div>
+          <span class="app-card-btn">Open Workbench &rarr;</span>
+        </a>
+        <a href="platform/admin-console.html" class="app-card reveal">
+          <div class="app-card-icon" style="background:rgba(255,167,38,0.1);color:#ffa726;">&#x2699;&#xFE0F;</div>
+          <div class="app-card-title">Admin Console</div>
+          <div class="app-card-desc">System administration — user management, security policies, service health monitoring, and audit logging.</div>
+          <div class="app-card-status"><span class="app-status-dot"></span>99.7% Uptime</div>
+          <span class="app-card-btn">Open Console &rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3c: Live Dashboards -->
+  <section class="section" id="dashboards">
+    <div class="container">
+      <div class="section-label reveal">Monitoring</div>
+      <h2 class="section-title reveal">8 Live Dashboards.<br>Real-Time Intelligence.</h2>
+      <p class="section-subtitle reveal">Grafana-powered monitoring dashboards covering every layer of the platform — from data ingestion latency to storage tier costs to analytics usage.</p>
+      <div class="dashboards-grid">
+        <a href="dashboard/wildfire-overview.html" class="dash-card reveal">
+          <div class="dash-card-group">Operations</div>
+          <div class="dash-card-title">Wildfire Overview</div>
+          <div class="dash-card-desc">Active fires, detections, sensor readings, and incident tracking across California.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/system-performance.html" class="dash-card reveal">
+          <div class="dash-card-group">Operations</div>
+          <div class="dash-card-title">System Performance</div>
+          <div class="dash-card-desc">CPU, memory, throughput, and uptime metrics for all infrastructure components.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 6 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/ingestion-latency.html" class="dash-card reveal">
+          <div class="dash-card-group">Data Ingestion</div>
+          <div class="dash-card-title">Latency &amp; Fidelity</div>
+          <div class="dash-card-desc">p50/p95/p99 ingestion latency, validation rates, Kafka lag, and SLA compliance.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 11 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/latency-fidelity-enhanced.html" class="dash-card reveal">
+          <div class="dash-card-group">Data Ingestion</div>
+          <div class="dash-card-title">Enhanced Latency</div>
+          <div class="dash-card-desc">Per-connector breakdown with heatmaps, bar gauges, and source performance tables.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 13 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/storage-tiers.html" class="dash-card reveal">
+          <div class="dash-card-group">Data Storage</div>
+          <div class="dash-card-title">Storage Tiers</div>
+          <div class="dash-card-desc">HOT/WARM/COLD/ARCHIVE latency gauges, growth trends, and cost analysis.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 10 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/storage-lifecycle.html" class="dash-card reveal">
+          <div class="dash-card-group">Data Storage</div>
+          <div class="dash-card-title">Storage Lifecycle</div>
+          <div class="dash-card-desc">Data migration, cleanup candidates, retention policies, and quality by source.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/platform-health.html" class="dash-card reveal">
+          <div class="dash-card-group">Data Storage</div>
+          <div class="dash-card-title">Platform Health</div>
+          <div class="dash-card-desc">End-to-end health scores, real-time data flows, and security monitoring.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
+        <a href="dashboard/analytics-platform.html" class="dash-card reveal">
+          <div class="dash-card-group">Analytics</div>
+          <div class="dash-card-title">Analytics Platform</div>
+          <div class="dash-card-desc">Role-based activity, platform distribution, query performance, and usage metrics.</div>
+          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
+          <div class="dash-card-preview"></div>
+        </a>
       </div>
     </div>
   </section>
@@ -310,7 +425,7 @@
         </div>
         <div class="badge-content">
           <span class="badge-title">CAL FIRE — 2025 Global Space-Based Data Challenge</span>
-          <span class="badge-subtitle">Winner — 88% validation score across all challenge categories</span>
+          <span class="badge-subtitle">Winner — 88% validation score across all categories</span>
         </div>
       </div>
       <div class="impact-timeline reveal">

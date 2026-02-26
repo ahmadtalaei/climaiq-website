@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latency &amp; Fidelity — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Data Ingestion — Latency &amp; Fidelity</h1>
+          <span class="header-sub">Data ingestion pipeline performance metrics</span>
+        </div>
+
+        <!-- SLA Stats -->
+        <div class="panel-grid grid-cols-4" style="margin-bottom:16px;">
+          <div class="panel" id="stat-success"></div>
+          <div class="panel" id="stat-p95"></div>
+          <div class="panel" id="stat-dup"></div>
+          <div class="panel" id="stat-sla"></div>
+        </div>
+
+        <!-- Latency + Validation/Kafka row -->
+        <div class="panel-grid grid-cols-3" style="margin-bottom:16px;">
+          <div class="panel grid-span-2">
+            <div class="panel-header"><span class="panel-title">Ingestion Latency (p50 / p95 / p99)</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-latency"></canvas></div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="panel" id="gauge-validation"></div>
+            <div class="panel" id="gauge-kafka"></div>
+          </div>
+        </div>
+
+        <!-- Throughput -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header"><span class="panel-title">Throughput (messages/sec)</span></div>
+          <div class="panel-body"><div class="chart-container chart-container-sm"><canvas id="chart-throughput"></canvas></div></div>
+        </div>
+
+        <!-- Quality + Anomalies -->
+        <div class="panel-grid grid-cols-2" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Quality Score</span></div>
+            <div class="panel-body"><div class="chart-container chart-container-sm"><canvas id="chart-quality"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Anomalies Detected</span></div>
+            <div class="panel-body"><div class="chart-container chart-container-sm"><canvas id="chart-anomalies"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Failed Messages Table -->
+        <div class="panel" id="table-failed"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Latency & Fidelity');
+    const data = DashboardData.ingestionLatency();
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-success'),
+      { title: 'Success Rate', value: data.stats.successRate, unit: '%', color: 'green', label: 'SLA target: 99.5%' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-p95'),
+      { title: 'p95 Latency', value: data.stats.p95Latency, unit: 'ms', color: 'yellow', label: 'SLA target: <1000ms' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-dup'),
+      { title: 'Duplicate Rate', value: data.stats.duplicateRate, unit: '%', color: 'green', label: 'SLA target: <0.1%' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-sla'),
+      { title: 'Overall SLA', value: data.stats.slaOverall, unit: '%', color: 'green', label: 'Composite score' });
+
+    // Gauges
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-validation'), {
+      title: 'Validation Pass Rate', value: parseFloat(data.validationRate), max: 100, unit: '%',
+      thresholds: [{ value: 0, color: '#f2495c' }, { value: 90, color: '#ff9830' }, { value: 98, color: '#73bf69' }],
+    });
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-kafka'), {
+      title: 'Kafka Consumer Lag', value: data.kafkaLag, max: 1000, unit: 'msgs',
+      thresholds: [{ value: 0, color: '#73bf69' }, { value: 300, color: '#ff9830' }, { value: 700, color: '#f2495c' }],
+    });
+
+    // Charts
+    const latencyChart = DashboardCharts.timeseries(document.getElementById('chart-latency'), { ...data.latency, yLabel: 'ms' });
+    DashboardCharts.area(document.getElementById('chart-throughput'), data.throughput);
+    DashboardCharts.timeseries(document.getElementById('chart-quality'), { ...data.quality, yLabel: '%' });
+    const anomChart = DashboardCharts.bar(document.getElementById('chart-anomalies'), {
+      labels: data.anomalies.labels,
+      datasets: [{ label: 'Anomalies', data: data.anomalies.datasets[0].data, color: '#f2495c' }],
+    });
+
+    // Table
+    DashboardCommon.createTablePanel(document.getElementById('table-failed'), {
+      title: 'Failed Messages',
+      columns: ['Message ID', 'Source', 'Error Type', 'Time', 'Status'],
+      rows: data.failedMessages,
+    });
+
+    // Live update
+    setInterval(() => {
+      const d = DashboardData.ingestionLatency();
+      DashboardCommon.updateStatValue(document.getElementById('stat-success'), d.stats.successRate);
+      DashboardCommon.updateStatValue(document.getElementById('stat-p95'), d.stats.p95Latency);
+      const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      DashboardCharts.pushTimeseriesPoint(latencyChart, now,
+        [DashboardCommon.jitter(320, 10), DashboardCommon.jitter(870, 8), DashboardCommon.jitter(1450, 8)]);
+    }, 5000);
+  </script>
+</body>
+</html>

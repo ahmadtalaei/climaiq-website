@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Latency &amp; Fidelity — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Enhanced Latency &amp; Fidelity</h1>
+          <span class="header-sub">Per-connector breakdown with validation &amp; quality analysis</span>
+        </div>
+
+        <!-- Top stats -->
+        <div class="panel-grid grid-cols-6" style="margin-bottom:16px;">
+          <div class="panel" id="stat-latency"></div>
+          <div class="panel" id="stat-kafka"></div>
+          <div class="panel" id="stat-validation"></div>
+          <div class="panel" id="stat-sources"></div>
+          <div class="panel" id="stat-rate"></div>
+          <div class="panel" id="stat-quality"></div>
+        </div>
+
+        <!-- Latency by Connector + Kafka by Topic -->
+        <div class="panel-grid grid-cols-2" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Latency by Connector</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-latency-conn"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Kafka Lag by Topic</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-kafka-topic"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Validation + Quality by source -->
+        <div class="panel-grid grid-cols-2" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Validation Rate by Source</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-val-source"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Quality Score by Source</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-quality-source"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Source Performance Table + Bar Gauge + Heatmap -->
+        <div class="panel-grid grid-cols-3">
+          <div class="panel" id="table-perf"></div>
+          <div class="panel" id="bargauge-failures"></div>
+          <div class="panel" id="heatmap-processing"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Enhanced Latency & Fidelity');
+    const data = DashboardData.latencyFidelityEnhanced();
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-latency'),
+      { title: 'Avg Latency', value: data.stats.avgLatency, unit: 'ms', color: 'yellow', label: 'p95 across all' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-kafka'),
+      { title: 'Kafka Lag', value: data.stats.kafkaLag, unit: 'msgs', color: 'green', label: 'Consumer lag' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-validation'),
+      { title: 'Validation Rate', value: data.stats.validationRate, unit: '%', color: 'green', label: 'Pass rate' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-sources'),
+      { title: 'Active Sources', value: data.stats.activeSources, color: 'cyan', label: 'Connected' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-rate'),
+      { title: 'Ingestion Rate', value: data.stats.ingestionRate.toLocaleString(), unit: '/s', color: 'blue', label: 'Messages/sec' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-quality'),
+      { title: 'Quality Score', value: data.stats.qualityScore, unit: '%', color: 'green', label: 'Composite' });
+
+    // Charts
+    DashboardCharts.timeseries(document.getElementById('chart-latency-conn'), { ...data.latencyByConnector, yLabel: 'ms' });
+    DashboardCharts.timeseries(document.getElementById('chart-kafka-topic'), { ...data.kafkaByTopic, yLabel: 'messages' });
+    DashboardCharts.timeseries(document.getElementById('chart-val-source'), { ...data.validationBySource, yLabel: '%' });
+    DashboardCharts.timeseries(document.getElementById('chart-quality-source'), { ...data.qualityBySource, yLabel: '%' });
+
+    // Table
+    DashboardCommon.createTablePanel(document.getElementById('table-perf'), {
+      title: 'Source Performance',
+      columns: ['Connector', 'Latency', 'Validation', 'Throughput', 'Health'],
+      rows: data.sourcePerformance,
+    });
+
+    // Bar Gauge
+    DashboardCommon.createBarGauge(document.getElementById('bargauge-failures'), {
+      title: 'Validation Failures (last 1h)',
+      items: data.validationFailures,
+    });
+
+    // Heatmap
+    DashboardCommon.createHeatmap(document.getElementById('heatmap-processing'), {
+      title: 'Processing Time Heatmap',
+      ...data.heatmapData,
+    });
+
+    // Live update
+    setInterval(() => {
+      const d = DashboardData.latencyFidelityEnhanced();
+      DashboardCommon.updateStatValue(document.getElementById('stat-latency'), d.stats.avgLatency);
+      DashboardCommon.updateStatValue(document.getElementById('stat-kafka'), d.stats.kafkaLag);
+      DashboardCommon.updateStatValue(document.getElementById('stat-rate'), d.stats.ingestionRate.toLocaleString());
+    }, 5000);
+  </script>
+</body>
+</html>

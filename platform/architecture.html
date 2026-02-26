@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Architecture | ClimaIQ</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #f0f0f5;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: #0e0e15;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #f0f0f5;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6b35, #00bcd4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: #00bcd4;
+        }
+
+        .page-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #a0a0b0;
+            padding-left: 24px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .back-link {
+            color: #00bcd4;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #ff6b35;
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #16161f;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,107,53,0.3);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b35, #ff8f65);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6a6a7a;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Mermaid Diagram Container */
+        .diagram-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f0f0f5;
+        }
+
+        .section-header .badge {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0,188,212,0.15);
+            color: #00bcd4;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .diagram-container {
+            background: #12121a;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 32px;
+            overflow-x: auto;
+        }
+
+        .diagram-container .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        .diagram-container .mermaid svg {
+            max-width: 100%;
+        }
+
+        /* Legend */
+        .legend-section {
+            margin-bottom: 40px;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .legend-card {
+            background: #16161f;
+            border-radius: 12px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .legend-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .legend-card.ingestion {
+            border: 1px solid rgba(242,73,92,0.3);
+        }
+        .legend-card.ingestion::before {
+            background: #f2495c;
+        }
+
+        .legend-card.storage {
+            border: 1px solid rgba(87,148,242,0.3);
+        }
+        .legend-card.storage::before {
+            background: #5794f2;
+        }
+
+        .legend-card.clearing {
+            border: 1px solid rgba(115,191,105,0.3);
+        }
+        .legend-card.clearing::before {
+            background: #73bf69;
+        }
+
+        .legend-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .legend-dot.red { background: #f2495c; }
+        .legend-dot.blue { background: #5794f2; }
+        .legend-dot.green { background: #73bf69; }
+        .legend-dot.purple { background: #a855f7; }
+
+        .legend-card.ai {
+            border: 1px solid rgba(168,85,247,0.3);
+        }
+        .legend-card.ai::before {
+            background: #a855f7;
+        }
+
+        .legend-list {
+            list-style: none;
+        }
+
+        .legend-list li {
+            font-size: 14px;
+            color: #a0a0b0;
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-list li::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #6a6a7a;
+            flex-shrink: 0;
+        }
+
+        /* Key Differentiators */
+        .differentiators-section {
+            margin-bottom: 40px;
+        }
+
+        .differentiators-box {
+            background: #16161f;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .differentiators-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ff6b35, #00bcd4);
+        }
+
+        .differentiators-box h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #f0f0f5;
+        }
+
+        .diff-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 32px;
+        }
+
+        .diff-list li {
+            font-size: 14px;
+            color: #a0a0b0;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1.5;
+        }
+
+        .diff-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #73bf69;
+            flex-shrink: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-row {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .diff-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .stats-row {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="../index.html" class="logo">
+                <div class="logo-icon">CQ</div>
+                <div class="logo-text">Clima<span>IQ</span></div>
+            </a>
+            <div class="page-title">System Architecture</div>
+        </div>
+        <a href="index.html" class="back-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to Platform
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">15,078</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">25+</div>
+                <div class="stat-label">Docker Containers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">7</div>
+                <div class="stat-label">Microservices</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Kafka Topics</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Storage Tiers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">45+</div>
+                <div class="stat-label">API Endpoints</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">97.5%</div>
+                <div class="stat-label">Cost Savings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">4</div>
+                <div class="stat-label">ML Models</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">20+</div>
+                <div class="stat-label">Engineered Features</div>
+            </div>
+        </div>
+
+        <!-- Mermaid Diagram -->
+        <div class="diagram-section">
+            <div class="section-header">
+                <h2>Full System Architecture</h2>
+                <span class="badge">9 Layers</span>
+            </div>
+            <div class="diagram-container">
+                <pre class="mermaid">
+graph TB
+    subgraph LAYER1["LAYER 1: EXTERNAL DATA SOURCES"]
+        NASA["NASA FIRMS\nSatellite Fire Detection\nReal-Time Polling 30s"]
+        NOAA["NOAA Weather API\nMeteorological Data\nLive Streaming 8 partitions"]
+        COPER["Copernicus ERA5\nWeather Reanalysis\nBatch 6-hourly GRIB2"]
+        IOT["IoT Sensors\nMQTT Air Quality\nLive Streaming 12 partitions"]
+        LANDSAT["Landsat Thermal\nSatellite Imagery\nBatch Daily GeoTIFF"]
+    end
+
+    subgraph LAYER2["LAYER 2: INGESTION & VALIDATION"]
+        CONN1["FIRMS Connector\nStreamManager"]
+        CONN2["NOAA Connector\nStreamManager"]
+        CONN3["Copernicus Connector\nStreamManager"]
+        CONN4["MQTT Connector\nStreamManager"]
+        CONN5["Landsat Connector\nStreamManager"]
+        VAL["Avro Schema Validator\n4 Schemas\nReal-time Validation"]
+        DLQ["Dead Letter Queue\nExponential Backoff\nAutomatic Retry"]
+        QUAL["Data Quality Engine\nCompleteness Check\nConsistency Validation"]
+    end
+
+    subgraph LAYER3["LAYER 3: EVENT STREAMING"]
+        K1["wildfire-nasa-firms\n4 partitions\nFire detections"]
+        K2["wildfire-weather-processed\n8 partitions\nWeather data"]
+        K3["wildfire-iot-sensors\n12 partitions\nSensor readings"]
+        K4["wildfire-satellite-metadata\n4 partitions\nImage metadata"]
+        K5["wildfire-weather-alerts\n4 partitions\nNWS alerts"]
+        KAFKA_INFO["Apache Kafka Cluster\nZSTD Compression\n10,000 events/sec\nBinary imagery support"]
+    end
+
+    subgraph LAYER4["LAYER 4: MULTI-TIER STORAGE"]
+        subgraph ONPREM["On-Premises Storage"]
+            subgraph HOT_TIER["HOT TIER 0-7 days"]
+                PG_PRIMARY["PostgreSQL Primary\nPostGIS Enabled\n50TB NVMe SSD\nQuery SLA: less than 100ms"]
+                PG_REPLICA1["Standby Replica 1\nStreaming Replication\n30s lag"]
+                PG_REPLICA2["Standby Replica 2\nStreaming Replication\n30s lag"]
+            end
+            subgraph WARM_TIER["WARM TIER 7-90 days"]
+                MINIO1["MinIO Node 1\n50TB HDD\nParquet + Snappy"]
+                MINIO2["MinIO Node 2\n50TB HDD\nErasure Coding"]
+                MINIO3["MinIO Node 3\n50TB HDD\nN/2 Fault Tolerant"]
+                MINIO4["MinIO Node 4\n50TB HDD\nQuery SLA: less than 500ms"]
+            end
+        end
+        subgraph CLOUD["AWS Cloud Storage US-West-2"]
+            subgraph COLD_TIER["COLD TIER 90-365 days"]
+                S3_IA["S3 Standard-IA\n5PB Capacity\nMulti-AZ\nQuery SLA: less than 5s\n$0.004/GB/month"]
+            end
+            subgraph ARCHIVE_TIER["ARCHIVE TIER 365+ days"]
+                GLACIER["S3 Glacier Deep Archive\n100PB Capacity\n12-hour retrieval\n7-year retention FISMA\n$0.00099/GB/month"]
+            end
+        end
+        AIRFLOW["Apache Airflow\nLifecycle Orchestration\n4 DAGs"]
+        BACKUP["Veeam Backup\nCross-Region Replication\nRPO: 15 min, RTO: 60 min"]
+    end
+
+    subgraph LAYER_AI["LAYER 5: ENSEMBLE AI ENGINE"]
+        subgraph ML_FEATURES["Feature Engineering"]
+            FEAT_PIPE["Feature Pipeline\n20+ Engineered Features\nFWI, NDVI, THI, Drought"]
+            FEAT_STORE["Feature Store\nRedis + PostgreSQL\nSub-millisecond Cache"]
+        end
+        subgraph ML_MODELS["Model Ensemble — Parallel Inference"]
+            RF["Random Forest\nBaseline Classifier\n100 Estimators\nWeight: 20%"]
+            LSTM_M["LSTM Predictor\n3-Layer + Attention\n7-Day Forecast\nWeight: 25%"]
+            CNN_M["CNN Satellite Analyzer\nU-Net Encoder-Decoder\n7-Ch Multi-Spectral\nWeight: 20%"]
+            FIRESAT["FireSat Real-Time\nActive Fire Detection\nFRP + Proximity\nWeight: 35%"]
+        end
+        ENSEMBLE["Ensemble Meta-Learner\nConfidence-Adjusted\nWeighted Voting\n4 Models Combined"]
+        subgraph ML_OUTPUT["Prediction & Serving"]
+            PRED_PIPE["Prediction Pipeline\nAsync Priority Queue\n4 Workers\nSub-100ms Inference"]
+            SPREAD["Fire Spread Model\n3D Risk Fields\nPerimeter Prediction\nEvacuation Zones"]
+        end
+        MODEL_REG["MLflow Registry\nExperiment Tracking\nModel Versioning"]
+    end
+
+    subgraph LAYER6["LAYER 6: API GATEWAY & SECURITY"]
+        KONG["Kong API Gateway\nPort 8080\nRate Limiting: 1000 req/hr\nRequest Validation\nResponse Caching 15-min TTL"]
+        SEC["Security Service\nPort 8005\nOAuth2/OIDC\nJWT Tokens"]
+        RBAC["5-Role RBAC\nFire Chief\nAnalyst\nScientist\nAdmin\nField Responder"]
+        MFA["Multi-Factor Auth\nTOTP Google Auth\nRequired: Admin + Scientist"]
+        AUDIT["Comprehensive Audit\nAll Access Logged\nCorrelation IDs\nFISMA Compliant"]
+    end
+
+    subgraph LAYER7["LAYER 7: DATA CLEARING HOUSE"]
+        DCH["Data Clearing House API\nPort 8006\n45+ REST Endpoints\nFastAPI Auto-Docs"]
+        META["Metadata Catalog\nPort 8003\nDataset Discovery\nSchema Docs\nLineage Tracking"]
+        QUAL_SVC["Data Quality Service\nPort 8004\nValidation Rules\nProfiling Reports\nAnomaly Detection"]
+        VIZ["Visualization Service\nPort 8007\nChart.js, D3.js\nLeaflet Maps\nPlotly"]
+        EXPORT["Export Service\nFormats:\nCSV, JSON, GeoJSON\nParquet, Shapefile"]
+        REDIS["Redis Cache\nPort 6379\nHigh Hit Rate\n15-min TTL\nSession Management"]
+    end
+
+    subgraph LAYER8["LAYER 8: USER DASHBOARDS"]
+        CHIEF["Fire Chief Dashboard\nPort 3001\n8 Widgets\nReal-Time Operations\nActive Fire Maps\nResource Status"]
+        ANALYST["Data Analyst Portal\nPort 3002\n10 Widgets\nHistorical Trends\nStatistical Reports\nQuery Builder"]
+        SCIENTIST["Data Scientist Workbench\nPort 3003\n12 Widgets\nJupyter Notebooks\nML Model Training\nAPI Explorer"]
+        ADMIN_DASH["Admin Console\nPort 3004\nUser Management\nSystem Config\nAudit Logs\nPerformance Metrics"]
+        INTEGRATIONS["External Integrations\nPower BI Connector\nEsri ArcGIS\nTableau\nPython/R SDK"]
+    end
+
+    subgraph LAYER9["LAYER 9: MONITORING & OPERATIONS"]
+        GRAFANA["Grafana Dashboards\nPort 3010\n33+ KPIs\n5 Dashboards\nAuto-refresh: 30s"]
+        PROM["Prometheus\nPort 9090\nMetrics Collection\nSystem + Business KPIs\nSLA Tracking"]
+        ELK["Elasticsearch + Kibana\nPorts 9200, 5601\nCentralized Logging\nApplication + Access Logs\n90-day retention"]
+        CLOUDWATCH["AWS CloudWatch\nCloud Metrics\nS3 + Glacier Monitoring\nCost Tracking"]
+    end
+
+    NASA --> CONN1
+    NOAA --> CONN2
+    COPER --> CONN3
+    IOT --> CONN4
+    LANDSAT --> CONN5
+
+    CONN1 --> VAL
+    CONN2 --> VAL
+    CONN3 --> VAL
+    CONN4 --> VAL
+    CONN5 --> VAL
+
+    VAL -->|Valid| QUAL
+    VAL -->|Invalid| DLQ
+    DLQ -->|Retry| VAL
+
+    QUAL --> K1
+    QUAL --> K2
+    QUAL --> K3
+    QUAL --> K4
+    QUAL --> K5
+
+    K1 -.-> KAFKA_INFO
+    K2 -.-> KAFKA_INFO
+    K3 -.-> KAFKA_INFO
+
+    K1 --> PG_PRIMARY
+    K2 --> PG_PRIMARY
+    K3 --> PG_PRIMARY
+    K4 --> PG_PRIMARY
+    K5 --> PG_PRIMARY
+
+    PG_PRIMARY --> PG_REPLICA1
+    PG_PRIMARY --> PG_REPLICA2
+
+    PG_PRIMARY -->|Day 7\nAirflow DAG| AIRFLOW
+    AIRFLOW -->|Export Parquet\n78% compression| MINIO1
+    MINIO1 <--> MINIO2
+    MINIO2 <--> MINIO3
+    MINIO3 <--> MINIO4
+
+    MINIO1 -->|Day 90\nAirflow DAG| AIRFLOW
+    AIRFLOW -->|Transfer to Cloud| S3_IA
+
+    S3_IA -->|Day 365\nAirflow DAG| AIRFLOW
+    AIRFLOW -->|Archive| GLACIER
+
+    PG_PRIMARY -.->|Continuous| BACKUP
+    MINIO1 -.->|Continuous| BACKUP
+    BACKUP -.->|Cross-Region| S3_IA
+
+    PG_PRIMARY --> KONG
+    MINIO1 --> KONG
+    S3_IA --> KONG
+    GLACIER --> KONG
+
+    KONG --> SEC
+    SEC --> RBAC
+    SEC --> MFA
+    SEC --> AUDIT
+
+    RBAC --> DCH
+    RBAC --> META
+    RBAC --> QUAL_SVC
+    RBAC --> VIZ
+
+    DCH --> REDIS
+    DCH --> EXPORT
+    META --> REDIS
+
+    DCH --> CHIEF
+    DCH --> ANALYST
+    DCH --> SCIENTIST
+    DCH --> ADMIN_DASH
+    DCH --> INTEGRATIONS
+
+    PG_PRIMARY --> PROM
+    MINIO1 --> PROM
+    KAFKA_INFO --> PROM
+    DCH --> PROM
+    KONG --> PROM
+
+    S3_IA --> CLOUDWATCH
+    GLACIER --> CLOUDWATCH
+
+    PROM --> GRAFANA
+    CLOUDWATCH --> GRAFANA
+
+    PG_PRIMARY --> ELK
+    DCH --> ELK
+    KONG --> ELK
+    AUDIT --> ELK
+
+    KAFKA_INFO --> FEAT_PIPE
+    PG_PRIMARY --> FEAT_PIPE
+    MINIO1 --> CNN_M
+
+    FEAT_PIPE --> FEAT_STORE
+    FEAT_STORE --> RF
+    FEAT_STORE --> LSTM_M
+    FEAT_STORE --> CNN_M
+    FEAT_STORE --> FIRESAT
+
+    RF --> ENSEMBLE
+    LSTM_M --> ENSEMBLE
+    CNN_M --> ENSEMBLE
+    FIRESAT --> ENSEMBLE
+
+    ENSEMBLE --> PRED_PIPE
+    ENSEMBLE --> SPREAD
+    PRED_PIPE --> KONG
+
+    ENSEMBLE --> PROM
+    MODEL_REG -.-> GRAFANA
+    PRED_PIPE --> ELK
+
+    classDef layer1Style fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:#fff
+    classDef layer2Style fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+    classDef layer3Style fill:#f39c12,stroke:#e67e22,stroke-width:2px,color:#fff
+    classDef layer4HotStyle fill:#27ae60,stroke:#229954,stroke-width:2px,color:#fff
+    classDef layer4WarmStyle fill:#e67e22,stroke:#d35400,stroke-width:2px,color:#fff
+    classDef layer4ColdStyle fill:#3498db,stroke:#2980b9,stroke-width:2px,color:#fff
+    classDef layer4ArchiveStyle fill:#9b59b6,stroke:#8e44ad,stroke-width:2px,color:#fff
+    classDef layer5Style fill:#e84393,stroke:#d63031,stroke-width:2px,color:#fff
+    classDef layer6Style fill:#00b894,stroke:#00a085,stroke-width:2px,color:#fff
+    classDef layer7Style fill:#0984e3,stroke:#0770c9,stroke-width:2px,color:#fff
+    classDef layer8Style fill:#6c5ce7,stroke:#5a4ad9,stroke-width:2px,color:#fff
+    classDef aiModelStyle fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff
+    classDef aiPipelineStyle fill:#0891b2,stroke:#0e7490,stroke-width:2px,color:#fff
+    classDef aiEnsembleStyle fill:#dc2626,stroke:#b91c1c,stroke-width:2px,color:#fff
+    classDef aiRegistryStyle fill:#ca8a04,stroke:#a16207,stroke-width:2px,color:#fff
+    classDef orchestrationStyle fill:#fdcb6e,stroke:#f9b54a,stroke-width:2px,color:#000
+
+    class NASA,NOAA,COPER,IOT,LANDSAT layer1Style
+    class CONN1,CONN2,CONN3,CONN4,CONN5,VAL,DLQ,QUAL layer2Style
+    class K1,K2,K3,K4,K5,KAFKA_INFO layer3Style
+    class PG_PRIMARY,PG_REPLICA1,PG_REPLICA2 layer4HotStyle
+    class MINIO1,MINIO2,MINIO3,MINIO4 layer4WarmStyle
+    class S3_IA layer4ColdStyle
+    class GLACIER layer4ArchiveStyle
+    class KONG,SEC,RBAC,MFA,AUDIT layer5Style
+    class DCH,META,QUAL_SVC,VIZ,EXPORT,REDIS layer6Style
+    class CHIEF,ANALYST,SCIENTIST,ADMIN_DASH,INTEGRATIONS layer7Style
+    class GRAFANA,PROM,ELK,CLOUDWATCH layer8Style
+    class RF,LSTM_M,CNN_M,FIRESAT aiModelStyle
+    class FEAT_PIPE,FEAT_STORE,PRED_PIPE,SPREAD aiPipelineStyle
+    class ENSEMBLE aiEnsembleStyle
+    class MODEL_REG aiRegistryStyle
+    class AIRFLOW,BACKUP orchestrationStyle
+                </pre>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-section">
+            <div class="section-header">
+                <h2>Architecture Layers</h2>
+                <span class="badge">Legend</span>
+            </div>
+            <div class="legend-grid">
+                <div class="legend-card ingestion">
+                    <div class="legend-title">
+                        <span class="legend-dot red"></span>
+                        Data Ingestion Layer
+                    </div>
+                    <ul class="legend-list">
+                        <li>6 active data source connectors (NASA, NOAA, Copernicus, IoT, Landsat)</li>
+                        <li>Real-time, batch, and streaming ingestion modes</li>
+                        <li>Avro schema validation with quality checks</li>
+                        <li>Dead Letter Queue with automatic retry</li>
+                        <li>Apache Kafka: 8 topics, 25 partitions</li>
+                        <li>High throughput: 10,000 events/second sustained</li>
+                        <li>ZSTD compression for latency reduction</li>
+                    </ul>
+                </div>
+                <div class="legend-card storage">
+                    <div class="legend-title">
+                        <span class="legend-dot blue"></span>
+                        Storage Layer
+                    </div>
+                    <ul class="legend-list">
+                        <li>4-tier hybrid architecture: HOT &rarr; WARM &rarr; COLD &rarr; ARCHIVE</li>
+                        <li>Cost-optimized storage: $405/month for 10TB</li>
+                        <li>HOT tier: &lt;100ms query SLA on PostgreSQL+PostGIS</li>
+                        <li>WARM tier: &lt;500ms query SLA on MinIO Parquet</li>
+                        <li>High compression ratio with Snappy</li>
+                        <li>Fully automated lifecycle management (Apache Airflow)</li>
+                        <li>High availability: RPO 15min, RTO 60min</li>
+                        <li>7-year retention compliance (FISMA, NIST 800-53)</li>
+                    </ul>
+                </div>
+                <div class="legend-card clearing">
+                    <div class="legend-title">
+                        <span class="legend-dot green"></span>
+                        Data Clearing House
+                    </div>
+                    <ul class="legend-list">
+                        <li>45+ REST API endpoints with FastAPI auto-documentation</li>
+                        <li>4 role-based dashboards: Fire Chief, Analyst, Scientist, Admin</li>
+                        <li>5-role RBAC with least privilege access control</li>
+                        <li>OAuth2/OIDC authentication with MFA for elevated roles</li>
+                        <li>Redis cache with configurable TTL</li>
+                        <li>Export formats: CSV, JSON, GeoJSON, Parquet, Shapefile</li>
+                        <li>High uptime with low API latency</li>
+                        <li>Complete audit trail with FISMA compliance</li>
+                        <li>Power BI, Esri ArcGIS, Tableau integration</li>
+                    </ul>
+                </div>
+                <div class="legend-card ai">
+                    <div class="legend-title">
+                        <span class="legend-dot purple"></span>
+                        Ensemble AI Engine
+                    </div>
+                    <ul class="legend-list">
+                        <li>4-model ensemble with confidence-adjusted weighted voting</li>
+                        <li>CNN satellite + LSTM temporal + RF baseline + FireSat real-time</li>
+                        <li>20+ engineered features (FWI, NDVI, THI, drought index)</li>
+                        <li>&lt;100ms real-time inference pipeline</li>
+                        <li>7-day fire risk forecasting with temporal attention</li>
+                        <li>3D risk fields + fire perimeter prediction + evacuation zones</li>
+                        <li>MLflow experiment tracking and model versioning</li>
+                        <li>Confidence-adjusted prediction scoring</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Differentiators -->
+        <div class="differentiators-section">
+            <div class="section-header">
+                <h2>Key Differentiators</h2>
+            </div>
+            <div class="differentiators-box">
+                <h3>What Sets ClimaIQ Apart</h3>
+                <ul class="diff-list">
+                    <li>Complete end-to-end implementation across all system layers</li>
+                    <li>Production-ready features: DLQ, backpressure, Avro schemas, MFA</li>
+                    <li>Meets and exceeds SLA targets with measurable results</li>
+                    <li>Significant cost optimization while maintaining performance</li>
+                    <li>Real-world data sources (not mock data)</li>
+                    <li>Infrastructure as Code with Terraform</li>
+                    <li>Comprehensive test coverage and code quality</li>
+                    <li>4-model ensemble AI with confidence-adjusted weighted voting</li>
+                    <li>7-day fire risk forecasting with LSTM temporal attention</li>
+                    <li>Real-time satellite analysis via U-Net CNN (7-channel multi-spectral)</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            themeVariables: {
+                darkMode: true,
+                background: '#12121a',
+                primaryColor: '#1e3a5f',
+                primaryTextColor: '#f0f0f5',
+                primaryBorderColor: '#ff6b35',
+                lineColor: '#a0a0b0',
+                secondaryColor: '#16161f',
+                tertiaryColor: '#0e0e15',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '13px',
+                nodeBorder: '#ff6b35',
+                clusterBkg: '#16161f',
+                clusterBorder: 'rgba(255,255,255,0.1)',
+                edgeLabelBackground: '#16161f',
+                nodeTextColor: '#f0f0f5'
+            },
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                padding: 16,
+                nodeSpacing: 30,
+                rankSpacing: 40
+            }
+        });
+    </script>
+
+</body>
+</html>

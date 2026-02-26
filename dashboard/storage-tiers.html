@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage Tier Monitoring — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Data Storage — Tier Monitoring</h1>
+          <span class="header-sub">Multi-tier storage performance &amp; cost analysis</span>
+        </div>
+
+        <!-- Tier latency gauges -->
+        <div class="panel-grid grid-cols-4" style="margin-bottom:16px;">
+          <div class="panel" id="gauge-hot"></div>
+          <div class="panel" id="gauge-warm"></div>
+          <div class="panel" id="gauge-cold"></div>
+          <div class="panel" id="gauge-archive"></div>
+        </div>
+
+        <!-- Cost stats -->
+        <div class="panel-grid grid-cols-4" style="margin-bottom:16px;">
+          <div class="panel" id="stat-total"></div>
+          <div class="panel" id="stat-cost"></div>
+          <div class="panel" id="stat-compress"></div>
+          <div class="panel" id="stat-dedup"></div>
+        </div>
+
+        <!-- Storage growth -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header"><span class="panel-title">Storage Growth by Tier (14d)</span></div>
+          <div class="panel-body"><div class="chart-container"><canvas id="chart-growth"></canvas></div></div>
+        </div>
+
+        <!-- Query perf + Capacity -->
+        <div class="panel-grid grid-cols-2">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Query Performance Distribution</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-query-perf"></canvas></div></div>
+          </div>
+          <div class="panel" id="bargauge-capacity"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Storage Tier Monitoring');
+    const data = DashboardData.storageTiers();
+
+    // Tier gauges
+    const tierColors = [
+      { value: 0, color: '#73bf69' }, { value: 50, color: '#ff9830' }, { value: 80, color: '#f2495c' }
+    ];
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-hot'), {
+      title: 'HOT Tier Latency', value: data.tiers.hot.latency, max: data.tiers.hot.max, unit: data.tiers.hot.unit,
+      thresholds: [{ value: 0, color: '#73bf69' }, { value: 20, color: '#ff9830' }, { value: 40, color: '#f2495c' }],
+    });
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-warm'), {
+      title: 'WARM Tier Latency', value: data.tiers.warm.latency, max: data.tiers.warm.max, unit: data.tiers.warm.unit,
+      thresholds: [{ value: 0, color: '#73bf69' }, { value: 100, color: '#ff9830' }, { value: 160, color: '#f2495c' }],
+    });
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-cold'), {
+      title: 'COLD Tier Latency', value: data.tiers.cold.latency, max: data.tiers.cold.max, unit: data.tiers.cold.unit,
+      thresholds: [{ value: 0, color: '#73bf69' }, { value: 500, color: '#ff9830' }, { value: 800, color: '#f2495c' }],
+    });
+    DashboardCommon.createGaugePanel(document.getElementById('gauge-archive'), {
+      title: 'ARCHIVE Tier Latency', value: data.tiers.archive.latency, max: data.tiers.archive.max, unit: data.tiers.archive.unit,
+      thresholds: [{ value: 0, color: '#73bf69' }, { value: 3000, color: '#ff9830' }, { value: 4500, color: '#f2495c' }],
+    });
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-total'),
+      { title: 'Total Storage', value: data.stats.totalStorage, unit: 'TB', color: 'cyan', label: 'All tiers' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-cost'),
+      { title: 'Monthly Cost', value: '$' + data.stats.monthlyCost.toLocaleString(), color: 'orange', label: 'Infrastructure' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-compress'),
+      { title: 'Compression Ratio', value: data.stats.compressionRatio, color: 'green', label: 'Average across tiers' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-dedup'),
+      { title: 'Dedup Savings', value: data.stats.deduplication, unit: '%', color: 'blue', label: 'Storage saved' });
+
+    // Charts
+    DashboardCharts.area(document.getElementById('chart-growth'), { ...data.storageGrowth, yLabel: 'GB' });
+    DashboardCharts.bar(document.getElementById('chart-query-perf'), {
+      labels: data.queryPerf.labels,
+      datasets: [{ label: 'Queries (%)', data: data.queryPerf.data, color: '#00bcd4' }],
+      yLabel: '% of queries',
+    });
+
+    // Bar gauge
+    DashboardCommon.createBarGauge(document.getElementById('bargauge-capacity'), {
+      title: 'Capacity Utilization',
+      items: data.capacityUtil.map(t => ({ ...t, unit: '%' })),
+    });
+
+    // Live update
+    setInterval(() => {
+      const d = DashboardData.storageTiers();
+      DashboardCommon.updateStatValue(document.getElementById('stat-cost'), '$' + d.stats.monthlyCost.toLocaleString());
+    }, 5000);
+  </script>
+</body>
+</html>

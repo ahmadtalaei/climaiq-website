@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Platform — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Analytics Platform</h1>
+          <span class="header-sub">Role-based analytics &amp; platform usage metrics</span>
+        </div>
+
+        <!-- Role selector -->
+        <div class="role-selector">
+          <label for="role-select">Active Role:</label>
+          <select id="role-select">
+            <option value="Admin">Admin</option>
+            <option value="Fire Chief">Fire Chief</option>
+            <option value="Data Scientist">Data Scientist</option>
+            <option value="Data Analyst">Data Analyst</option>
+            <option value="Field Responder">Field Responder</option>
+          </select>
+        </div>
+
+        <!-- Stats for selected role -->
+        <div class="panel-grid grid-cols-6" style="margin-bottom:16px;">
+          <div class="panel" id="stat-queries"></div>
+          <div class="panel" id="stat-response"></div>
+          <div class="panel" id="stat-sessions"></div>
+          <div class="panel" id="stat-reports"></div>
+          <div class="panel" id="stat-exports"></div>
+          <div class="panel" id="stat-usage"></div>
+        </div>
+
+        <!-- Role activity chart + platform distribution -->
+        <div class="panel-grid grid-cols-2" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Role-Based Activity (24h)</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-activity"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Platform Distribution</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-platform"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Query table -->
+        <div class="panel" id="table-queries"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Analytics Platform');
+    const data = DashboardData.analyticsOverview();
+
+    function renderStats(role) {
+      const r = data.roles[role];
+      DashboardCommon.createStatPanel(document.getElementById('stat-queries'),
+        { title: 'Total Queries', value: r.queries, color: 'orange', label: 'Last 24h' });
+      DashboardCommon.createStatPanel(document.getElementById('stat-response'),
+        { title: 'Avg Response', value: r.avgResp, unit: 'ms', color: r.avgResp < 150 ? 'green' : 'yellow', label: 'Query latency' });
+      DashboardCommon.createStatPanel(document.getElementById('stat-sessions'),
+        { title: 'Active Sessions', value: r.sessions, color: 'cyan', label: 'Currently online' });
+      DashboardCommon.createStatPanel(document.getElementById('stat-reports'),
+        { title: 'Reports Generated', value: r.reports, color: 'blue', label: 'This week' });
+      DashboardCommon.createStatPanel(document.getElementById('stat-exports'),
+        { title: 'Data Exports', value: r.exports, color: 'purple', label: 'This week' });
+      DashboardCommon.createStatPanel(document.getElementById('stat-usage'),
+        { title: 'Platform Usage', value: r.usage, unit: '%', color: 'green', label: 'Feature adoption' });
+    }
+
+    renderStats(data.defaultRole);
+
+    document.getElementById('role-select').addEventListener('change', (e) => {
+      renderStats(e.target.value);
+    });
+
+    // Charts
+    DashboardCharts.timeseries(document.getElementById('chart-activity'), { ...data.roleActivity, yLabel: 'queries/min' });
+    DashboardCharts.pie(document.getElementById('chart-platform'), { ...data.platformDist, doughnut: true });
+
+    // Table
+    DashboardCommon.createTablePanel(document.getElementById('table-queries'), {
+      title: 'Real-Time Query Activity',
+      columns: ['Query ID', 'Description', 'Role', 'Duration', 'Status', 'Age'],
+      rows: data.queryTable,
+    });
+
+    // Live update
+    setInterval(() => {
+      const role = document.getElementById('role-select').value;
+      const r = data.roles[role];
+      DashboardCommon.updateStatValue(document.getElementById('stat-queries'),
+        DashboardCommon.jitterInt(r.queries, 3));
+      DashboardCommon.updateStatValue(document.getElementById('stat-sessions'),
+        DashboardCommon.jitterInt(r.sessions, 10));
+    }, 5000);
+  </script>
+</body>
+</html>

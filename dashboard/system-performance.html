@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Performance — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>System Performance</h1>
+          <span class="header-sub">Infrastructure health & resource utilization</span>
+        </div>
+
+        <!-- Stat panels -->
+        <div class="panel-grid grid-cols-4" style="margin-bottom:16px;">
+          <div class="panel" id="stat-response"></div>
+          <div class="panel" id="stat-throughput"></div>
+          <div class="panel" id="stat-uptime"></div>
+          <div class="panel" id="stat-quality"></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="panel-grid grid-cols-2">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">CPU Usage (%)</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-cpu"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Memory Usage (%)</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-memory"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('System Performance');
+    const data = DashboardData.systemPerformance();
+
+    DashboardCommon.createStatPanel(document.getElementById('stat-response'),
+      { title: 'Avg Response Time', value: data.stats.avgResponse, unit: 'ms', color: 'green', label: 'Last 5 min' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-throughput'),
+      { title: 'Throughput', value: data.stats.throughput.toLocaleString(), unit: 'req/s', color: 'cyan', label: 'Current' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-uptime'),
+      { title: 'System Uptime', value: data.stats.uptime, unit: '%', color: 'green', label: '30-day average' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-quality'),
+      { title: 'Data Quality', value: data.stats.dataQuality, unit: '%', color: 'green', label: 'Validation pass rate' });
+
+    const cpuChart = DashboardCharts.timeseries(document.getElementById('chart-cpu'), { ...data.cpu, yLabel: 'CPU %', yMax: 100 });
+    const memChart = DashboardCharts.timeseries(document.getElementById('chart-memory'), { ...data.memory, yLabel: 'Memory %', yMax: 100 });
+
+    setInterval(() => {
+      const d = DashboardData.systemPerformance();
+      DashboardCommon.updateStatValue(document.getElementById('stat-response'), d.stats.avgResponse);
+      DashboardCommon.updateStatValue(document.getElementById('stat-throughput'), Number(d.stats.throughput).toLocaleString());
+      const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      DashboardCharts.pushTimeseriesPoint(cpuChart, now,
+        [DashboardCommon.jitter(35, 10), DashboardCommon.jitter(22, 10), DashboardCommon.jitter(45, 10)]);
+      DashboardCharts.pushTimeseriesPoint(memChart, now,
+        [DashboardCommon.jitter(62, 5), DashboardCommon.jitter(78, 3), DashboardCommon.jitter(15, 10)]);
+    }, 5000);
+  </script>
+</body>
+</html>

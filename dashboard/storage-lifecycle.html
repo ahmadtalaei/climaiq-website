@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storage Lifecycle — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Storage Lifecycle</h1>
+          <span class="header-sub">Data lifecycle management, migration &amp; cleanup</span>
+        </div>
+
+        <!-- Top row: pie chart + stats -->
+        <div class="panel-grid grid-cols-3" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Storage Distribution</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-dist"></canvas></div></div>
+          </div>
+          <div class="panel" id="stat-total-tier"></div>
+          <div class="panel" id="stat-monthly-cost"></div>
+        </div>
+
+        <!-- Growth trend -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header"><span class="panel-title">Storage Growth Trend (14d)</span></div>
+          <div class="panel-body"><div class="chart-container"><canvas id="chart-growth"></canvas></div></div>
+        </div>
+
+        <!-- Migration + Cleanup tables -->
+        <div class="panel-grid grid-cols-2" style="margin-bottom:16px;">
+          <div class="panel" id="table-migration"></div>
+          <div class="panel" id="table-cleanup"></div>
+        </div>
+
+        <!-- Quality bar gauge + Retention log + File count -->
+        <div class="panel-grid grid-cols-3">
+          <div class="panel" id="bargauge-quality"></div>
+          <div class="panel" id="table-retention"></div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">File Count by Tier</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-files"></canvas></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Storage Lifecycle');
+    const data = DashboardData.storageLifecycle();
+
+    // Pie chart
+    DashboardCharts.pie(document.getElementById('chart-dist'), {
+      ...data.distribution, doughnut: true,
+    });
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-total-tier'),
+      { title: 'Total Storage by Tier', value: data.stats.totalByTier, color: 'cyan', label: 'Across all tiers' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-monthly-cost'),
+      { title: 'Monthly Cost', value: data.stats.monthlyCost, color: 'orange', label: 'Current billing period' });
+
+    // Growth trend
+    DashboardCharts.area(document.getElementById('chart-growth'), { ...data.growthTrend, yLabel: 'GB' });
+
+    // Tables
+    DashboardCommon.createTablePanel(document.getElementById('table-migration'), {
+      title: 'Migration Eligible',
+      columns: ['Dataset', 'Migration Path', 'Size', 'Age', 'Status'],
+      rows: data.migrationEligible,
+    });
+    DashboardCommon.createTablePanel(document.getElementById('table-cleanup'), {
+      title: 'Cleanup Candidates',
+      columns: ['Item', 'Size', 'Reason', 'Age', 'Action'],
+      rows: data.cleanupCandidates,
+    });
+
+    // Quality bar gauge
+    DashboardCommon.createBarGauge(document.getElementById('bargauge-quality'), {
+      title: 'Data Quality by Source',
+      items: data.qualityBySource.map(q => ({ ...q, unit: '%' })),
+    });
+
+    // Retention actions table
+    DashboardCommon.createTablePanel(document.getElementById('table-retention'), {
+      title: 'Retention Actions Log',
+      columns: ['Timestamp', 'Action', 'Details', 'Result'],
+      rows: data.retentionActions,
+    });
+
+    // File count bar chart
+    DashboardCharts.bar(document.getElementById('chart-files'), {
+      labels: data.fileCount.labels,
+      datasets: [{ label: 'Files', data: data.fileCount.data, color: data.fileCount.colors }],
+    });
+  </script>
+</body>
+</html>

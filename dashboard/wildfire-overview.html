@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wildfire Overview — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <!-- Header -->
+        <div class="dashboard-header-panel">
+          <h1>Wildfire Overview</h1>
+          <span class="header-sub">Real-time wildfire monitoring across California</span>
+        </div>
+
+        <!-- Stat panels row -->
+        <div class="panel-grid grid-cols-6" style="margin-bottom:16px;">
+          <div class="panel" id="stat-fires24h"></div>
+          <div class="panel" id="stat-fires7d"></div>
+          <div class="panel" id="stat-fires30d"></div>
+          <div class="panel" id="stat-detections24h"></div>
+          <div class="panel" id="stat-detections7d"></div>
+          <div class="panel" id="stat-sensors"></div>
+        </div>
+
+        <!-- Fire Activity Chart -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header"><span class="panel-title">Fire Activity Trends (24h)</span></div>
+          <div class="panel-body">
+            <div class="chart-container"><canvas id="chart-fire-activity"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Two tables side by side -->
+        <div class="panel-grid grid-cols-2">
+          <div class="panel" id="table-sources"></div>
+          <div class="panel" id="table-fires"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Wildfire Overview');
+    const data = DashboardData.wildfireOverview();
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-fires24h'),
+      { title: 'Fire Incidents (24h)', value: data.stats.fires24h, color: 'red', label: 'Active fires' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-fires7d'),
+      { title: 'Fire Incidents (7d)', value: data.stats.fires7d, color: 'orange', label: 'This week' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-fires30d'),
+      { title: 'Fire Incidents (30d)', value: data.stats.fires30d, color: 'yellow', label: 'This month' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-detections24h'),
+      { title: 'Detections (24h)', value: data.stats.detections24h, color: 'cyan', label: 'Satellite + sensor' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-detections7d'),
+      { title: 'Detections (7d)', value: data.stats.detections7d, color: 'blue', label: 'This week' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-sensors'),
+      { title: 'Sensor Readings', value: data.stats.sensorReadings.toLocaleString(), color: 'green', label: 'Total processed' });
+
+    // Fire Activity Chart
+    const fireChart = DashboardCharts.area(document.getElementById('chart-fire-activity'), data.fireActivity);
+
+    // Tables
+    DashboardCommon.createTablePanel(document.getElementById('table-sources'), {
+      title: 'Data Sources',
+      columns: ['Source', 'Type', 'Status', 'Uptime', 'Latency'],
+      rows: data.dataSources,
+    });
+    DashboardCommon.createTablePanel(document.getElementById('table-fires'), {
+      title: 'Recent Fire Incidents',
+      columns: ['Name', 'Location', 'Severity', 'Size', 'Containment'],
+      rows: data.recentFires,
+    });
+
+    // Live update
+    setInterval(() => {
+      const d = DashboardData.wildfireOverview();
+      DashboardCommon.updateStatValue(document.getElementById('stat-fires24h'), d.stats.fires24h);
+      DashboardCommon.updateStatValue(document.getElementById('stat-detections24h'), d.stats.detections24h);
+      const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      DashboardCharts.pushTimeseriesPoint(fireChart, now, [
+        d.stats.fires24h, d.stats.detections24h, Math.round(d.stats.fires24h * 0.4)
+      ]);
+    }, 5000);
+  </script>
+</body>
+</html>

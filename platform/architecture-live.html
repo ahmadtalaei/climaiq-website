@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Architecture View | ClimaIQ</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #f0f0f5;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: #0e0e15;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #f0f0f5;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff6b35, #00bcd4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: #00bcd4;
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 24px;
+            border-left: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .page-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: #a0a0b0;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4ade80;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            background: rgba(74,222,128,0.1);
+            border: 1px solid rgba(74,222,128,0.3);
+            border-radius: 20px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74,222,128,0.6); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(74,222,128,0); }
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .throughput-counter {
+            font-size: 13px;
+            color: #a0a0b0;
+            font-weight: 500;
+        }
+
+        .throughput-counter strong {
+            color: #ff6b35;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .back-link {
+            color: #00bcd4;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: #ff6b35;
+        }
+
+        .back-link svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Canvas Container */
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 130px);
+            min-height: 700px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 48px;
+            padding: 14px 32px;
+            background: #0e0e15;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .stat-item-icon.orange { background: rgba(255,107,53,0.15); color: #ff6b35; }
+        .stat-item-icon.cyan { background: rgba(0,188,212,0.15); color: #00bcd4; }
+        .stat-item-icon.green { background: rgba(74,222,128,0.15); color: #4ade80; }
+        .stat-item-icon.purple { background: rgba(168,85,247,0.15); color: #a855f7; }
+
+        .stat-item-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-item-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #f0f0f5;
+        }
+
+        .stat-item-label {
+            font-size: 11px;
+            color: #6a6a7a;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 800px) {
+            .stats-bar { gap: 20px; flex-wrap: wrap; padding: 10px 16px; }
+            .top-bar { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+            .throughput-counter { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <a href="../index.html" class="logo">
+                <div class="logo-icon">CQ</div>
+                <div class="logo-text">Clima<span>IQ</span></div>
+            </a>
+            <div class="title-area">
+                <div class="page-title">Live Architecture View</div>
+                <div class="live-badge">
+                    <div class="live-dot"></div>
+                    LIVE
+                </div>
+            </div>
+        </div>
+        <div class="top-bar-right">
+            <div class="throughput-counter">Events processed: <strong id="event-counter">0</strong></div>
+            <a href="index.html" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                Back to Platform
+            </a>
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas-container">
+        <canvas id="archCanvas"></canvas>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-item-icon orange">&#9889;</div>
+            <div class="stat-item-text">
+                <div class="stat-item-value" id="stat-events">10,000</div>
+                <div class="stat-item-label">Events/sec</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-item-icon cyan">&#128279;</div>
+            <div class="stat-item-text">
+                <div class="stat-item-value" id="stat-connections">26</div>
+                <div class="stat-item-label">Active Connections</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-item-icon green">&#128338;</div>
+            <div class="stat-item-text">
+                <div class="stat-item-value" id="stat-lag">&lt;50ms</div>
+                <div class="stat-item-label">Kafka Lag</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-item-icon purple">&#128640;</div>
+            <div class="stat-item-text">
+                <div class="stat-item-value" id="stat-latency">43ms</div>
+                <div class="stat-item-label">API Latency</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-item-icon purple">&#129504;</div>
+            <div class="stat-item-text">
+                <div class="stat-item-value" id="stat-ai">847/min</div>
+                <div class="stat-item-label">AI Predictions</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        const canvas = document.getElementById('archCanvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        let dpr = window.devicePixelRatio || 1;
+
+        function resize() {
+            const container = canvas.parentElement;
+            W = container.clientWidth;
+            H = container.clientHeight;
+            canvas.width = W * dpr;
+            canvas.height = H * dpr;
+            canvas.style.width = W + 'px';
+            canvas.style.height = H + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            layoutNodes();
+        }
+
+        // Color palette
+        const COLORS = {
+            datasource: '#f2495c',
+            ingestion: '#ff6b35',
+            kafka: '#f0a030',
+            hotStorage: '#4ade80',
+            warmStorage: '#5794f2',
+            coldStorage: '#00bcd4',
+            archiveStorage: '#a855f7',
+            security: '#ec4899',
+            api: '#14b8a6',
+            dashboard: '#3b82f6',
+            monitoring: '#8b5cf6',
+            ai: '#a855f7',
+            text: '#f0f0f5',
+            textSec: '#a0a0b0',
+            textMuted: '#6a6a7a',
+            bg: '#0a0a0f',
+            cardBg: '#16161f',
+            border: 'rgba(255,255,255,0.08)'
+        };
+
+        // Node definitions
+        const nodesDef = [
+            // Layer 1: Data Sources
+            { id: 'nasa', label: 'NASA FIRMS', sub: 'Satellite Fire Detection', layer: 0, col: 0, color: COLORS.datasource },
+            { id: 'noaa', label: 'NOAA Weather', sub: 'Meteorological Data', layer: 0, col: 1, color: COLORS.datasource },
+            { id: 'copernicus', label: 'Copernicus ERA5', sub: 'Weather Reanalysis', layer: 0, col: 2, color: COLORS.datasource },
+            { id: 'iot', label: 'IoT Sensors', sub: 'MQTT Air Quality', layer: 0, col: 3, color: COLORS.datasource },
+            { id: 'landsat', label: 'Landsat Thermal', sub: 'Satellite Imagery', layer: 0, col: 4, color: COLORS.datasource },
+            // Layer 2: Ingestion
+            { id: 'validator', label: 'Avro Validator', sub: '4 Schemas', layer: 1, col: 1, color: COLORS.ingestion },
+            { id: 'dlq', label: 'Dead Letter Queue', sub: 'Auto Retry', layer: 1, col: 3, color: COLORS.ingestion },
+            { id: 'quality', label: 'Quality Engine', sub: 'Completeness Check', layer: 1, col: 2, color: COLORS.ingestion },
+            // Layer 3: Kafka
+            { id: 'kafka', label: 'Apache Kafka', sub: '8 Topics | 10K evt/s', layer: 2, col: 2, color: COLORS.kafka },
+            // Layer 4: Storage
+            { id: 'hot', label: 'HOT: PostgreSQL', sub: 'NVMe SSD | <100ms', layer: 3, col: 0.5, color: COLORS.hotStorage },
+            { id: 'warm', label: 'WARM: MinIO', sub: 'Parquet | <500ms', layer: 3, col: 1.5, color: COLORS.warmStorage },
+            { id: 'cold', label: 'COLD: S3', sub: 'Standard-IA | <5s', layer: 3, col: 2.5, color: COLORS.coldStorage },
+            { id: 'archive', label: 'ARCHIVE: Glacier', sub: '100PB | 12h', layer: 3, col: 3.5, color: COLORS.archiveStorage },
+            // Layer 5: AI Engine
+            { id: 'feat_pipe', label: 'Feature Pipeline', sub: '20+ Features', layer: 4, col: 0.5, color: COLORS.ai },
+            { id: 'ensemble', label: 'Ensemble AI', sub: '4-Model Voting', layer: 4, col: 2, color: COLORS.ai },
+            { id: 'pred_pipe', label: 'Prediction API', sub: '<100ms Inference', layer: 4, col: 3.5, color: COLORS.ai },
+            // Layer 6: Security
+            { id: 'kong', label: 'Kong Gateway', sub: 'Rate Limiting', layer: 5, col: 1.5, color: COLORS.security },
+            { id: 'auth', label: 'OAuth2 + RBAC', sub: 'JWT | MFA', layer: 5, col: 2.5, color: COLORS.security },
+            // Layer 7: API
+            { id: 'api', label: 'Data Clearing House', sub: '45+ REST APIs', layer: 6, col: 2, color: COLORS.api },
+            // Layer 8: Dashboards
+            { id: 'chief', label: 'Fire Chief', sub: 'Port 3001', layer: 7, col: 0.5, color: COLORS.dashboard },
+            { id: 'analyst', label: 'Analyst', sub: 'Port 3002', layer: 7, col: 1.5, color: COLORS.dashboard },
+            { id: 'scientist', label: 'Scientist', sub: 'Port 3003', layer: 7, col: 2.5, color: COLORS.dashboard },
+            { id: 'admin', label: 'Admin', sub: 'Port 3004', layer: 7, col: 3.5, color: COLORS.dashboard },
+            // Layer 9: Monitoring
+            { id: 'prometheus', label: 'Prometheus', sub: 'Metrics', layer: 8, col: 1.5, color: COLORS.monitoring },
+            { id: 'grafana', label: 'Grafana', sub: '33+ KPIs', layer: 8, col: 2.5, color: COLORS.monitoring },
+        ];
+
+        // Edges (from -> to)
+        const edgesDef = [
+            { from: 'nasa', to: 'validator' },
+            { from: 'noaa', to: 'validator' },
+            { from: 'copernicus', to: 'validator' },
+            { from: 'iot', to: 'validator' },
+            { from: 'landsat', to: 'validator' },
+            { from: 'validator', to: 'quality' },
+            { from: 'validator', to: 'dlq' },
+            { from: 'dlq', to: 'validator' },
+            { from: 'quality', to: 'kafka' },
+            { from: 'kafka', to: 'hot' },
+            { from: 'hot', to: 'warm' },
+            { from: 'warm', to: 'cold' },
+            { from: 'cold', to: 'archive' },
+            { from: 'kafka', to: 'feat_pipe' },
+            { from: 'hot', to: 'feat_pipe' },
+            { from: 'feat_pipe', to: 'ensemble' },
+            { from: 'ensemble', to: 'pred_pipe' },
+            { from: 'pred_pipe', to: 'kong' },
+            { from: 'ensemble', to: 'prometheus' },
+            { from: 'hot', to: 'kong' },
+            { from: 'kong', to: 'auth' },
+            { from: 'auth', to: 'api' },
+            { from: 'api', to: 'chief' },
+            { from: 'api', to: 'analyst' },
+            { from: 'api', to: 'scientist' },
+            { from: 'api', to: 'admin' },
+            { from: 'hot', to: 'prometheus' },
+            { from: 'prometheus', to: 'grafana' },
+        ];
+
+        let nodes = [];
+        let edges = [];
+        let particles = [];
+
+        const NODE_W = 140;
+        const NODE_H = 52;
+        const LAYER_LABELS = [
+            'DATA SOURCES',
+            'INGESTION',
+            'STREAMING',
+            'STORAGE',
+            'AI ENGINE',
+            'SECURITY',
+            'APIs',
+            'DASHBOARDS',
+            'MONITORING'
+        ];
+
+        function layoutNodes() {
+            const marginX = 60;
+            const marginTop = 40;
+            const marginBot = 70;
+            const usableH = H - marginTop - marginBot;
+            const layerCount = 9;
+            const layerGap = usableH / (layerCount - 1);
+
+            // Determine max columns per layer
+            const layerCols = {};
+            nodesDef.forEach(nd => {
+                if (!layerCols[nd.layer]) layerCols[nd.layer] = [];
+                layerCols[nd.layer].push(nd.col);
+            });
+
+            nodes = nodesDef.map(nd => {
+                const cols = layerCols[nd.layer];
+                const maxCol = Math.max(...cols);
+                const minCol = Math.min(...cols);
+                const range = maxCol - minCol || 1;
+                const usableW = W - marginX * 2 - NODE_W;
+                const x = marginX + ((nd.col - minCol) / range) * usableW + NODE_W / 2;
+                const y = marginTop + nd.layer * layerGap + NODE_H / 2;
+                // Center single-column layers
+                const cx = cols.length === 1 ? W / 2 : x;
+                return { ...nd, x: cx, y, w: NODE_W, h: NODE_H };
+            });
+
+            // Build edges with resolved positions
+            const nodeMap = {};
+            nodes.forEach(n => nodeMap[n.id] = n);
+            edges = edgesDef.map(e => ({
+                from: nodeMap[e.from],
+                to: nodeMap[e.to],
+                color: nodeMap[e.from].color
+            }));
+        }
+
+        // Particle system
+        class Particle {
+            constructor(edge) {
+                this.edge = edge;
+                this.t = 0;
+                const baseSpeed = 0.003 + Math.random() * 0.004;
+                this.speed = baseSpeed;
+                this.size = 2.5 + Math.random() * 2;
+                this.opacity = 0.6 + Math.random() * 0.4;
+                this.color = edge.color;
+            }
+
+            update() {
+                this.t += this.speed;
+                if (this.t > 1) return false;
+                return true;
+            }
+
+            draw() {
+                const fromX = this.edge.from.x;
+                const fromY = this.edge.from.y + this.edge.from.h / 2;
+                const toX = this.edge.to.x;
+                const toY = this.edge.to.y - this.edge.to.h / 2;
+
+                // Cubic bezier for smooth curves
+                const midY = (fromY + toY) / 2;
+                const t = this.t;
+                const t2 = t * t;
+                const t3 = t2 * t;
+                const mt = 1 - t;
+                const mt2 = mt * mt;
+                const mt3 = mt2 * mt;
+
+                const cp1x = fromX;
+                const cp1y = midY;
+                const cp2x = toX;
+                const cp2y = midY;
+
+                const x = mt3 * fromX + 3 * mt2 * t * cp1x + 3 * mt * t2 * cp2x + t3 * toX;
+                const y = mt3 * fromY + 3 * mt2 * t * cp1y + 3 * mt * t2 * cp2y + t3 * toY;
+
+                ctx.beginPath();
+                ctx.arc(x, y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.opacity;
+                ctx.fill();
+
+                // Glow
+                ctx.beginPath();
+                ctx.arc(x, y, this.size * 3, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, this.size * 3);
+                grad.addColorStop(0, this.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.globalAlpha = this.opacity * 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function spawnParticles() {
+            edges.forEach(edge => {
+                if (Math.random() < 0.06) {
+                    particles.push(new Particle(edge));
+                }
+            });
+        }
+
+        function drawEdge(edge) {
+            const fromX = edge.from.x;
+            const fromY = edge.from.y + edge.from.h / 2;
+            const toX = edge.to.x;
+            const toY = edge.to.y - edge.to.h / 2;
+            const midY = (fromY + toY) / 2;
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.bezierCurveTo(fromX, midY, toX, midY, toX, toY);
+            ctx.strokeStyle = edge.color;
+            ctx.globalAlpha = 0.12;
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+        }
+
+        function drawNode(node, time) {
+            const x = node.x - node.w / 2;
+            const y = node.y - node.h / 2;
+            const r = 10;
+
+            // Shadow / glow
+            ctx.shadowColor = node.color;
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+
+            // Background
+            ctx.beginPath();
+            ctx.roundRect(x, y, node.w, node.h, r);
+            ctx.fillStyle = '#16161f';
+            ctx.fill();
+
+            // Border
+            ctx.beginPath();
+            ctx.roundRect(x, y, node.w, node.h, r);
+            ctx.strokeStyle = node.color;
+            ctx.globalAlpha = 0.5 + 0.15 * Math.sin(time * 0.002 + node.col);
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            ctx.shadowBlur = 0;
+
+            // Top accent line
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + node.w - r, y);
+            ctx.strokeStyle = node.color;
+            ctx.globalAlpha = 0.8;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.globalAlpha = 1;
+
+            // Label
+            ctx.font = '600 12px Inter, sans-serif';
+            ctx.fillStyle = COLORS.text;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.label, node.x, node.y - 7);
+
+            // Sub label
+            ctx.font = '400 10px Inter, sans-serif';
+            ctx.fillStyle = COLORS.textMuted;
+            ctx.fillText(node.sub, node.x, node.y + 9);
+        }
+
+        function drawLayerLabels() {
+            const marginTop = 40;
+            const marginBot = 70;
+            const usableH = H - marginTop - marginBot;
+            const layerGap = usableH / 8;
+
+            LAYER_LABELS.forEach((label, i) => {
+                const y = marginTop + i * layerGap + NODE_H / 2;
+                ctx.font = '700 9px Inter, sans-serif';
+                ctx.fillStyle = COLORS.textMuted;
+                ctx.globalAlpha = 0.4;
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, 10, y);
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function drawBackground(time) {
+            ctx.fillStyle = COLORS.bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // Subtle grid
+            ctx.strokeStyle = 'rgba(255,255,255,0.015)';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            for (let x = 0; x < W; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, H);
+                ctx.stroke();
+            }
+            for (let y = 0; y < H; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(W, y);
+                ctx.stroke();
+            }
+
+            // Radial glow at center top
+            const grad = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, W * 0.6);
+            grad.addColorStop(0, 'rgba(255,107,53,0.04)');
+            grad.addColorStop(0.5, 'rgba(0,188,212,0.02)');
+            grad.addColorStop(1, 'transparent');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        // Event counter
+        let eventCount = 1247893;
+        const counterEl = document.getElementById('event-counter');
+
+        function formatNumber(n) {
+            return n.toLocaleString('en-US');
+        }
+
+        // Stats jitter
+        let statsTimer = 0;
+        function updateStats(time) {
+            if (time - statsTimer < 800) return;
+            statsTimer = time;
+
+            const evtSec = 9800 + Math.floor(Math.random() * 400);
+            document.getElementById('stat-events').textContent = evtSec.toLocaleString();
+
+            const conn = 24 + Math.floor(Math.random() * 5);
+            document.getElementById('stat-connections').textContent = conn;
+
+            const lag = 30 + Math.floor(Math.random() * 25);
+            document.getElementById('stat-lag').textContent = '<' + lag + 'ms';
+
+            const latency = 38 + Math.floor(Math.random() * 12);
+            document.getElementById('stat-latency').textContent = latency + 'ms';
+
+            const aiPred = 820 + Math.floor(Math.random() * 60);
+            document.getElementById('stat-ai').textContent = aiPred + '/min';
+
+            eventCount += Math.floor(Math.random() * 300) + 100;
+            counterEl.textContent = formatNumber(eventCount);
+        }
+
+        // Main loop
+        function draw(time) {
+            drawBackground(time);
+            drawLayerLabels();
+
+            // Draw edges
+            edges.forEach(e => drawEdge(e));
+
+            // Spawn and update particles
+            spawnParticles();
+            particles = particles.filter(p => {
+                if (p.update()) {
+                    p.draw();
+                    return true;
+                }
+                return false;
+            });
+
+            // Draw nodes
+            nodes.forEach(n => drawNode(n, time));
+
+            // Update stats
+            updateStats(time);
+
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        requestAnimationFrame(draw);
+    })();
+    </script>
+
+</body>
+</html>

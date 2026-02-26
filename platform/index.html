@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClimaIQ — Platform Services</title>
+  <meta name="description" content="ClimaIQ Wildfire Intelligence Platform Services Portal — 26 Data Sources, 5 Role-Based Interfaces, Real-Time Intelligence">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0a0f;
+      --card-bg: #16161f;
+      --card-hover: #1c1c28;
+      --text-primary: #f0f0f5;
+      --text-secondary: #a0a0b0;
+      --text-muted: #6a6a7a;
+      --fire-orange: #ff6b35;
+      --amber: #ffa726;
+      --red: #ff3d00;
+      --cyan: #00bcd4;
+      --green: #73bf69;
+      --fire-gradient: linear-gradient(135deg, #ff6b35, #ffa726);
+      --border-color: rgba(255, 255, 255, 0.06);
+      --card-radius: 12px;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== Animated Background ===== */
+    .bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-canvas .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      animation: orbFloat 20s ease-in-out infinite;
+    }
+
+    .bg-canvas .orb:nth-child(1) {
+      width: 500px;
+      height: 500px;
+      background: var(--fire-orange);
+      top: -10%;
+      left: -5%;
+      animation-delay: 0s;
+      animation-duration: 25s;
+    }
+
+    .bg-canvas .orb:nth-child(2) {
+      width: 400px;
+      height: 400px;
+      background: var(--amber);
+      top: 50%;
+      right: -10%;
+      animation-delay: -8s;
+      animation-duration: 22s;
+    }
+
+    .bg-canvas .orb:nth-child(3) {
+      width: 350px;
+      height: 350px;
+      background: var(--cyan);
+      bottom: -5%;
+      left: 30%;
+      animation-delay: -15s;
+      animation-duration: 28s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      25% { transform: translate(40px, -30px) scale(1.05); }
+      50% { transform: translate(-20px, 20px) scale(0.95); }
+      75% { transform: translate(30px, 40px) scale(1.02); }
+    }
+
+    /* ===== Top Navigation Bar ===== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .topbar-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-clima {
+      color: var(--text-primary);
+    }
+
+    .logo-iq {
+      background: var(--fire-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .topbar-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .topbar-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .topbar-right a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .topbar-right a:hover {
+      color: var(--text-primary);
+      border-color: rgba(255, 107, 53, 0.3);
+      background: rgba(255, 107, 53, 0.06);
+    }
+
+    .topbar-right a svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ===== Header Section ===== */
+    .header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+    }
+
+    .header-badge {
+      display: inline-block;
+      padding: 0.4rem 1.2rem;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.25);
+      border-radius: 100px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--fire-orange);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 1.5rem;
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .header h1 {
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      animation: fadeInUp 0.7s ease;
+    }
+
+    .header h1 .gradient-text {
+      background: var(--fire-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header-subtitle {
+      font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+      color: var(--text-secondary);
+      max-width: 700px;
+      margin: 0 auto 2rem;
+      font-weight: 400;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .header-subtitle strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .fire-underline {
+      width: 120px;
+      height: 4px;
+      background: var(--fire-gradient);
+      border-radius: 4px;
+      margin: 0 auto;
+      animation: underlineGrow 1s ease;
+      position: relative;
+    }
+
+    .fire-underline::after {
+      content: '';
+      position: absolute;
+      top: -4px;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      background: var(--fire-gradient);
+      border-radius: 4px;
+      filter: blur(12px);
+      opacity: 0.5;
+    }
+
+    @keyframes underlineGrow {
+      from { width: 0; opacity: 0; }
+      to { width: 120px; opacity: 1; }
+    }
+
+    /* ===== Stats Bar ===== */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      padding: 1.5rem 2rem 3rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.9s ease;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: var(--fire-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.2rem;
+    }
+
+    /* ===== Card Grid ===== */
+    .grid-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .grid-section-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .grid-section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    /* ===== Service Card ===== */
+    .service-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--card-radius);
+      padding: 1.75rem;
+      transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--fire-gradient);
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+
+    .service-card:hover {
+      background: var(--card-hover);
+      transform: translateY(-4px);
+      border-color: rgba(255, 107, 53, 0.2);
+      box-shadow: 0 12px 40px rgba(255, 107, 53, 0.08), 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .service-card:hover::before {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .card-title-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .card-icon.architecture { background: rgba(255, 107, 53, 0.12); color: var(--fire-orange); }
+    .card-icon.storage { background: rgba(0, 188, 212, 0.12); color: var(--cyan); }
+    .card-icon.database { background: rgba(115, 191, 105, 0.12); color: var(--green); }
+    .card-icon.cache { background: rgba(255, 61, 0, 0.12); color: var(--red); }
+    .card-icon.object-store { background: rgba(255, 167, 38, 0.12); color: var(--amber); }
+    .card-icon.ingestion { background: rgba(255, 107, 53, 0.12); color: var(--fire-orange); }
+    .card-icon.metrics { background: rgba(0, 188, 212, 0.12); color: var(--cyan); }
+    .card-icon.tiers { background: rgba(115, 191, 105, 0.12); color: var(--green); }
+    .card-icon.clearing { background: rgba(255, 167, 38, 0.12); color: var(--amber); }
+    .card-icon.dashboard { background: rgba(255, 61, 0, 0.12); color: var(--red); }
+    .card-icon.scientist { background: rgba(0, 188, 212, 0.12); color: var(--cyan); }
+    .card-icon.analyst { background: rgba(255, 107, 53, 0.12); color: var(--fire-orange); }
+    .card-icon.admin { background: rgba(115, 191, 105, 0.12); color: var(--green); }
+    .card-icon.risk { background: rgba(255, 61, 0, 0.12); color: var(--red); }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    /* ===== Status Indicator ===== */
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-shrink: 0;
+      padding-top: 0.2rem;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      position: relative;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .status-dot::after {
+      content: '';
+      position: absolute;
+      top: -3px;
+      left: -3px;
+      right: -3px;
+      bottom: -3px;
+      border-radius: 50%;
+      background: var(--green);
+      opacity: 0;
+      animation: pulseRing 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes pulseRing {
+      0% { opacity: 0.4; transform: scale(1); }
+      50% { opacity: 0; transform: scale(1.5); }
+      100% { opacity: 0; transform: scale(1); }
+    }
+
+    .status-text {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== Card Description ===== */
+    .card-description {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      margin-bottom: 1.25rem;
+      min-height: 2.5em;
+    }
+
+    /* ===== Card Tags ===== */
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-tag {
+      font-size: 0.68rem;
+      font-weight: 500;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      letter-spacing: 0.3px;
+    }
+
+    /* ===== Card Buttons ===== */
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: all 0.25s ease;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary {
+      background: var(--fire-gradient);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(255, 107, 53, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.35);
+      filter: brightness(1.1);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ===== Feature Card (Architecture) ===== */
+    .service-card.featured {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(22, 22, 31, 0.9), rgba(28, 28, 40, 0.9));
+      border-color: rgba(255, 107, 53, 0.15);
+    }
+
+    .service-card.featured .card-description {
+      max-width: 700px;
+    }
+
+    .featured-inner {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .featured-content {
+      flex: 1;
+    }
+
+    .featured-visual {
+      flex-shrink: 0;
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .arch-node {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .arch-node:hover {
+      transform: scale(1.1);
+    }
+
+    .arch-node.node-api { background: rgba(255, 107, 53, 0.1); }
+    .arch-node.node-db { background: rgba(0, 188, 212, 0.1); }
+    .arch-node.node-ml { background: rgba(115, 191, 105, 0.1); }
+    .arch-node.node-stream { background: rgba(255, 167, 38, 0.1); }
+
+    /* ===== Footer ===== */
+    .footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .footer-text strong {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .footer-tech {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-tech-item {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+    }
+
+    /* ===== Animations ===== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-grid .service-card:nth-child(1) { animation-delay: 0.05s; }
+    .card-grid .service-card:nth-child(2) { animation-delay: 0.1s; }
+    .card-grid .service-card:nth-child(3) { animation-delay: 0.15s; }
+    .card-grid .service-card:nth-child(4) { animation-delay: 0.2s; }
+    .card-grid .service-card:nth-child(5) { animation-delay: 0.25s; }
+    .card-grid .service-card:nth-child(6) { animation-delay: 0.3s; }
+    .card-grid .service-card:nth-child(7) { animation-delay: 0.35s; }
+    .card-grid .service-card:nth-child(8) { animation-delay: 0.4s; }
+    .card-grid .service-card:nth-child(9) { animation-delay: 0.45s; }
+    .card-grid .service-card:nth-child(10) { animation-delay: 0.5s; }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 768px) {
+      .topbar {
+        padding: 0 1rem;
+        height: 56px;
+      }
+
+      .topbar-title {
+        display: none;
+      }
+
+      .topbar-divider {
+        display: none;
+      }
+
+      .header {
+        padding: 3rem 1.25rem 2rem;
+      }
+
+      .stats-bar {
+        gap: 1.5rem;
+        padding: 1rem 1.25rem 2rem;
+      }
+
+      .grid-container {
+        padding: 0 1rem 3rem;
+      }
+
+      .card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .service-card.featured {
+        grid-column: 1;
+      }
+
+      .featured-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .featured-visual {
+        align-self: center;
+      }
+
+      .footer-tech {
+        gap: 0.75rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .stats-bar {
+        gap: 1rem;
+      }
+
+      .stat-value {
+        font-size: 1.4rem;
+      }
+    }
+
+    /* ===== Live Dynamic View Button ===== */
+    .btn-live {
+      background: linear-gradient(135deg, #ff3d00, #ff6b35, #ff1744);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(255, 61, 0, 0.35);
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    .btn-live:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(255, 61, 0, 0.5);
+      filter: brightness(1.15);
+    }
+
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 2px 12px rgba(255, 61, 0, 0.35); }
+      50% { box-shadow: 0 2px 20px rgba(255, 61, 0, 0.55), 0 0 30px rgba(255, 23, 68, 0.2); }
+    }
+
+    /* ===== Modal Overlay ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      animation: modalFadeIn 0.25s ease;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background: #16161f;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 560px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      animation: modalSlideUp 0.3s ease;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 61, 0, 0.15);
+      border-color: rgba(255, 61, 0, 0.3);
+      color: var(--text-primary);
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1.25rem;
+      padding-right: 2.5rem;
+      letter-spacing: -0.3px;
+    }
+
+    .modal-body .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .modal-body .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .modal-body .info-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .modal-body .info-value {
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .modal-body .info-value.green {
+      color: var(--green);
+    }
+
+    .modal-body .info-value.cyan {
+      color: var(--cyan);
+    }
+
+    .modal-body .info-value.amber {
+      color: var(--amber);
+    }
+
+    .modal-body .info-value.orange {
+      color: var(--fire-orange);
+    }
+
+    .modal-body .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-top: 1.25rem;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .modal-body .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .modal-body .modal-tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .modal-body .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .modal-body .status-badge.healthy {
+      background: rgba(115, 191, 105, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(115, 191, 105, 0.25);
+    }
+
+    .modal-body .status-badge.active {
+      background: rgba(0, 188, 212, 0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 188, 212, 0.25);
+    }
+
+    .modal-body .status-badge.warning {
+      background: rgba(255, 167, 38, 0.12);
+      color: var(--amber);
+      border: 1px solid rgba(255, 167, 38, 0.25);
+    }
+
+    .modal-body .connector-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 0.4rem;
+    }
+
+    .modal-body .connector-name {
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .modal-body .connector-status {
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .modal-body .alert-item {
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      border-left: 3px solid;
+    }
+
+    .modal-body .alert-item.critical {
+      border-left-color: var(--red);
+    }
+
+    .modal-body .alert-item.warning {
+      border-left-color: var(--amber);
+    }
+
+    .modal-body .alert-item.info {
+      border-left-color: var(--cyan);
+    }
+
+    .modal-body .alert-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .modal-body .alert-time {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .modal-body .query-preview {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      overflow-x: auto;
+      margin-top: 0.75rem;
+    }
+
+    .modal-body .query-preview .keyword {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    .modal-body .query-preview .string {
+      color: var(--green);
+    }
+
+    .modal-body .query-preview .number {
+      color: var(--amber);
+    }
+
+    .modal-body .query-preview .comment {
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .modal-body .model-card {
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-body .model-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-body .model-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .modal-body .model-version {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .modal-body .model-detail {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .modal-body p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+      .modal-content {
+        padding: 1.5rem;
+        margin: 1rem;
+        max-height: 85vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Animated Background Orbs -->
+  <div class="bg-canvas">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+
+  <!-- ===== Top Navigation Bar ===== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="../index.html" class="topbar-logo">
+        <span class="logo-clima">Clima</span><span class="logo-iq">IQ</span>
+      </a>
+      <div class="topbar-divider"></div>
+      <span class="topbar-title">Platform Services</span>
+    </div>
+    <div class="topbar-right">
+      <a href="../index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Main Site
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== Header Section ===== -->
+  <section class="header">
+    <div class="header-badge">Enterprise-Ready Platform</div>
+    <h1>
+      <span class="gradient-text">Wildfire Intelligence</span><br>Platform
+    </h1>
+    <p class="header-subtitle">
+      <strong>26 Data Sources</strong> &middot; <strong>5 Role-Based Interfaces</strong> &middot; <strong>Real-Time Intelligence</strong><br>
+      Unified wildfire monitoring, prediction, and response coordination
+    </p>
+    <div class="fire-underline"></div>
+  </section>
+
+  <!-- ===== Stats Bar ===== -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value">14</div>
+      <div class="stat-label">Active Services</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">26</div>
+      <div class="stat-label">Data Sources</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">5</div>
+      <div class="stat-label">Interfaces</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">33+</div>
+      <div class="stat-label">KPI Metrics</div>
+    </div>
+  </div>
+
+  <!-- ===== Service Cards Grid ===== -->
+  <main class="grid-container">
+
+    <!-- Section: Core Architecture -->
+    <div class="grid-section-label">Core Architecture</div>
+    <div class="card-grid">
+
+      <!-- 1. System Architecture (Featured) -->
+      <div class="service-card featured" style="animation-delay: 0.05s;">
+        <div class="featured-inner">
+          <div class="featured-content">
+            <div class="card-header">
+              <div class="card-title-group">
+                <div class="card-icon architecture">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                </div>
+                <div class="card-title">System Architecture</div>
+              </div>
+            </div>
+            <p class="card-description">Multi-service architecture with microservices, message queues, and distributed processing. The backbone of the entire wildfire intelligence platform.</p>
+            <div class="card-tags">
+              <span class="card-tag">Microservices</span>
+              <span class="card-tag">Docker</span>
+              <span class="card-tag">FastAPI</span>
+              <span class="card-tag">Message Queues</span>
+              <span class="card-tag">Distributed</span>
+            </div>
+            <div class="card-actions">
+              <a href="architecture.html" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                View Architecture
+              </a>
+              <a href="architecture-live.html" class="btn btn-live">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                Live Dynamic View
+              </a>
+            </div>
+          </div>
+          <div class="featured-visual">
+            <div class="arch-node node-api" title="FastAPI Services">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="arch-node node-db" title="PostgreSQL + TimescaleDB">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div class="arch-node node-ml" title="ML Pipeline">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#73bf69" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="arch-node node-stream" title="Data Streaming">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffa726" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Data Infrastructure -->
+    <div class="grid-section-label">Data Infrastructure</div>
+    <div class="card-grid">
+
+      <!-- 2. Data Storage Service -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon storage">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            </div>
+            <div class="card-title">Data Storage Service</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Scalable data storage with TimescaleDB, PostgreSQL, and S3/MinIO integration for multi-tier data management.</p>
+        <div class="card-tags">
+          <span class="card-tag">TimescaleDB</span>
+          <span class="card-tag">PostgreSQL</span>
+          <span class="card-tag">S3/MinIO</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('Data Storage Service &mdash; Health', healthCheckContent)" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            Health Check
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('Data Storage API Documentation', apiDocsContent)" class="btn btn-secondary">API Docs</a>
+        </div>
+      </div>
+
+      <!-- 3. PostgreSQL Database -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon database">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+            <div class="card-title">PostgreSQL Database</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Primary database with TimescaleDB extension for time-series data. Handles 1.06B+ records with optimized hypertables.</p>
+        <div class="card-tags">
+          <span class="card-tag">PostgreSQL 15</span>
+          <span class="card-tag">TimescaleDB</span>
+          <span class="card-tag">Hypertables</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('PostgreSQL Connection Info', connectionInfoContent)" class="btn btn-secondary">Connection Info</a>
+        </div>
+      </div>
+
+      <!-- 4. Redis Cache -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon cache">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </div>
+            <div class="card-title">Redis Cache</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">High-performance caching layer for session management, real-time data buffering, and sub-millisecond query responses.</p>
+        <div class="card-tags">
+          <span class="card-tag">Redis 7</span>
+          <span class="card-tag">In-Memory</span>
+          <span class="card-tag">Pub/Sub</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('Redis Cache Statistics', cacheStatsContent)" class="btn btn-secondary">Cache Stats</a>
+        </div>
+      </div>
+
+      <!-- 5. MinIO Object Storage -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon object-store">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="card-title">MinIO Object Storage</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">S3-compatible object storage for satellite imagery, ML model artifacts, and large geospatial files.</p>
+        <div class="card-tags">
+          <span class="card-tag">S3 Compatible</span>
+          <span class="card-tag">Object Storage</span>
+          <span class="card-tag">Satellite Data</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('MinIO Object Storage &mdash; Buckets', browseBucketsContent)" class="btn btn-secondary">Browse Buckets</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Data Processing -->
+    <div class="grid-section-label">Data Processing & Monitoring</div>
+    <div class="card-grid">
+
+      <!-- 6. Data Ingestion Service -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon ingestion">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+            </div>
+            <div class="card-title">Data Ingestion Service</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Real-time data ingestion from 26 sources including satellites, weather stations, IoT sensors, and government feeds.</p>
+        <div class="card-tags">
+          <span class="card-tag">26 Sources</span>
+          <span class="card-tag">Real-Time</span>
+          <span class="card-tag">GOES-16/17</span>
+          <span class="card-tag">VIIRS</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('Data Ingestion Service &mdash; Status', ingestionStatusContent)" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Ingestion Status
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('Data Source Configuration', sourceConfigContent)" class="btn btn-secondary">Source Config</a>
+        </div>
+      </div>
+
+      <!-- 7. Metrics Monitoring -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon metrics">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div class="card-title">Metrics Monitoring</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Advanced metrics collection for latency, data fidelity, throughput, and platform performance across all services.</p>
+        <div class="card-tags">
+          <span class="card-tag">Prometheus</span>
+          <span class="card-tag">Grafana</span>
+          <span class="card-tag">Latency</span>
+        </div>
+        <div class="card-actions">
+          <a href="../dashboard/wildfire-overview.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            View Metrics
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('Active Alerts', alertsContent)" class="btn btn-secondary">Alerts</a>
+        </div>
+      </div>
+
+      <!-- 8. Storage Tier Monitoring -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon tiers">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="card-title">Storage Tier Monitoring</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Real-time monitoring of hybrid storage with 33+ KPIs across HOT, WARM, COLD, and ARCHIVE tiers.</p>
+        <div class="card-tags">
+          <span class="card-tag">HOT</span>
+          <span class="card-tag">WARM</span>
+          <span class="card-tag">COLD</span>
+          <span class="card-tag">ARCHIVE</span>
+          <span class="card-tag">33+ KPIs</span>
+        </div>
+        <div class="card-actions">
+          <a href="../dashboard/storage-tiers.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Tier Dashboard
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('Platform KPI Report', kpiReportContent)" class="btn btn-secondary">KPI Report</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Analytics & Interfaces -->
+    <div class="grid-section-label">Analytics & Role-Based Interfaces</div>
+    <div class="card-grid">
+
+      <!-- 9. Data Clearing House & Analytics -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon clearing">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </div>
+            <div class="card-title">Data Clearing House & Analytics</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Complete analytics ecosystem with self-service portal, 6 role-based interfaces, visual query builder, and export pipelines.</p>
+        <div class="card-tags">
+          <span class="card-tag">Self-Service</span>
+          <span class="card-tag">Query Builder</span>
+          <span class="card-tag">6 Roles</span>
+          <span class="card-tag">Export</span>
+        </div>
+        <div class="card-actions">
+          <a href="../dashboard/analytics-platform.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            Analytics Portal
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('Visual Query Builder', queryBuilderContent)" class="btn btn-secondary">Query Builder</a>
+        </div>
+      </div>
+
+      <!-- 10. Fire Chief Dashboard -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon dashboard">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="card-title">Fire Chief Dashboard</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Advanced React dashboard with real-time wildfire monitoring, resource management, and incident command integration.</p>
+        <div class="card-tags">
+          <span class="card-tag">React</span>
+          <span class="card-tag">Real-Time</span>
+          <span class="card-tag">Command View</span>
+        </div>
+        <div class="card-actions">
+          <a href="fire-chief.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Launch Dashboard
+          </a>
+        </div>
+      </div>
+
+      <!-- 11. Scientist Workbench -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon scientist">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6v11l3 6H6l3-6V3z"/><line x1="8" y1="3" x2="16" y2="3"/></svg>
+            </div>
+            <div class="card-title">Scientist Workbench</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Scientific computing environment with ML tools, Jupyter integration, statistical analysis, and data exploration capabilities.</p>
+        <div class="card-tags">
+          <span class="card-tag">ML Tools</span>
+          <span class="card-tag">Jupyter</span>
+          <span class="card-tag">PyTorch</span>
+          <span class="card-tag">Analysis</span>
+        </div>
+        <div class="card-actions">
+          <a href="scientist-workbench.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Workbench
+          </a>
+        </div>
+      </div>
+
+      <!-- 12. Analyst Portal -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon analyst">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            </div>
+            <div class="card-title">Analyst Portal</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Advanced data analytics and intelligence platform with trend analysis, geospatial visualization, and report generation.</p>
+        <div class="card-tags">
+          <span class="card-tag">Analytics</span>
+          <span class="card-tag">Geospatial</span>
+          <span class="card-tag">Reports</span>
+        </div>
+        <div class="card-actions">
+          <a href="analyst-portal.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Portal
+          </a>
+        </div>
+      </div>
+
+      <!-- 13. Admin Console -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon admin">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="card-title">Admin Console</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">System management, user administration, platform configuration, and access control for all wildfire platform services.</p>
+        <div class="card-tags">
+          <span class="card-tag">User Mgmt</span>
+          <span class="card-tag">RBAC</span>
+          <span class="card-tag">Config</span>
+          <span class="card-tag">Audit Logs</span>
+        </div>
+        <div class="card-actions">
+          <a href="admin-console.html" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Open Console
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: AI & Risk -->
+    <div class="grid-section-label">AI & Prediction Engine</div>
+    <div class="card-grid">
+
+      <!-- 14. Fire Risk Service -->
+      <div class="service-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <div class="card-icon risk">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 10a5 5 0 0 1-5 5 5 5 0 0 1-5-5c0-2 1.5-3 2-4.5C9.5 4 11 2 12 2z"/><path d="M12 15v3"/><circle cx="12" cy="20" r="2"/></svg>
+            </div>
+            <div class="card-title">Fire Risk Service</div>
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span class="status-text">Healthy</span>
+          </div>
+        </div>
+        <p class="card-description">Advanced ML engine for wildfire risk prediction using CNN satellite analysis, LSTM temporal forecasting, and ensemble meta-learning with 92% accuracy.</p>
+        <div class="card-tags">
+          <span class="card-tag">CNN</span>
+          <span class="card-tag">LSTM</span>
+          <span class="card-tag">Ensemble ML</span>
+          <span class="card-tag">92% Accuracy</span>
+          <span class="card-tag">PyTorch</span>
+        </div>
+        <div class="card-actions">
+          <a href="javascript:void(0)" onclick="showModal('Fire Risk Dashboard &mdash; ML Overview', riskDashboardContent)" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2c1 3 2.5 3.5 3.5 4.5A5 5 0 0 1 17 10a5 5 0 0 1-5 5 5 5 0 0 1-5-5c0-2 1.5-3 2-4.5C9.5 4 11 2 12 2z"/></svg>
+            Risk Dashboard
+          </a>
+          <a href="javascript:void(0)" onclick="showModal('ML Model Status', modelStatusContent)" class="btn btn-secondary">Model Status</a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <p class="footer-text">
+      <strong>Enterprise-Ready Wildfire Intelligence Platform</strong>
+    </p>
+    <div class="footer-tech">
+      <span class="footer-tech-item">FastAPI</span>
+      <span class="footer-tech-item">React</span>
+      <span class="footer-tech-item">PostgreSQL</span>
+      <span class="footer-tech-item">TimescaleDB</span>
+      <span class="footer-tech-item">PyTorch</span>
+      <span class="footer-tech-item">Docker</span>
+      <span class="footer-tech-item">Redis</span>
+      <span class="footer-tech-item">MinIO</span>
+    </div>
+    <p class="footer-text" style="margin-top: 1.5rem; font-size: 0.72rem;">
+      &copy; 2026 ClimaIQ &mdash; Wildfire Intelligence Platform
+    </p>
+  </footer>
+
+  <!-- ===== Modal Overlay ===== -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Modal System =====
+    function showModal(title, content) {
+      document.getElementById('modalTitle').innerHTML = title;
+      document.getElementById('modalBody').innerHTML = content;
+      document.getElementById('modalOverlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(event) {
+      if (event && event.target !== document.getElementById('modalOverlay') && event.target !== document.querySelector('.modal-close')) return;
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // ===== Modal Content Definitions =====
+
+    // 2. Health Check — Data Storage Service
+    var healthCheckContent = `
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="status-badge healthy">&#9679; HEALTHY</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Response Time</span>
+        <span class="info-value green">12ms</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">PostgreSQL</span>
+        <span class="info-value green">Connected (5432)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Database Size</span>
+        <span class="info-value">847 MB</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Active Connections</span>
+        <span class="info-value">12 / 100</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Uptime</span>
+        <span class="info-value green">99.97%</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Last Checked</span>
+        <span class="info-value" style="color: var(--text-muted);">Just now</span>
+      </div>
+    `;
+
+    // 3. API Docs — Data Storage
+    var apiDocsContent = `
+      <p>FastAPI auto-generated docs with <strong style="color: var(--text-primary);">45+ endpoints</strong> covering fire data ingestion, weather feeds, sensor streams, storage management, and health monitoring.</p>
+      <div class="section-label">Endpoint Groups</div>
+      <div class="connector-item">
+        <span class="connector-name">/fire-data</span>
+        <span class="connector-status" style="color: var(--green);">12 endpoints</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">/weather</span>
+        <span class="connector-status" style="color: var(--green);">8 endpoints</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">/sensors</span>
+        <span class="connector-status" style="color: var(--green);">9 endpoints</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">/storage</span>
+        <span class="connector-status" style="color: var(--green);">10 endpoints</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">/health</span>
+        <span class="connector-status" style="color: var(--green);">6 endpoints</span>
+      </div>
+      <div class="section-label">Documentation</div>
+      <div class="info-row">
+        <span class="info-label">Swagger UI</span>
+        <span class="info-value cyan">localhost:8000/docs</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">ReDoc</span>
+        <span class="info-value cyan">localhost:8000/redoc</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">OpenAPI JSON</span>
+        <span class="info-value cyan">localhost:8000/openapi.json</span>
+      </div>
+    `;
+
+    // 4. Connection Info — PostgreSQL
+    var connectionInfoContent = `
+      <div class="section-label">Connection Details</div>
+      <div class="info-row">
+        <span class="info-label">Host</span>
+        <span class="info-value">localhost:5432</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Database</span>
+        <span class="info-value cyan">wildfire_db</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">User</span>
+        <span class="info-value">wildfire_user</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">SSL</span>
+        <span class="info-value green">Enabled</span>
+      </div>
+      <div class="section-label">Extensions</div>
+      <div class="tag-list">
+        <span class="modal-tag">TimescaleDB</span>
+        <span class="modal-tag">PostGIS</span>
+      </div>
+      <div class="section-label">Management</div>
+      <div class="info-row">
+        <span class="info-label">pgAdmin</span>
+        <span class="info-value cyan">localhost:5050</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total Records</span>
+        <span class="info-value">1.06B+</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Hypertables</span>
+        <span class="info-value">14 active</span>
+      </div>
+    `;
+
+    // 5. Cache Stats — Redis
+    var cacheStatsContent = `
+      <div class="section-label">Connection</div>
+      <div class="info-row">
+        <span class="info-label">Host</span>
+        <span class="info-value">localhost:6379</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Status</span>
+        <span class="status-badge healthy">&#9679; Connected</span>
+      </div>
+      <div class="section-label">Performance</div>
+      <div class="info-row">
+        <span class="info-label">Memory Used</span>
+        <span class="info-value">45.2 MB</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total Keys</span>
+        <span class="info-value">1,247</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Hit Rate</span>
+        <span class="info-value green">94.7%</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Connected Clients</span>
+        <span class="info-value">8</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Ops/sec</span>
+        <span class="info-value">12,480</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Eviction Policy</span>
+        <span class="info-value" style="color: var(--text-muted);">allkeys-lru</span>
+      </div>
+    `;
+
+    // 6. Browse Buckets — MinIO
+    var browseBucketsContent = `
+      <div class="section-label">Console</div>
+      <div class="info-row">
+        <span class="info-label">MinIO Console</span>
+        <span class="info-value cyan">localhost:9001</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">API Endpoint</span>
+        <span class="info-value">localhost:9000</span>
+      </div>
+      <div class="section-label">Buckets</div>
+      <div class="connector-item">
+        <span class="connector-name">fire-data</span>
+        <span class="connector-status" style="color: var(--green);">8,240 objects</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">satellite-images</span>
+        <span class="connector-status" style="color: var(--green);">10,120 objects</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">model-files</span>
+        <span class="connector-status" style="color: var(--cyan);">4,680 objects</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">exports</span>
+        <span class="connector-status" style="color: var(--cyan);">1,640 objects</span>
+      </div>
+      <div class="section-label">Storage Summary</div>
+      <div class="info-row">
+        <span class="info-label">Total Objects</span>
+        <span class="info-value">24,680</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total Storage</span>
+        <span class="info-value">2.1 TB</span>
+      </div>
+    `;
+
+    // 7. Ingestion Status
+    var ingestionStatusContent = `
+      <div class="info-row">
+        <span class="info-label">Service Status</span>
+        <span class="status-badge healthy">&#9679; RUNNING</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Active Connectors</span>
+        <span class="info-value green">26 / 26</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Records Ingested (24h)</span>
+        <span class="info-value">2.4M</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Avg Latency</span>
+        <span class="info-value green">145ms</span>
+      </div>
+      <div class="section-label">Connector Status</div>
+      <div class="connector-item">
+        <span class="connector-name">GOES-16/17 Satellite</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">VIIRS Active Fire</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">NOAA Weather Stations</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">CAL FIRE Incidents</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">RAWS Sensors</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">AirNow AQI</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">MODIS Thermal</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">NWS Alerts</span>
+        <span class="connector-status" style="color: var(--green);">&#9679; Active</span>
+      </div>
+    `;
+
+    // 8. Source Config
+    var sourceConfigContent = `
+      <p>Configuration for all connected data sources with ingestion type and refresh intervals.</p>
+      <div class="section-label">Data Sources</div>
+      <div class="connector-item">
+        <span class="connector-name">GOES-16/17 Satellite</span>
+        <span class="status-badge active">Real-Time</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">VIIRS Active Fire</span>
+        <span class="status-badge active">Real-Time</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">NOAA Weather Stations</span>
+        <span class="status-badge active">Streaming</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">CAL FIRE Incidents</span>
+        <span class="status-badge healthy">Batch (15 min)</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">RAWS Sensor Network</span>
+        <span class="status-badge active">Streaming</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">AirNow AQI</span>
+        <span class="status-badge healthy">Batch (1 hr)</span>
+      </div>
+      <div class="section-label">Ingestion Types</div>
+      <div class="info-row">
+        <span class="info-label">Real-Time</span>
+        <span class="info-value">Sub-second WebSocket feeds</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Streaming</span>
+        <span class="info-value">Continuous poll (30s-5min)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Batch</span>
+        <span class="info-value">Scheduled intervals (15min-24hr)</span>
+      </div>
+    `;
+
+    // 10. Alerts
+    var alertsContent = `
+      <div class="info-row">
+        <span class="info-label">Total Active Alerts</span>
+        <span class="info-value amber">3</span>
+      </div>
+      <div class="section-label">Recent Alerts</div>
+      <div class="alert-item critical">
+        <div class="alert-title">High Fire Risk &mdash; Los Angeles County</div>
+        <div class="alert-time">Red Flag Warning &bull; Wind gusts 55+ mph &bull; Humidity &lt;8%</div>
+        <div class="alert-time" style="margin-top: 0.3rem;">2 minutes ago</div>
+      </div>
+      <div class="alert-item warning">
+        <div class="alert-title">Elevated AQI &mdash; San Bernardino</div>
+        <div class="alert-time">AQI 162 (Unhealthy) &bull; PM2.5 elevated &bull; Drift from Cajon Pass</div>
+        <div class="alert-time" style="margin-top: 0.3rem;">18 minutes ago</div>
+      </div>
+      <div class="alert-item info">
+        <div class="alert-title">GOES-17 Data Delay</div>
+        <div class="alert-time">Satellite feed delayed 45s &bull; Auto-fallback to GOES-16 active</div>
+        <div class="alert-time" style="margin-top: 0.3rem;">1 hour ago</div>
+      </div>
+    `;
+
+    // 12. KPI Report
+    var kpiReportContent = `
+      <p>Key performance indicators across all platform services and storage tiers.</p>
+      <div class="section-label">Data Pipeline</div>
+      <div class="info-row">
+        <span class="info-label">Ingestion Throughput</span>
+        <span class="info-value green">2.4M records/day</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Data Freshness (P95)</span>
+        <span class="info-value green">&lt; 2 seconds</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Pipeline Uptime</span>
+        <span class="info-value green">99.97%</span>
+      </div>
+      <div class="section-label">Storage Tiers</div>
+      <div class="info-row">
+        <span class="info-label">HOT Tier Latency</span>
+        <span class="info-value green">12ms (P99)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">WARM Tier Latency</span>
+        <span class="info-value">85ms (P99)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">COLD Tier Latency</span>
+        <span class="info-value">340ms (P99)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Compression Ratio</span>
+        <span class="info-value">8.4:1</span>
+      </div>
+      <div class="section-label">Platform</div>
+      <div class="info-row">
+        <span class="info-label">Active Services</span>
+        <span class="info-value green">14 / 14</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">API Response (P95)</span>
+        <span class="info-value green">45ms</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Cache Hit Rate</span>
+        <span class="info-value green">94.7%</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">ML Prediction Latency</span>
+        <span class="info-value">230ms</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Total KPIs Tracked</span>
+        <span class="info-value orange">33+</span>
+      </div>
+    `;
+
+    // 14. Query Builder
+    var queryBuilderContent = `
+      <p>Visual query builder for fire data analysis. Construct queries without writing SQL, or use the advanced editor for full control.</p>
+      <div class="section-label">Example Query</div>
+      <div class="query-preview">
+        <span class="comment">-- Active fires in California with high risk</span><br>
+        <span class="keyword">SELECT</span> f.fire_id, f.location, f.intensity,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;w.wind_speed, w.humidity,<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;r.risk_score<br>
+        <span class="keyword">FROM</span> fire_incidents f<br>
+        <span class="keyword">JOIN</span> weather_data w <span class="keyword">ON</span> f.station_id = w.id<br>
+        <span class="keyword">JOIN</span> risk_assessments r <span class="keyword">ON</span> f.fire_id = r.fire_id<br>
+        <span class="keyword">WHERE</span> f.state = <span class="string">'CA'</span><br>
+        &nbsp;&nbsp;<span class="keyword">AND</span> f.status = <span class="string">'active'</span><br>
+        &nbsp;&nbsp;<span class="keyword">AND</span> r.risk_score &gt; <span class="number">0.75</span><br>
+        <span class="keyword">ORDER BY</span> r.risk_score <span class="keyword">DESC</span><br>
+        <span class="keyword">LIMIT</span> <span class="number">50</span>;
+      </div>
+      <div class="section-label">Available Tables</div>
+      <div class="tag-list">
+        <span class="modal-tag">fire_incidents</span>
+        <span class="modal-tag">weather_data</span>
+        <span class="modal-tag">sensor_readings</span>
+        <span class="modal-tag">satellite_imagery</span>
+        <span class="modal-tag">risk_assessments</span>
+        <span class="modal-tag">air_quality</span>
+        <span class="modal-tag">evacuation_zones</span>
+        <span class="modal-tag">resource_tracking</span>
+      </div>
+    `;
+
+    // 15. Risk Dashboard
+    var riskDashboardContent = `
+      <div class="info-row">
+        <span class="info-label">Overall Accuracy</span>
+        <span class="info-value green">92%</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Active Models</span>
+        <span class="info-value">4</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Engineered Features</span>
+        <span class="info-value">20+</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Prediction Window</span>
+        <span class="info-value">7-day forecast</span>
+      </div>
+      <div class="section-label">Model Ensemble Weights</div>
+      <div class="connector-item">
+        <span class="connector-name">CNN Satellite Analyzer</span>
+        <span class="connector-status" style="color: var(--fire-orange);">20% weight</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">LSTM Temporal Predictor</span>
+        <span class="connector-status" style="color: var(--fire-orange);">25% weight</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">Random Forest Classifier</span>
+        <span class="connector-status" style="color: var(--fire-orange);">20% weight</span>
+      </div>
+      <div class="connector-item">
+        <span class="connector-name">FireSat Physics Model</span>
+        <span class="connector-status" style="color: var(--fire-orange);">35% weight</span>
+      </div>
+      <div class="section-label">Key Features</div>
+      <div class="tag-list">
+        <span class="modal-tag">FWI Index</span>
+        <span class="modal-tag">NDVI</span>
+        <span class="modal-tag">Fuel Moisture</span>
+        <span class="modal-tag">THI</span>
+        <span class="modal-tag">Drought Index</span>
+        <span class="modal-tag">Wind Speed</span>
+        <span class="modal-tag">Humidity</span>
+        <span class="modal-tag">Slope/Aspect</span>
+      </div>
+    `;
+
+    // 16. Model Status
+    var modelStatusContent = `
+      <div class="section-label">Deployed Models</div>
+      <div class="model-card">
+        <div class="model-header">
+          <span class="model-name">CNN Satellite Analyzer</span>
+          <span class="model-version">v2.1.0</span>
+        </div>
+        <div class="model-detail">PyTorch &bull; 7-channel multi-spectral &bull; Fire/Smoke/Vegetation stress detection</div>
+        <div style="margin-top: 0.4rem;"><span class="status-badge healthy">&#9679; Deployed</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-header">
+          <span class="model-name">LSTM Temporal Predictor</span>
+          <span class="model-version">v1.8.3</span>
+        </div>
+        <div class="model-detail">PyTorch &bull; 7-day fire risk forecast &bull; Attention mechanism</div>
+        <div style="margin-top: 0.4rem;"><span class="status-badge healthy">&#9679; Deployed</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-header">
+          <span class="model-name">Random Forest Classifier</span>
+          <span class="model-version">v3.0.1</span>
+        </div>
+        <div class="model-detail">scikit-learn &bull; 100 estimators &bull; 85% accuracy on synthetic data</div>
+        <div style="margin-top: 0.4rem;"><span class="status-badge healthy">&#9679; Deployed</span></div>
+      </div>
+      <div class="model-card">
+        <div class="model-header">
+          <span class="model-name">Ensemble Meta-Learner</span>
+          <span class="model-version">v1.3.0</span>
+        </div>
+        <div class="model-detail">Weighted voting &bull; Combines all 4 models &bull; 92% ensemble accuracy</div>
+        <div style="margin-top: 0.4rem;"><span class="status-badge healthy">&#9679; Deployed</span></div>
+      </div>
+      <div class="section-label">Infrastructure</div>
+      <div class="info-row">
+        <span class="info-label">ML Framework</span>
+        <span class="info-value">PyTorch + TensorFlow</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Experiment Tracking</span>
+        <span class="info-value cyan">MLflow</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Last Retrained</span>
+        <span class="info-value" style="color: var(--text-muted);">2 days ago</span>
+      </div>
+    `;
+  </script>
+
+</body>
+</html>

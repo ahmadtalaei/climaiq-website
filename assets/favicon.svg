@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14141e"/>
+      <stop offset="100%" stop-color="#0a0a0f"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%" stop-color="#ff3d00"/>
+      <stop offset="30%" stop-color="#ff6b35"/>
+      <stop offset="60%" stop-color="#ffa726"/>
+      <stop offset="100%" stop-color="#00bcd4"/>
+    </linearGradient>
+    <linearGradient id="innerFlame" x1="0.5" y1="1" x2="0.5" y2="0">
+      <stop offset="0%" stop-color="#ff6b35"/>
+      <stop offset="100%" stop-color="#00bcd4"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <!-- Background rounded square -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <rect x="3" y="3" width="506" height="506" rx="94" fill="none" stroke="rgba(255,107,53,0.15)" stroke-width="3"/>
+  <!-- Outer flame with glow -->
+  <g filter="url(#glow)">
+    <path d="M256 56 C218 148 136 216 136 324 C136 390 190 440 256 440 C322 440 376 390 376 324 C376 216 294 148 256 56Z" fill="url(#flame)"/>
+  </g>
+  <!-- Inner depth cutout -->
+  <path d="M256 188 C238 232 192 276 192 332 C192 368 221 396 256 396 C291 396 320 368 320 332 C320 276 274 232 256 188Z" fill="#0a0a0f" opacity="0.4"/>
+  <!-- Intelligence eye — the "IQ" element -->
+  <ellipse cx="256" cy="330" rx="32" ry="26" fill="#00bcd4" opacity="0.8"/>
+  <circle cx="256" cy="330" r="12" fill="#f0f0f5"/>
+  <!-- Data pulse rings -->
+  <ellipse cx="256" cy="330" rx="48" ry="38" fill="none" stroke="#00bcd4" stroke-width="2" opacity="0.25"/>
+  <ellipse cx="256" cy="330" rx="64" ry="50" fill="none" stroke="#00bcd4" stroke-width="1.5" opacity="0.12"/>
+</svg>

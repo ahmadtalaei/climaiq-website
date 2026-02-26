@@ -549,6 +549,181 @@ img { max-width: 100%; display: block; }
   letter-spacing: 0.08em;
 }
 
+/* --- Platform Apps Section --- */
+.platform-apps {
+  background: var(--bg-secondary);
+}
+
+.apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.app-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 28px 24px;
+  transition: all 0.35s;
+  overflow: hidden;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 107, 53, 0.25);
+  box-shadow: 0 8px 40px rgba(255, 107, 53, 0.08);
+}
+
+.app-card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+.app-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.app-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  flex: 1;
+}
+
+.app-card-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #73bf69;
+  font-weight: 500;
+}
+
+.app-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #73bf69;
+  animation: app-pulse 2s infinite;
+}
+
+@keyframes app-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.app-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 107, 53, 0.1);
+  color: var(--fire-orange);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  margin-top: 12px;
+  width: fit-content;
+}
+
+.app-card-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: rgba(255, 107, 53, 0.4);
+}
+
+/* --- Dashboards Section --- */
+.dashboards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.dash-card {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  transition: all 0.35s;
+  text-decoration: none;
+  display: block;
+  overflow: hidden;
+}
+
+.dash-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 188, 212, 0.25);
+  box-shadow: 0 8px 40px rgba(0, 188, 212, 0.06);
+}
+
+.dash-card-group {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--data-blue);
+  margin-bottom: 8px;
+}
+
+.dash-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.dash-card-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.dash-card-panels {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-card-panels span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dash-card-preview {
+  height: 4px;
+  border-radius: 2px;
+  margin-top: 16px;
+  background: linear-gradient(90deg, var(--fire-orange), var(--data-blue), var(--fire-amber));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.dash-card:hover .dash-card-preview {
+  opacity: 1;
+}
+
 /* --- AI Engine Section --- */
 .ai-engine {
   background: var(--bg-secondary);
@@ -1204,6 +1379,8 @@ img { max-width: 100%; display: block; }
 
   .crisis-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
   .platform-grid { grid-template-columns: 1fr; max-width: 500px; margin-left: auto; margin-right: auto; }
+  .apps-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .dashboards-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
 
   .comparison-table { font-size: 0.8rem; }

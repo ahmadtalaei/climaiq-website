@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Health — ClimaIQ Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+  <button class="sidebar-toggle" aria-label="Toggle sidebar">&#9776;</button>
+  <div class="sidebar-overlay"></div>
+
+  <div class="dashboard-wrapper">
+    <aside class="dashboard-sidebar"></aside>
+    <main class="dashboard-main">
+      <div class="dashboard-topbar"></div>
+      <div class="dashboard-content">
+        <div class="dashboard-header-panel">
+          <h1>Platform Health</h1>
+          <span class="header-sub">End-to-end platform health &amp; data flow monitoring</span>
+        </div>
+
+        <!-- Stats row 1 -->
+        <div class="panel-grid grid-cols-3" style="margin-bottom:16px;">
+          <div class="panel" id="stat-storage"></div>
+          <div class="panel" id="stat-security"></div>
+          <div class="panel" id="stat-integrity"></div>
+        </div>
+
+        <!-- Stats row 2 -->
+        <div class="panel-grid grid-cols-3" style="margin-bottom:16px;">
+          <div class="panel" id="stat-flows"></div>
+          <div class="panel" id="stat-growth"></div>
+          <div class="panel" id="stat-health"></div>
+        </div>
+
+        <!-- Data flow chart -->
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-header"><span class="panel-title">Real-Time Data Flow (Ingest / Process / Store)</span></div>
+          <div class="panel-body"><div class="chart-container"><canvas id="chart-flow"></canvas></div></div>
+        </div>
+
+        <!-- Pie + Security table -->
+        <div class="panel-grid grid-cols-2">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">Storage by Quality</span></div>
+            <div class="panel-body"><div class="chart-container"><canvas id="chart-quality-pie"></canvas></div></div>
+          </div>
+          <div class="panel" id="table-security"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="../js/dashboard-common.js"></script>
+  <script src="../js/dashboard-data.js"></script>
+  <script src="../js/dashboard-charts.js"></script>
+  <script>
+    DashboardCommon.init('Platform Health');
+    const data = DashboardData.platformHealth();
+
+    // Stats
+    DashboardCommon.createStatPanel(document.getElementById('stat-storage'),
+      { title: 'Storage Utilization', value: data.stats.storageUtil, unit: '%', color: 'cyan', label: 'Across all tiers' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-security'),
+      { title: 'Security Alerts', value: data.stats.securityAlerts, color: data.stats.securityAlerts > 5 ? 'red' : 'green', label: 'Last 24h' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-integrity'),
+      { title: 'Data Integrity', value: data.stats.dataIntegrity, unit: '%', color: 'green', label: 'Checksum verified' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-flows'),
+      { title: 'Active Data Flows', value: data.stats.activeFlows, color: 'blue', label: 'Connected pipelines' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-growth'),
+      { title: 'Growth Rate', value: data.stats.growthRate, unit: 'GB/day', color: 'orange', label: '7-day average' });
+    DashboardCommon.createStatPanel(document.getElementById('stat-health'),
+      { title: 'System Health Score', value: data.stats.healthScore, unit: '%', color: 'green', label: 'Composite' });
+
+    // Data flow chart
+    const flowChart = DashboardCharts.timeseries(document.getElementById('chart-flow'), { ...data.dataFlow, yLabel: 'events/sec' });
+
+    // Pie
+    DashboardCharts.pie(document.getElementById('chart-quality-pie'), {
+      ...data.storageByQuality, doughnut: true,
+    });
+
+    // Security table
+    DashboardCommon.createTablePanel(document.getElementById('table-security'), {
+      title: 'Security Monitoring',
+      columns: ['Timestamp', 'Level', 'Event', 'Status'],
+      rows: data.securityTable,
+    });
+
+    // Live update
+    setInterval(() => {
+      const d = DashboardData.platformHealth();
+      DashboardCommon.updateStatValue(document.getElementById('stat-security'), d.stats.securityAlerts);
+      DashboardCommon.updateStatValue(document.getElementById('stat-health'), d.stats.healthScore);
+      const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      DashboardCharts.pushTimeseriesPoint(flowChart, now,
+        [DashboardCommon.jitter(1200, 5), DashboardCommon.jitter(1150, 5), DashboardCommon.jitter(1100, 5)]);
+    }, 5000);
+  </script>
+</body>
+</html>

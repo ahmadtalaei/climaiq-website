@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire Chief Dashboard | ClimaIQ</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: #16161f;
+            --card-hover: #1c1c28;
+            --sidebar-bg: #0d0d14;
+            --text-primary: #f0f0f5;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6a6a7a;
+            --fire-orange: #ff6b35;
+            --fire-amber: #ffa726;
+            --fire-red: #ff3d00;
+            --data-cyan: #00bcd4;
+            --border: rgba(255,255,255,0.06);
+            --card-shadow: 0 4px 32px rgba(0,0,0,0.4);
+            --radius: 14px;
+            --sidebar-width: 240px;
+            --topbar-height: 60px;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: var(--topbar-height);
+            background: linear-gradient(180deg, #0d0d16 0%, #0a0a0f 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--fire-orange), var(--fire-red));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: white;
+            box-shadow: 0 0 20px rgba(255,107,53,0.3);
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            background: linear-gradient(135deg, var(--fire-orange), var(--data-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .topbar-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: -0.3px;
+        }
+
+        .live-dot-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(76,175,80,0.1);
+            border: 1px solid rgba(76,175,80,0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+            box-shadow: 0 0 8px rgba(76,175,80,0.6);
+        }
+
+        .live-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #4caf50;
+            letter-spacing: 1.5px;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .topbar-right a {
+            color: var(--data-cyan);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border: 1px solid rgba(0,188,212,0.2);
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .topbar-right a:hover {
+            background: rgba(0,188,212,0.08);
+            border-color: rgba(0,188,212,0.4);
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            position: fixed;
+            top: var(--topbar-height);
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            z-index: 90;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 24px 12px;
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 24px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-nav li a:hover {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav li a.active {
+            background: rgba(255,107,53,0.06);
+            border-left-color: var(--fire-orange);
+            color: var(--fire-orange);
+        }
+
+        .sidebar-nav li a .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav li a.active .nav-icon {
+            opacity: 1;
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background: var(--fire-red);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .sidebar-footer-text {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .sidebar-footer-text strong {
+            color: var(--text-secondary);
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            height: calc(100vh - var(--topbar-height));
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 24px;
+            background: var(--bg);
+        }
+
+        /* ===== STATS ROW ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.red::before { background: linear-gradient(90deg, var(--fire-red), #ff6b35); }
+        .stat-card.blue::before { background: linear-gradient(90deg, var(--data-cyan), #26c6da); }
+        .stat-card.orange::before { background: linear-gradient(90deg, var(--fire-orange), #ff9800); }
+        .stat-card.amber::before { background: linear-gradient(90deg, var(--fire-amber), #ffca28); }
+
+        .stat-card.red { background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,61,0,0.06) 100%); }
+        .stat-card.blue { background: linear-gradient(135deg, var(--card-bg) 0%, rgba(0,188,212,0.06) 100%); }
+        .stat-card.orange { background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,107,53,0.06) 100%); }
+        .stat-card.amber { background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,167,38,0.06) 100%); }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+        }
+
+        .stat-card.red .stat-value { color: var(--fire-red); text-shadow: 0 0 30px rgba(255,61,0,0.25); }
+        .stat-card.blue .stat-value { color: var(--data-cyan); text-shadow: 0 0 30px rgba(0,188,212,0.25); }
+        .stat-card.orange .stat-value { color: var(--fire-orange); text-shadow: 0 0 30px rgba(255,107,53,0.25); }
+        .stat-card.amber .stat-value { color: var(--fire-amber); text-shadow: 0 0 30px rgba(255,167,38,0.25); }
+
+        .stat-subtext {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .stat-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
+
+        .stat-trend.up {
+            color: var(--fire-red);
+            background: rgba(255,61,0,0.1);
+        }
+
+        .stat-trend.down {
+            color: #4caf50;
+            background: rgba(76,175,80,0.1);
+        }
+
+        .stat-trend.neutral {
+            color: var(--fire-amber);
+            background: rgba(255,167,38,0.1);
+        }
+
+        /* Pulse animation for alert card */
+        .alert-pulse {
+            animation: alertPulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% { box-shadow: var(--card-shadow); }
+            50% { box-shadow: 0 4px 32px rgba(0,0,0,0.4), 0 0 40px rgba(255,167,38,0.15), inset 0 0 30px rgba(255,167,38,0.03); }
+        }
+
+        /* ===== MAP ROW ===== */
+        .map-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.2px;
+        }
+
+        .card-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .card-badge.live {
+            color: #4caf50;
+            background: rgba(76,175,80,0.12);
+            border: 1px solid rgba(76,175,80,0.2);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* ===== MAP ===== */
+        .map-container {
+            position: relative;
+            background: #111118;
+            border-radius: 0 0 var(--radius) var(--radius);
+            height: 520px;
+            overflow: hidden;
+        }
+
+        #leafletMap, #windyContainer {
+            width: 100%;
+            height: 100%;
+        }
+
+        #windyContainer { display: none; }
+        #windyContainer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        /* Leaflet dark overrides */
+        .leaflet-container { background: #111118; }
+        .leaflet-control-layers {
+            background: rgba(10,10,15,0.92) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 10px !important;
+            color: var(--text-secondary) !important;
+            backdrop-filter: blur(10px);
+            padding: 8px 12px !important;
+        }
+        .leaflet-control-layers-toggle {
+            background-color: rgba(10,10,15,0.85) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px !important;
+            width: 36px !important;
+            height: 36px !important;
+        }
+        .leaflet-control-layers label { color: var(--text-secondary) !important; font-size: 12px; }
+        .leaflet-control-layers-separator { border-color: var(--border) !important; }
+        .leaflet-control-zoom a {
+            background: rgba(10,10,15,0.85) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border) !important;
+        }
+        .leaflet-control-zoom a:hover { background: rgba(30,30,40,0.95) !important; }
+        .leaflet-popup-content-wrapper {
+            background: rgba(10,10,15,0.95) !important;
+            color: var(--text-primary) !important;
+            border-radius: 10px !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+        }
+        .leaflet-popup-tip { background: rgba(10,10,15,0.95) !important; }
+        .leaflet-bar { border: none !important; border-radius: 10px !important; overflow: hidden; }
+
+        /* Map view tabs */
+        .map-view-tabs {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        .map-tab {
+            padding: 5px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            letter-spacing: 0.2px;
+        }
+
+        .map-tab:hover { color: var(--text-secondary); }
+        .map-tab.active {
+            background: rgba(255,107,53,0.15);
+            color: var(--fire-orange);
+        }
+
+        /* Fire weather alert on map */
+        .map-fire-alert {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 1000;
+            background: rgba(211,47,47,0.92);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,61,0,0.3);
+            pointer-events: none;
+        }
+        .map-fire-alert small {
+            display: block;
+            font-weight: 400;
+            font-size: 10px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        /* Fire count badge on map */
+        .map-fire-count {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            z-index: 1000;
+            background: rgba(255,69,0,0.9);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            pointer-events: none;
+        }
+
+        @keyframes firePulseMarker {
+            0%, 100% { box-shadow: 0 0 8px rgba(255,68,68,0.6); transform: scale(1); }
+            50% { box-shadow: 0 0 18px rgba(255,68,68,0.9); transform: scale(1.15); }
+        }
+
+        /* ===== INCIDENTS TABLE ===== */
+        .incidents-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .incident-list {
+            padding: 0;
+            flex: 1;
+        }
+
+        .incident-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+            cursor: default;
+        }
+
+        .incident-item:last-child {
+            border-bottom: none;
+        }
+
+        .incident-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .incident-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .incident-location {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .incident-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .severity-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 3px 8px;
+            border-radius: 5px;
+        }
+
+        .severity-badge.critical {
+            color: var(--fire-red);
+            background: rgba(255,61,0,0.12);
+            border: 1px solid rgba(255,61,0,0.2);
+        }
+
+        .severity-badge.high {
+            color: var(--fire-orange);
+            background: rgba(255,107,53,0.12);
+            border: 1px solid rgba(255,107,53,0.2);
+        }
+
+        .severity-badge.moderate {
+            color: var(--fire-amber);
+            background: rgba(255,167,38,0.12);
+            border: 1px solid rgba(255,167,38,0.2);
+        }
+
+        .severity-badge.low {
+            color: #4caf50;
+            background: rgba(76,175,80,0.12);
+            border: 1px solid rgba(76,175,80,0.2);
+        }
+
+        .incident-detail {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .containment-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .containment-track {
+            flex: 1;
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .containment-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .containment-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* ===== BOTTOM ROW ===== */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        /* ===== RESOURCE CHART ===== */
+        .chart-container {
+            padding: 20px;
+            height: 260px;
+        }
+
+        /* ===== WEATHER CARD ===== */
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            padding: 20px;
+        }
+
+        .weather-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+            transition: background 0.2s ease;
+        }
+
+        .weather-item:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .weather-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .weather-label {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .weather-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .weather-value.critical {
+            color: var(--fire-red);
+        }
+
+        .weather-value.warning {
+            color: var(--fire-amber);
+        }
+
+        .weather-value.large {
+            font-size: 32px;
+            letter-spacing: -1px;
+        }
+
+        .red-flag-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,61,0,0.12);
+            border: 1px solid rgba(255,61,0,0.25);
+            color: var(--fire-red);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 8px;
+            animation: redFlagPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes redFlagPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,61,0,0.2); }
+            50% { box-shadow: 0 0 16px 4px rgba(255,61,0,0.15); }
+        }
+
+        .red-flag-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--fire-red);
+            border-radius: 50%;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        .fwi-bar {
+            margin-top: 8px;
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .fwi-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--fire-amber), var(--fire-red));
+            width: 87%;
+            transition: width 0.5s ease;
+        }
+
+        /* ===== ALERTS LIST ===== */
+        .alerts-scroll {
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 4px 0;
+        }
+
+        .alert-item {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+            animation: alertSlideIn 0.4s ease;
+        }
+
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-item:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .alert-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .alert-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'Inter', monospace;
+        }
+
+        .alert-severity {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .alert-severity.critical {
+            color: var(--fire-red);
+            background: rgba(255,61,0,0.12);
+        }
+
+        .alert-severity.warning {
+            color: var(--fire-amber);
+            background: rgba(255,167,38,0.12);
+        }
+
+        .alert-severity.info {
+            color: var(--data-cyan);
+            background: rgba(0,188,212,0.12);
+        }
+
+        .alert-message {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* ===== NEW ALERT FLASH ===== */
+        .alert-item.new-alert {
+            background: rgba(255,61,0,0.04);
+        }
+
+        /* ===== UTILITY ===== */
+        .glow-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,107,53,0.3), transparent);
+            margin: 0;
+        }
+
+        /* ===== AMBIENT PARTICLES ===== */
+        .ambient-glow {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ambient-glow-1 {
+            top: 15%;
+            right: 10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,61,0,0.03) 0%, transparent 70%);
+        }
+
+        .ambient-glow-2 {
+            bottom: 20%;
+            left: 30%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0,188,212,0.02) 0%, transparent 70%);
+        }
+
+        /* ===== SECTION ANCHORS ===== */
+        [id^="section-"] {
+            scroll-margin-top: 16px;
+        }
+
+        /* ===== LEAFLET FIRE MARKERS ===== */
+        .fire-div-icon {
+            background: transparent;
+            border: none;
+        }
+        .fire-marker-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            animation: firePulseMarker 2s ease-in-out infinite;
+        }
+        .fire-marker-dot.critical { background: var(--fire-red); box-shadow: 0 0 10px rgba(255,61,0,0.7); }
+        .fire-marker-dot.high { background: var(--fire-orange); box-shadow: 0 0 10px rgba(255,107,53,0.7); }
+        .fire-marker-dot.low { background: #4caf50; box-shadow: 0 0 10px rgba(76,175,80,0.5); }
+    </style>
+</head>
+<body>
+
+<!-- Ambient Glows -->
+<div class="ambient-glow ambient-glow-1"></div>
+<div class="ambient-glow ambient-glow-2"></div>
+
+<!-- ===== TOP BAR ===== -->
+<header class="topbar">
+    <div class="topbar-left">
+        <a href="../index.html" class="logo">
+            <div class="logo-icon">CQ</div>
+            <div class="logo-text"><span>ClimaIQ</span></div>
+        </a>
+    </div>
+    <div class="topbar-center">
+        <span class="topbar-title">Fire Chief Dashboard</span>
+        <div class="live-dot-container">
+            <div class="live-dot"></div>
+            <span class="live-label">LIVE</span>
+        </div>
+    </div>
+    <div class="topbar-right">
+        <a href="../index.html">Back to Platform</a>
+    </div>
+</header>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+    <div class="sidebar-section-label">Operations</div>
+    <ul class="sidebar-nav">
+        <li><a href="#" class="active" data-nav="dashboard">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </span>
+            Dashboard
+        </a></li>
+        <li><a href="#" data-nav="incidents">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </span>
+            Incidents
+            <span class="sidebar-badge">47</span>
+        </a></li>
+        <li><a href="#" data-nav="resources">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </span>
+            Resources
+        </a></li>
+        <li><a href="#" data-nav="alerts">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </span>
+            Alerts
+            <span class="sidebar-badge">12</span>
+        </a></li>
+        <li><a href="#" data-nav="data-portal">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </span>
+            Data Portal
+        </a></li>
+        <li><a href="#" data-nav="situational">
+            <span class="nav-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </span>
+            Situational Awareness
+        </a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-footer-text">
+            <strong>ClimaIQ Platform</strong><br>
+            v2.4.1 &middot; Region: CA-West<br>
+            Last sync: <span id="lastSync">2s ago</span>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+    <!-- ===== STATS ROW ===== -->
+    <div id="section-dashboard" class="section-anchor"></div>
+    <div class="stats-row">
+        <div class="stat-card red">
+            <div class="stat-label">Active Fires</div>
+            <div class="stat-value" id="statFires">47</div>
+            <div class="stat-trend up">+3 since 06:00</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-label">Resources Deployed</div>
+            <div class="stat-value" id="statResources">312</div>
+            <div class="stat-trend neutral">89% utilization</div>
+        </div>
+        <div class="stat-card orange">
+            <div class="stat-label">Population at Risk</div>
+            <div class="stat-value" id="statPopulation">24,500</div>
+            <div class="stat-trend up">+1,200 today</div>
+        </div>
+        <div class="stat-card amber alert-pulse">
+            <div class="stat-label">Alert Level</div>
+            <div class="stat-value" id="statAlert">HIGH</div>
+            <div class="stat-subtext">Elevated since 04:30 PST</div>
+        </div>
+    </div>
+
+    <!-- ===== MAP + INCIDENTS ROW ===== -->
+    <div id="section-incidents" class="section-anchor"></div>
+    <div class="map-row">
+        <!-- Map Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">California Wildfire Map</span>
+                <div class="map-view-tabs">
+                    <button class="map-tab active" data-view="leaflet">Satellite Map</button>
+                    <button class="map-tab" data-view="windy">Windy Weather</button>
+                </div>
+                <span class="card-badge live">Live Feed</span>
+            </div>
+            <div class="map-container" id="mapContainer">
+                <!-- Leaflet Map -->
+                <div id="leafletMap"></div>
+                <!-- Windy.com Embed -->
+                <div id="windyContainer">
+                    <iframe id="windyFrame" title="Windy Weather Map" loading="lazy"></iframe>
+                </div>
+                <!-- Overlays -->
+                <div class="map-fire-alert" id="mapFireAlert">
+                    CRITICAL FIRE WEATHER CONDITIONS
+                    <small>Red Flag Warning in effect. Extreme fire behavior possible.</small>
+                </div>
+                <div class="map-fire-count" id="mapFireCount">5 Active Fires</div>
+            </div>
+        </div>
+
+        <!-- Incidents Side Panel -->
+        <div class="card incidents-card">
+            <div class="card-header">
+                <span class="card-title">Active Incidents</span>
+                <span class="card-badge live">5 Active</span>
+            </div>
+            <div class="incident-list">
+                <!-- Caldor -->
+                <div class="incident-item">
+                    <div class="incident-name">Caldor Complex</div>
+                    <div class="incident-location">El Dorado County &middot; 38.77&deg;N, 120.54&deg;W</div>
+                    <div class="incident-meta">
+                        <span class="severity-badge critical">Critical</span>
+                        <span class="incident-detail">18,420 acres</span>
+                    </div>
+                    <div class="containment-bar">
+                        <div class="containment-track">
+                            <div class="containment-fill" style="width: 15%; background: linear-gradient(90deg, var(--fire-red), var(--fire-orange));"></div>
+                        </div>
+                        <span class="containment-label">15%</span>
+                    </div>
+                </div>
+                <!-- Creek -->
+                <div class="incident-item">
+                    <div class="incident-name">Creek Fire</div>
+                    <div class="incident-location">Fresno County &middot; 37.21&deg;N, 119.32&deg;W</div>
+                    <div class="incident-meta">
+                        <span class="severity-badge critical">Critical</span>
+                        <span class="incident-detail">12,800 acres</span>
+                    </div>
+                    <div class="containment-bar">
+                        <div class="containment-track">
+                            <div class="containment-fill" style="width: 22%; background: linear-gradient(90deg, var(--fire-red), var(--fire-orange));"></div>
+                        </div>
+                        <span class="containment-label">22%</span>
+                    </div>
+                </div>
+                <!-- Dixie -->
+                <div class="incident-item">
+                    <div class="incident-name">Dixie Fire</div>
+                    <div class="incident-location">Butte County &middot; 40.01&deg;N, 121.38&deg;W</div>
+                    <div class="incident-meta">
+                        <span class="severity-badge high">High</span>
+                        <span class="incident-detail">8,350 acres</span>
+                    </div>
+                    <div class="containment-bar">
+                        <div class="containment-track">
+                            <div class="containment-fill" style="width: 38%; background: linear-gradient(90deg, var(--fire-orange), var(--fire-amber));"></div>
+                        </div>
+                        <span class="containment-label">38%</span>
+                    </div>
+                </div>
+                <!-- Shasta -->
+                <div class="incident-item">
+                    <div class="incident-name">Shasta Fire</div>
+                    <div class="incident-location">Shasta County &middot; 40.68&deg;N, 122.39&deg;W</div>
+                    <div class="incident-meta">
+                        <span class="severity-badge high">High</span>
+                        <span class="incident-detail">5,100 acres</span>
+                    </div>
+                    <div class="containment-bar">
+                        <div class="containment-track">
+                            <div class="containment-fill" style="width: 45%; background: linear-gradient(90deg, var(--fire-orange), var(--fire-amber));"></div>
+                        </div>
+                        <span class="containment-label">45%</span>
+                    </div>
+                </div>
+                <!-- Pine Valley -->
+                <div class="incident-item">
+                    <div class="incident-name">Pine Valley Fire</div>
+                    <div class="incident-location">San Diego County &middot; 32.82&deg;N, 116.52&deg;W</div>
+                    <div class="incident-meta">
+                        <span class="severity-badge low">Low</span>
+                        <span class="incident-detail">320 acres</span>
+                    </div>
+                    <div class="containment-bar">
+                        <div class="containment-track">
+                            <div class="containment-fill" style="width: 82%; background: linear-gradient(90deg, #4caf50, #66bb6a);"></div>
+                        </div>
+                        <span class="containment-label">82%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== BOTTOM ROW ===== -->
+    <div class="bottom-row">
+        <!-- Resource Allocation -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Resource Allocation</span>
+                <span class="card-badge live">Deployed</span>
+            </div>
+            <div class="chart-container">
+                <canvas id="resourceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Weather Conditions -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Weather Conditions</span>
+                <span style="font-size: 10px; color: var(--text-muted);">Sacramento Valley</span>
+            </div>
+            <div class="weather-grid">
+                <div class="weather-item">
+                    <div class="weather-label">Temperature</div>
+                    <div class="weather-value large warning" id="weatherTemp">98&deg;F</div>
+                </div>
+                <div class="weather-item">
+                    <div class="weather-label">Humidity</div>
+                    <div class="weather-value large critical" id="weatherHumidity">12%</div>
+                </div>
+                <div class="weather-item">
+                    <div class="weather-label">Wind Speed</div>
+                    <div class="weather-value" id="weatherWind">25 mph NW</div>
+                </div>
+                <div class="weather-item">
+                    <div class="weather-label">Fire Weather Index</div>
+                    <div class="weather-value warning" id="weatherFWI">87<span style="font-size: 14px; color: var(--text-muted);">/100</span></div>
+                    <div class="fwi-bar"><div class="fwi-fill"></div></div>
+                </div>
+                <div class="weather-item full-width" style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div class="weather-label">Red Flag Warning</div>
+                    </div>
+                    <div class="red-flag-badge">
+                        <div class="red-flag-dot"></div>
+                        ACTIVE
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Alerts -->
+        <div id="section-alerts" class="section-anchor"></div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Recent Alerts</span>
+                <span class="card-badge" style="color: var(--fire-amber); background: rgba(255,167,38,0.12); border: 1px solid rgba(255,167,38,0.2);" id="alertCount">6 Alerts</span>
+            </div>
+            <div class="alerts-scroll" id="alertsContainer">
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">14:32 PST</span>
+                        <span class="alert-severity critical">Critical</span>
+                    </div>
+                    <div class="alert-message">Caldor Complex perimeter expanded 500 acres &mdash; western flank advancing toward Pollock Pines</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">14:15 PST</span>
+                        <span class="alert-severity critical">Critical</span>
+                    </div>
+                    <div class="alert-message">Red Flag Warning issued for Sacramento Valley &mdash; winds exceeding 30 mph expected through 20:00</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">13:48 PST</span>
+                        <span class="alert-severity warning">Warning</span>
+                    </div>
+                    <div class="alert-message">Evacuation order: Zone 4 Riverside County &mdash; 2,300 residents affected</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">13:22 PST</span>
+                        <span class="alert-severity warning">Warning</span>
+                    </div>
+                    <div class="alert-message">Creek Fire spot fire detected 1.2 miles northeast of main perimeter &mdash; crews dispatched</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">12:55 PST</span>
+                        <span class="alert-severity info">Info</span>
+                    </div>
+                    <div class="alert-message">Air tanker AT-42 refueled and en route to Dixie Fire staging area &mdash; ETA 25 min</div>
+                </div>
+                <div class="alert-item">
+                    <div class="alert-top">
+                        <span class="alert-time">12:30 PST</span>
+                        <span class="alert-severity info">Info</span>
+                    </div>
+                    <div class="alert-message">Pine Valley Fire containment increased to 82% &mdash; mop-up operations continuing on eastern perimeter</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== DATA SOURCES ROW ===== -->
+    <div id="section-data-portal" class="section-anchor"></div>
+    <div class="bottom-row" style="margin-top:24px;">
+        <!-- NASA FIRMS Widget -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(0,150,255,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0096ff" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    </span>
+                    NASA FIRMS Fire Detection
+                </span>
+                <span class="card-badge live">LIVE</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+                    <div style="text-align:center;padding:12px;background:rgba(255,61,0,0.08);border-radius:10px;">
+                        <div style="font-size:22px;font-weight:700;color:var(--fire-red);" id="firmsHotspots">127</div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Active Hotspots</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(76,175,80,0.08);border-radius:10px;">
+                        <div style="font-size:22px;font-weight:700;color:#4caf50;">89</div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">High Confidence</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(0,188,212,0.08);border-radius:10px;">
+                        <div style="font-size:22px;font-weight:700;color:var(--data-cyan);">342</div>
+                        <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Last 24h</div>
+                    </div>
+                </div>
+                <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--fire-orange)" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    Recent Detections
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-muted);text-align:left;">
+                            <th style="padding:8px 6px;">Location</th><th style="padding:8px 6px;">Satellite</th><th style="padding:8px 6px;">Confidence</th><th style="padding:8px 6px;">FRP</th><th style="padding:8px 6px;">Time</th>
+                        </tr></thead>
+                        <tbody id="firmsTable">
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">38.77&deg;N, 120.54&deg;W</td><td style="padding:8px 6px;color:var(--text-secondary);">VIIRS</td><td style="padding:8px 6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 8px;border-radius:4px;font-weight:600;">96%</span></td><td style="padding:8px 6px;color:var(--fire-red);">42.8 MW</td><td style="padding:8px 6px;color:var(--text-muted);">14:22</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">37.21&deg;N, 119.32&deg;W</td><td style="padding:8px 6px;color:var(--text-secondary);">MODIS</td><td style="padding:8px 6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 8px;border-radius:4px;font-weight:600;">92%</span></td><td style="padding:8px 6px;color:var(--fire-red);">38.1 MW</td><td style="padding:8px 6px;color:var(--text-muted);">14:18</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">40.01&deg;N, 121.38&deg;W</td><td style="padding:8px 6px;color:var(--text-secondary);">VIIRS</td><td style="padding:8px 6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 8px;border-radius:4px;font-weight:600;">78%</span></td><td style="padding:8px 6px;color:var(--fire-orange);">21.3 MW</td><td style="padding:8px 6px;color:var(--text-muted);">14:15</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">40.68&deg;N, 122.39&deg;W</td><td style="padding:8px 6px;color:var(--text-secondary);">MODIS</td><td style="padding:8px 6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 8px;border-radius:4px;font-weight:600;">74%</span></td><td style="padding:8px 6px;color:var(--fire-orange);">15.7 MW</td><td style="padding:8px 6px;color:var(--text-muted);">14:10</td></tr>
+                            <tr><td style="padding:8px 6px;color:var(--text-secondary);">32.82&deg;N, 116.52&deg;W</td><td style="padding:8px 6px;color:var(--text-secondary);">VIIRS</td><td style="padding:8px 6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 8px;border-radius:4px;font-weight:600;">91%</span></td><td style="padding:8px 6px;color:var(--fire-orange);">8.2 MW</td><td style="padding:8px 6px;color:var(--text-muted);">14:05</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAWS Weather Widget -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(0,188,212,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--data-cyan)" stroke-width="2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+                    </span>
+                    RAWS Weather Network
+                </span>
+                <span class="card-badge" style="color:#4caf50;background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.2);">8/10 Online</span>
+            </div>
+            <div class="card-body">
+                <div style="background:rgba(255,61,0,0.06);border:1px solid rgba(255,61,0,0.15);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:var(--fire-red);font-weight:600;">
+                    Red Flag Conditions detected at 3 stations
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+                    <div style="padding:10px;background:rgba(255,61,0,0.06);border-radius:8px;text-align:center;">
+                        <div style="font-size:10px;color:var(--text-muted);">Temperature</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-red);" id="rawsTemp">102&deg;F</div>
+                    </div>
+                    <div style="padding:10px;background:rgba(0,150,255,0.06);border-radius:8px;text-align:center;">
+                        <div style="font-size:10px;color:var(--text-muted);">Humidity</div>
+                        <div style="font-size:20px;font-weight:700;color:#0096ff;" id="rawsHumid">8%</div>
+                    </div>
+                    <div style="padding:10px;background:rgba(0,188,212,0.06);border-radius:8px;text-align:center;">
+                        <div style="font-size:10px;color:var(--text-muted);">Wind Speed</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--data-cyan);" id="rawsWind">28 mph</div>
+                    </div>
+                    <div style="padding:10px;background:rgba(255,167,38,0.06);border-radius:8px;text-align:center;">
+                        <div style="font-size:10px;color:var(--text-muted);">Wind Gust</div>
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-amber);" id="rawsGust">42 mph</div>
+                    </div>
+                </div>
+                <div style="background:rgba(255,255,255,0.02);border-radius:8px;padding:10px;margin-bottom:14px;">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
+                        <div><div style="font-size:10px;color:var(--text-muted);">Fuel Moisture</div><div style="font-size:16px;font-weight:600;color:var(--fire-amber);">4.2%</div></div>
+                        <div><div style="font-size:10px;color:var(--text-muted);">Fuel Temp</div><div style="font-size:16px;font-weight:600;color:var(--fire-red);">138&deg;F</div></div>
+                        <div><div style="font-size:10px;color:var(--text-muted);">Solar Radiation</div><div style="font-size:16px;font-weight:600;color:var(--fire-orange);">842 W/m&sup2;</div></div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;max-height:200px;overflow-y:auto;">
+                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-muted);text-align:left;position:sticky;top:0;background:var(--card-bg);">
+                            <th style="padding:6px;">Station</th><th style="padding:6px;">Temp</th><th style="padding:6px;">Humidity</th><th style="padding:6px;">Wind</th><th style="padding:6px;">Risk</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Angeles Forest</td><td style="padding:6px;color:var(--fire-red);">104&deg;F</td><td style="padding:6px;color:var(--fire-red);">6%</td><td style="padding:6px;color:var(--text-secondary);">32 mph NW</td><td style="padding:6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">Extreme</span></td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Simi Valley</td><td style="padding:6px;color:var(--fire-red);">101&deg;F</td><td style="padding:6px;color:var(--fire-amber);">11%</td><td style="padding:6px;color:var(--text-secondary);">25 mph SW</td><td style="padding:6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">Extreme</span></td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Mount Wilson</td><td style="padding:6px;color:var(--fire-amber);">96&deg;F</td><td style="padding:6px;color:var(--fire-amber);">14%</td><td style="padding:6px;color:var(--text-secondary);">18 mph W</td><td style="padding:6px;"><span style="background:rgba(255,107,53,0.15);color:var(--fire-orange);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">High</span></td></tr>
+                            <tr><td style="padding:6px;color:var(--text-secondary);">Malibu Canyon</td><td style="padding:6px;color:var(--fire-amber);">94&deg;F</td><td style="padding:6px;color:var(--text-secondary);">18%</td><td style="padding:6px;color:var(--text-secondary);">15 mph S</td><td style="padding:6px;"><span style="background:rgba(255,107,53,0.15);color:var(--fire-orange);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">High</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- IoT Sensor Network -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(255,167,38,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fire-amber)" stroke-width="2"><path d="M5.12 19a7 7 0 0 1 0-14M2 12h1M19.07 4.93l-.71.71M18 12h1M12 2v1M4.93 4.93l.71.71M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/></svg>
+                    </span>
+                    IoT Sensor Network
+                </span>
+                <span class="card-badge" style="color:#4caf50;background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.2);">24/28 Online</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+                    <div style="text-align:center;padding:10px;background:rgba(76,175,80,0.08);border-radius:8px;">
+                        <div style="font-size:18px;font-weight:700;color:#4caf50;">24</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Online</div>
+                    </div>
+                    <div style="text-align:center;padding:10px;background:rgba(255,167,38,0.08);border-radius:8px;">
+                        <div style="font-size:18px;font-weight:700;color:var(--fire-amber);">7</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Alerts</div>
+                    </div>
+                    <div style="text-align:center;padding:10px;background:rgba(255,61,0,0.08);border-radius:8px;">
+                        <div style="font-size:18px;font-weight:700;color:var(--fire-red);">3</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Low Battery</div>
+                    </div>
+                    <div style="text-align:center;padding:10px;background:rgba(0,188,212,0.08);border-radius:8px;">
+                        <div style="font-size:18px;font-weight:700;color:var(--data-cyan);">28</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Total Sensors</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;max-height:220px;overflow-y:auto;">
+                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-muted);text-align:left;position:sticky;top:0;background:var(--card-bg);">
+                            <th style="padding:6px;">Sensor</th><th style="padding:6px;">Air Quality</th><th style="padding:6px;">Temp</th><th style="padding:6px;">Status</th><th style="padding:6px;">Battery</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">AF-Node-01</td><td style="padding:6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">PM2.5: 185</span></td><td style="padding:6px;color:var(--text-secondary);">104&deg;F</td><td style="padding:6px;color:#4caf50;">Online</td><td style="padding:6px;color:#4caf50;">92%</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">SV-Node-03</td><td style="padding:6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">PM2.5: 128</span></td><td style="padding:6px;color:var(--text-secondary);">99&deg;F</td><td style="padding:6px;color:#4caf50;">Online</td><td style="padding:6px;color:var(--fire-amber);">34%</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">MW-Node-07</td><td style="padding:6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">PM2.5: 95</span></td><td style="padding:6px;color:var(--text-secondary);">97&deg;F</td><td style="padding:6px;color:#4caf50;">Online</td><td style="padding:6px;color:#4caf50;">78%</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">MC-Node-12</td><td style="padding:6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">PM2.5: 42</span></td><td style="padding:6px;color:var(--text-secondary);">93&deg;F</td><td style="padding:6px;color:#4caf50;">Online</td><td style="padding:6px;color:#4caf50;">88%</td></tr>
+                            <tr><td style="padding:6px;color:var(--text-secondary);">DH-Node-15</td><td style="padding:6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;">PM2.5: 28</span></td><td style="padding:6px;color:var(--text-secondary);">91&deg;F</td><td style="padding:6px;color:var(--fire-amber);">Alert</td><td style="padding:6px;color:var(--fire-red);">12%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== RISK MODEL + VEGETATION ROW ===== -->
+    <div class="map-row" style="margin-top:24px;grid-template-columns:2fr 1fr;">
+        <!-- CAL FIRE Risk Model -->
+        <div class="card" id="section-situational">
+            <div class="card-header">
+                <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(255,61,0,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--fire-red)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </span>
+                    CAL FIRE Risk Assessment Model
+                </span>
+                <span class="card-badge" style="color:var(--fire-red);background:rgba(255,61,0,0.12);border:1px solid rgba(255,61,0,0.2);font-size:9px;">CONFIDENTIAL</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+                    <div style="text-align:center;padding:12px;background:rgba(255,61,0,0.06);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-red);">78%</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Avg Risk Score</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(255,167,38,0.06);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-amber);">4</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Extreme Risk Zones</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(0,188,212,0.06);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--data-cyan);">94%</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Model Confidence</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(76,175,80,0.06);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:#4caf50;">2 min</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Last Updated</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;max-height:250px;overflow-y:auto;">
+                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-muted);text-align:left;position:sticky;top:0;background:var(--card-bg);">
+                            <th style="padding:8px 6px;">Zone</th><th style="padding:8px 6px;">Risk Score</th><th style="padding:8px 6px;">Weather</th><th style="padding:8px 6px;">Fuel</th><th style="padding:8px 6px;">6h</th><th style="padding:8px 6px;">24h</th><th style="padding:8px 6px;">48h</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">LAC-North</td><td style="padding:8px 6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 8px;border-radius:4px;font-weight:600;">92%</span></td><td style="padding:8px 6px;color:var(--fire-red);">95%</td><td style="padding:8px 6px;color:var(--fire-red);">88%</td><td style="padding:8px 6px;color:var(--fire-red);">94%</td><td style="padding:8px 6px;color:var(--fire-red);">91%</td><td style="padding:8px 6px;color:var(--fire-amber);">85%</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">VEN-Central</td><td style="padding:8px 6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 8px;border-radius:4px;font-weight:600;">87%</span></td><td style="padding:8px 6px;color:var(--fire-red);">90%</td><td style="padding:8px 6px;color:var(--fire-amber);">82%</td><td style="padding:8px 6px;color:var(--fire-red);">89%</td><td style="padding:8px 6px;color:var(--fire-amber);">84%</td><td style="padding:8px 6px;color:var(--fire-amber);">78%</td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:8px 6px;color:var(--text-secondary);">ORA-East</td><td style="padding:8px 6px;"><span style="background:rgba(255,107,53,0.15);color:var(--fire-orange);padding:2px 8px;border-radius:4px;font-weight:600;">71%</span></td><td style="padding:8px 6px;color:var(--fire-orange);">74%</td><td style="padding:8px 6px;color:var(--fire-orange);">68%</td><td style="padding:8px 6px;color:var(--fire-orange);">73%</td><td style="padding:8px 6px;color:var(--fire-orange);">70%</td><td style="padding:8px 6px;color:var(--text-secondary);">62%</td></tr>
+                            <tr><td style="padding:8px 6px;color:var(--text-secondary);">SBD-West</td><td style="padding:8px 6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 8px;border-radius:4px;font-weight:600;">58%</span></td><td style="padding:8px 6px;color:var(--fire-amber);">62%</td><td style="padding:8px 6px;color:var(--text-secondary);">54%</td><td style="padding:8px 6px;color:var(--fire-amber);">60%</td><td style="padding:8px 6px;color:var(--text-secondary);">55%</td><td style="padding:8px 6px;color:var(--text-secondary);">48%</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Landsat Vegetation Index -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title" style="display:flex;align-items:center;gap:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;background:rgba(76,175,80,0.15);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4caf50" stroke-width="2"><path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66.95-2.3c.48.17.98.3 1.34.3C19 20 22 3 22 3c-1 2-8 2.25-13 3.25S2 11.5 2 13.5s1.75 3.75 1.75 3.75"/></svg>
+                    </span>
+                    Landsat Vegetation
+                </span>
+                <span class="card-badge" style="color:#4caf50;background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.2);">NDVI</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;">
+                    <div style="text-align:center;padding:12px;background:rgba(76,175,80,0.08);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:#4caf50;">0.42</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Avg NDVI</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(255,61,0,0.08);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-red);">6</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Extreme Risk</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(255,167,38,0.08);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--fire-amber);">12</div>
+                        <div style="font-size:10px;color:var(--text-muted);">Drought Stress</div>
+                    </div>
+                    <div style="text-align:center;padding:12px;background:rgba(0,188,212,0.08);border-radius:8px;">
+                        <div style="font-size:20px;font-weight:700;color:var(--data-cyan);">-18%</div>
+                        <div style="font-size:10px;color:var(--text-muted);">vs Historic Avg</div>
+                    </div>
+                </div>
+                <div style="overflow-x:auto;max-height:220px;overflow-y:auto;">
+                    <table style="width:100%;font-size:11px;border-collapse:collapse;">
+                        <thead><tr style="border-bottom:1px solid var(--border);color:var(--text-muted);text-align:left;position:sticky;top:0;background:var(--card-bg);">
+                            <th style="padding:6px;">Location</th><th style="padding:6px;">NDVI</th><th style="padding:6px;">Health</th><th style="padding:6px;">Fire Risk</th>
+                        </tr></thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Angeles Forest</td><td style="padding:6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 6px;border-radius:4px;font-weight:600;">0.18</span></td><td style="padding:6px;color:var(--fire-red);">Critical</td><td style="padding:6px;"><span style="background:rgba(255,61,0,0.15);color:var(--fire-red);padding:2px 6px;border-radius:4px;font-size:10px;">Extreme</span></td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Simi Valley</td><td style="padding:6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 6px;border-radius:4px;font-weight:600;">0.31</span></td><td style="padding:6px;color:var(--fire-amber);">Fair</td><td style="padding:6px;"><span style="background:rgba(255,107,53,0.15);color:var(--fire-orange);padding:2px 6px;border-radius:4px;font-size:10px;">High</span></td></tr>
+                            <tr style="border-bottom:1px solid var(--border);"><td style="padding:6px;color:var(--text-secondary);">Mount Wilson</td><td style="padding:6px;"><span style="background:rgba(0,188,212,0.15);color:var(--data-cyan);padding:2px 6px;border-radius:4px;font-weight:600;">0.48</span></td><td style="padding:6px;color:var(--data-cyan);">Good</td><td style="padding:6px;"><span style="background:rgba(255,167,38,0.15);color:var(--fire-amber);padding:2px 6px;border-radius:4px;font-size:10px;">Moderate</span></td></tr>
+                            <tr><td style="padding:6px;color:var(--text-secondary);">Malibu</td><td style="padding:6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 6px;border-radius:4px;font-weight:600;">0.62</span></td><td style="padding:6px;color:#4caf50;">Excellent</td><td style="padding:6px;"><span style="background:rgba(76,175,80,0.15);color:#4caf50;padding:2px 6px;border-radius:4px;font-size:10px;">Low</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== FIRE RISK ASSESSMENT ROW ===== -->
+    <div id="section-resources" class="section-anchor"></div>
+    <div style="margin-top:24px;">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Current Fire Risk Assessment</span>
+            </div>
+            <div class="card-body">
+                <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+                    <div style="background:rgba(255,61,0,0.06);border:1px solid rgba(255,61,0,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Sacramento Valley</div>
+                        <span style="background:var(--fire-red);color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">Extreme</span>
+                        <div style="font-size:22px;font-weight:800;color:var(--fire-red);margin-top:8px;">92%</div>
+                    </div>
+                    <div style="background:rgba(255,61,0,0.06);border:1px solid rgba(255,61,0,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Angeles NF</div>
+                        <span style="background:var(--fire-red);color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">Extreme</span>
+                        <div style="font-size:22px;font-weight:800;color:var(--fire-red);margin-top:8px;">89%</div>
+                    </div>
+                    <div style="background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Ventura Coast</div>
+                        <span style="background:var(--fire-orange);color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">High</span>
+                        <div style="font-size:22px;font-weight:800;color:var(--fire-orange);margin-top:8px;">74%</div>
+                    </div>
+                    <div style="background:rgba(255,107,53,0.06);border:1px solid rgba(255,107,53,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">San Bernardino</div>
+                        <span style="background:var(--fire-orange);color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">High</span>
+                        <div style="font-size:22px;font-weight:800;color:var(--fire-orange);margin-top:8px;">68%</div>
+                    </div>
+                    <div style="background:rgba(255,167,38,0.06);border:1px solid rgba(255,167,38,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Bay Area</div>
+                        <span style="background:var(--fire-amber);color:#000;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">Medium</span>
+                        <div style="font-size:22px;font-weight:800;color:var(--fire-amber);margin-top:8px;">45%</div>
+                    </div>
+                    <div style="background:rgba(76,175,80,0.06);border:1px solid rgba(76,175,80,0.15);border-radius:10px;padding:14px;text-align:center;">
+                        <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">North Coast</div>
+                        <span style="background:#4caf50;color:#fff;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;">Low</span>
+                        <div style="font-size:22px;font-weight:800;color:#4caf50;margin-top:8px;">22%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+// ===== SIDEBAR NAVIGATION =====
+const sections = {
+    'dashboard': 'section-dashboard',
+    'incidents': 'section-incidents',
+    'resources': 'section-resources',
+    'alerts': 'section-alerts',
+    'data-portal': 'section-data-portal',
+    'situational': 'section-situational'
+};
+document.querySelectorAll('.sidebar-nav a').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar-nav a').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        const nav = link.getAttribute('data-nav');
+        const targetId = sections[nav];
+        if (targetId) {
+            const el = document.getElementById(targetId);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if (nav === 'dashboard') {
+            document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    });
+});
+
+// ===== LEAFLET MAP INITIALIZATION =====
+const map = L.map('leafletMap', {
+    center: [36.7783, -119.4179],
+    zoom: 6,
+    zoomControl: true,
+    attributionControl: false
+});
+
+// --- Base Layers ---
+const satellite = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 19, attribution: 'Esri World Imagery' }
+);
+const street = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { maxZoom: 19, attribution: 'OpenStreetMap' }
+);
+const topo = L.tileLayer(
+    'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    { maxZoom: 17, attribution: 'OpenTopoMap' }
+);
+const terrain = L.tileLayer(
+    'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+    { maxZoom: 19, attribution: 'Humanitarian OSM' }
+);
+
+// Default: satellite
+satellite.addTo(map);
+
+// --- Overlay Layers ---
+const airnowFire = L.tileLayer(
+    'https://tiles.airnow.gov/MapFiles/Fire/{z}/{x}/{y}.png',
+    { opacity: 0.85, maxZoom: 12, attribution: 'AirNow Fire' }
+);
+airnowFire.addTo(map);
+
+const noaaSmoke = L.tileLayer.wms(
+    'https://idpgis.ncep.noaa.gov/arcgis/services/NWS_Forecasts_Guidance_Warnings/HRRR_smoke/MapServer/WMSServer',
+    { layers: '1', format: 'image/png', transparent: true, opacity: 0.5, attribution: 'NOAA HRRR Smoke' }
+);
+
+const stateLines = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png',
+    { opacity: 0.4, maxZoom: 18, attribution: 'CartoDB' }
+);
+stateLines.addTo(map);
+
+const cityLabels = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',
+    { opacity: 0.6, maxZoom: 18, attribution: 'CartoDB' }
+);
+cityLabels.addTo(map);
+
+// --- Layer Control ---
+const baseLayers = {
+    'Satellite': satellite,
+    'Street': street,
+    'Topographic': topo,
+    'Terrain': terrain
+};
+const overlays = {
+    'Active Fires (AirNow)': airnowFire,
+    'Smoke / AQI (NOAA)': noaaSmoke,
+    'State Boundaries': stateLines,
+    'City / State Labels': cityLabels
+};
+L.control.layers(baseLayers, overlays, { position: 'bottomright', collapsed: false }).addTo(map);
+
+// --- Fire Incident Markers ---
+const fireIncidents = [
+    { name: 'Caldor Complex', lat: 38.77, lng: -120.54, acres: '18,420', contained: '15%', county: 'El Dorado', severity: 'critical', status: 'Active spread, critical' },
+    { name: 'Creek Fire',     lat: 37.21, lng: -119.32, acres: '12,800', contained: '22%', county: 'Fresno',    severity: 'critical', status: 'Active, spot fires detected' },
+    { name: 'Dixie Fire',     lat: 40.01, lng: -121.38, acres: '8,350',  contained: '38%', county: 'Butte',     severity: 'high',     status: 'Moderate spread' },
+    { name: 'Shasta Fire',    lat: 40.68, lng: -122.39, acres: '5,100',  contained: '45%', county: 'Shasta',    severity: 'high',     status: 'Holding, crews on scene' },
+    { name: 'Pine Valley Fire', lat: 32.82, lng: -116.52, acres: '320', contained: '82%', county: 'San Diego',  severity: 'low',      status: 'Mop-up operations' }
+];
+
+fireIncidents.forEach(fire => {
+    const icon = L.divIcon({
+        className: 'fire-div-icon',
+        html: '<div class="fire-marker-dot ' + fire.severity + '"></div>',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7]
+    });
+    L.marker([fire.lat, fire.lng], { icon: icon })
+        .addTo(map)
+        .bindPopup(
+            '<div style="font-family:Inter,sans-serif;min-width:180px">' +
+            '<strong style="font-size:13px;color:#f0f0f5">' + fire.name + '</strong><br>' +
+            '<span style="font-size:11px;color:#a0a0b0">' + fire.county + ' County</span><br>' +
+            '<span style="font-size:11px;color:#a0a0b0">' + fire.acres + ' acres &bull; ' + fire.contained + ' contained</span><br>' +
+            '<span style="font-size:11px;color:' + (fire.severity === 'critical' ? '#ff3d00' : fire.severity === 'high' ? '#ff6b35' : '#4caf50') + '">' + fire.status + '</span>' +
+            '</div>',
+            { className: '' }
+        );
+});
+
+// Fix map size after DOM settles
+setTimeout(() => { map.invalidateSize(); }, 200);
+
+// ===== WINDY.COM EMBED =====
+const windyFrame = document.getElementById('windyFrame');
+const windyUrl = 'https://embed.windy.com/embed2.html'
+    + '?lat=36.7783&lon=-119.4179&detailLat=36.7783&detailLon=-119.4179'
+    + '&width=800&height=520&zoom=6&level=surface&overlay=wind&product=gfs'
+    + '&menu=&message=true&marker=&calendar=now&pressure=&type=satellite'
+    + '&location=coordinates&metricWind=mph&metricTemp=%C2%B0F&ra498=';
+windyFrame.src = windyUrl;
+
+// ===== MAP VIEW TAB TOGGLE =====
+document.querySelectorAll('.map-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.map-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const view = tab.getAttribute('data-view');
+        const leafletDiv = document.getElementById('leafletMap');
+        const windyDiv = document.getElementById('windyContainer');
+        const fireAlert = document.getElementById('mapFireAlert');
+        const fireCount = document.getElementById('mapFireCount');
+        if (view === 'windy') {
+            leafletDiv.style.display = 'none';
+            windyDiv.style.display = 'block';
+            fireAlert.style.display = 'none';
+            fireCount.style.display = 'none';
+        } else {
+            leafletDiv.style.display = 'block';
+            windyDiv.style.display = 'none';
+            fireAlert.style.display = '';
+            fireCount.style.display = '';
+            setTimeout(() => { map.invalidateSize(); }, 100);
+        }
+    });
+});
+
+// ===== RESOURCE ALLOCATION CHART =====
+const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+new Chart(resourceCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Fire Engines', 'Crews', 'Helicopters', 'Air Tankers', 'Dozers'],
+        datasets: [{
+            data: [156, 89, 12, 8, 23],
+            backgroundColor: [
+                'rgba(255,61,0,0.7)',
+                'rgba(255,107,53,0.7)',
+                'rgba(255,167,38,0.7)',
+                'rgba(0,188,212,0.7)',
+                'rgba(255,202,40,0.7)'
+            ],
+            borderColor: [
+                'rgba(255,61,0,1)',
+                'rgba(255,107,53,1)',
+                'rgba(255,167,38,1)',
+                'rgba(0,188,212,1)',
+                'rgba(255,202,40,1)'
+            ],
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false,
+            barPercentage: 0.65,
+            categoryPercentage: 0.8
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(10,10,15,0.95)',
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1,
+                titleFont: { family: 'Inter', size: 12, weight: '600' },
+                bodyFont: { family: 'Inter', size: 11 },
+                padding: 12,
+                cornerRadius: 8,
+                callbacks: {
+                    label: function(context) {
+                        return context.parsed.x + ' units deployed';
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(255,255,255,0.04)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: 'rgba(255,255,255,0.3)',
+                    font: { family: 'Inter', size: 10 }
+                },
+                border: { display: false }
+            },
+            y: {
+                grid: { display: false },
+                ticks: {
+                    color: 'rgba(255,255,255,0.5)',
+                    font: { family: 'Inter', size: 11, weight: '500' },
+                    padding: 8
+                },
+                border: { display: false }
+            }
+        }
+    }
+});
+
+// ===== LIVE UPDATE ENGINE =====
+const baseStats = {
+    fires: 47,
+    resources: 312,
+    population: 24500,
+};
+
+const alertMessages = [
+    { severity: 'critical', message: 'Caldor Complex: New spot fire detected 0.8 miles south of Highway 50' },
+    { severity: 'critical', message: 'Creek Fire perimeter breach on northern flank — resources redeployed' },
+    { severity: 'warning', message: 'Humidity dropping below 8% in Sacramento Valley — extreme fire danger' },
+    { severity: 'warning', message: 'Evacuation advisory upgraded for Pollock Pines — 1,400 residents' },
+    { severity: 'info', message: 'Helicopter H-204 completing water drop on Dixie Fire western edge' },
+    { severity: 'critical', message: 'Wind gust recorded at 42 mph near Caldor Complex — erratic fire behavior expected' },
+    { severity: 'warning', message: 'Structure threat assessment updated: 340 structures now in direct path' },
+    { severity: 'info', message: 'Mutual aid request: 3 additional strike teams en route from Nevada' },
+    { severity: 'critical', message: 'Infrared satellite confirms Caldor Complex grown to 19,100 acres' },
+    { severity: 'warning', message: 'Power shutoff initiated for El Dorado County zones 2, 5, 7' },
+    { severity: 'info', message: 'Pine Valley Fire: Full containment expected within 12 hours' },
+    { severity: 'critical', message: 'Creek Fire: Mandatory evacuation ordered for Bass Lake communities' },
+];
+
+let alertIndex = 0;
+let alertTotal = 6;
+
+function jitter(base, range) {
+    return base + Math.floor((Math.random() - 0.5) * range);
+}
+
+function formatNumber(num) {
+    return num.toLocaleString();
+}
+
+function getTimeString() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes} PST`;
+}
+
+function updateStats() {
+    const fires = jitter(baseStats.fires, 4);
+    const resources = jitter(baseStats.resources, 10);
+    const population = jitter(baseStats.population, 800);
+
+    document.getElementById('statFires').textContent = fires;
+    document.getElementById('statResources').textContent = formatNumber(resources);
+    document.getElementById('statPopulation').textContent = formatNumber(population);
+}
+
+function addAlert() {
+    const alert = alertMessages[alertIndex % alertMessages.length];
+    alertIndex++;
+    alertTotal++;
+
+    const container = document.getElementById('alertsContainer');
+    const alertEl = document.createElement('div');
+    alertEl.className = 'alert-item new-alert';
+    alertEl.innerHTML = `
+        <div class="alert-top">
+            <span class="alert-time">${getTimeString()}</span>
+            <span class="alert-severity ${alert.severity}">${alert.severity === 'info' ? 'Info' : alert.severity === 'warning' ? 'Warning' : 'Critical'}</span>
+        </div>
+        <div class="alert-message">${alert.message}</div>
+    `;
+    container.insertBefore(alertEl, container.firstChild);
+
+    document.getElementById('alertCount').textContent = `${alertTotal} Alerts`;
+
+    // Remove "new" highlight after 3 seconds
+    setTimeout(() => {
+        alertEl.classList.remove('new-alert');
+    }, 3000);
+
+    // Keep list from growing too long
+    while (container.children.length > 20) {
+        container.removeChild(container.lastChild);
+    }
+}
+
+// Update sync indicator
+function updateSync() {
+    document.getElementById('lastSync').textContent = 'just now';
+}
+
+// Start intervals
+setInterval(updateStats, 5000);
+setInterval(() => {
+    if (Math.random() > 0.4) {
+        addAlert();
+    }
+}, 8000);
+setInterval(updateSync, 5000);
+
+// Initial jitter after 2 seconds
+setTimeout(updateStats, 2000);
+</script>
+
+</body>
+</html>
