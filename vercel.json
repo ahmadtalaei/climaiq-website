@@ -4,21 +4,23 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
-    { "source": "/platform", "destination": "/platform/index.html" },
-    { "source": "/fire-chief", "destination": "/platform/fire-chief.html" },
-    { "source": "/architecture", "destination": "/platform/architecture.html" },
-    { "source": "/architecture-live", "destination": "/platform/architecture-live.html" },
-    { "source": "/analyst-portal", "destination": "/platform/analyst-portal.html" },
-    { "source": "/scientist-workbench", "destination": "/platform/scientist-workbench.html" },
-    { "source": "/admin-console", "destination": "/platform/admin-console.html" },
-    { "source": "/analytics-platform", "destination": "/dashboard/analytics-platform.html" },
-    { "source": "/ingestion-latency", "destination": "/dashboard/ingestion-latency.html" },
-    { "source": "/latency-fidelity-enhanced", "destination": "/dashboard/latency-fidelity-enhanced.html" },
-    { "source": "/platform-health", "destination": "/dashboard/platform-health.html" },
-    { "source": "/storage-lifecycle", "destination": "/dashboard/storage-lifecycle.html" },
-    { "source": "/storage-tiers", "destination": "/dashboard/storage-tiers.html" },
-    { "source": "/system-performance", "destination": "/dashboard/system-performance.html" },
-    { "source": "/wildfire-overview", "destination": "/dashboard/wildfire-overview.html" }
+    { "source": "/platform", "destination": "/platform/index.html" }
+  ],
+  "redirects": [
+    { "source": "/fire-chief", "destination": "/platform/fire-chief" },
+    { "source": "/architecture", "destination": "/platform/architecture" },
+    { "source": "/architecture-live", "destination": "/platform/architecture-live" },
+    { "source": "/analyst-portal", "destination": "/platform/analyst-portal" },
+    { "source": "/scientist-workbench", "destination": "/platform/scientist-workbench" },
+    { "source": "/admin-console", "destination": "/platform/admin-console" },
+    { "source": "/analytics-platform", "destination": "/dashboard/analytics-platform" },
+    { "source": "/ingestion-latency", "destination": "/dashboard/ingestion-latency" },
+    { "source": "/latency-fidelity-enhanced", "destination": "/dashboard/latency-fidelity-enhanced" },
+    { "source": "/platform-health", "destination": "/dashboard/platform-health" },
+    { "source": "/storage-lifecycle", "destination": "/dashboard/storage-lifecycle" },
+    { "source": "/storage-tiers", "destination": "/dashboard/storage-tiers" },
+    { "source": "/system-performance", "destination": "/dashboard/system-performance" },
+    { "source": "/wildfire-overview", "destination": "/dashboard/wildfire-overview" }
   ],
   "headers": [
     {
