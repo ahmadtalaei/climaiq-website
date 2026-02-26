@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClimaIQ — Wildfire Intelligence Platform</title>
+  <meta name="description" content="AI-powered wildfire prediction before ignition. 1.06B records processed, 92% accuracy, 43ms critical alerts. The future of wildfire intelligence.">
+  <meta property="og:title" content="ClimaIQ — Wildfire Intelligence Platform">
+  <meta property="og:description" content="AI-powered prediction before ignition. Not reaction after.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://climaiq.tech">
+  <meta property="og:image" content="https://climaiq.tech/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo">
+        <span class="logo-clima">Clima</span><span class="logo-iq">IQ</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#crisis">The Crisis</a></li>
+        <li><a href="#platform">Platform</a></li>
+        <li><a href="#ai-engine">AI Engine</a></li>
+        <li><a href="#metrics">Metrics</a></li>
+        <li><a href="#validation">Validation</a></li>
+        <li><a href="#contact" class="nav-cta">Get In Touch</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Section 1: Hero -->
+  <section class="hero" id="hero">
+    <div id="particles-js" class="particles-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge reveal">Wildfire Intelligence Platform</div>
+      <h1 class="hero-title reveal">
+        <span class="logo-clima">Clima</span><span class="logo-iq">IQ</span>
+      </h1>
+      <p class="hero-tagline reveal">AI-powered prediction before ignition.<br><span class="tagline-accent">Not reaction after.</span></p>
+      <div class="hero-stats reveal">
+        <div class="stat-badge">
+          <span class="stat-value" data-target="1.06" data-suffix="B" data-decimals="2">0</span>
+          <span class="stat-label">Records Processed</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-value" data-target="92" data-suffix="%" data-decimals="0">0</span>
+          <span class="stat-label">Prediction Accuracy</span>
+        </div>
+        <div class="stat-badge">
+          <span class="stat-value" data-target="43" data-suffix="ms" data-decimals="0">0</span>
+          <span class="stat-label">Critical Alerts</span>
+        </div>
+      </div>
+      <a href="#platform" class="hero-cta reveal">
+        See How It Works
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+      </a>
+    </div>
+    <div class="hero-scroll-indicator">
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- Section 2: The Crisis -->
+  <section class="section crisis" id="crisis">
+    <div class="container">
+      <div class="section-label reveal">The Problem</div>
+      <h2 class="section-title reveal">Wildfires Are Outpacing<br>Our Ability to Respond</h2>
+      <p class="section-subtitle reveal">By the time we detect a wildfire, it's already too late. Current systems are reactive — they track fires after ignition. Communities need prediction, not just observation.</p>
+      <div class="crisis-grid">
+        <div class="crisis-card reveal">
+          <div class="crisis-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          </div>
+          <div class="crisis-stat">
+            <span class="counter" data-target="50" data-prefix="$" data-suffix="B+">$0</span>
+          </div>
+          <p class="crisis-desc">Annual U.S. wildfire damages — and climbing every year</p>
+        </div>
+        <div class="crisis-card reveal">
+          <div class="crisis-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="crisis-stat">
+            <span class="counter" data-target="1.76" data-suffix="B tons" data-decimals="2">0</span>
+          </div>
+          <p class="crisis-desc">CO&#8322; released by wildfires in 2021 alone</p>
+        </div>
+        <div class="crisis-card reveal">
+          <div class="crisis-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <div class="crisis-stat">
+            <span class="counter" data-target="100" data-suffix="M+" data-decimals="0">0</span>
+          </div>
+          <p class="crisis-desc">Americans exposed to wildfire smoke health impacts annually</p>
+        </div>
+      </div>
+      <div class="crisis-callout reveal">
+        <p>The problem isn't data scarcity — it's data fragmentation. Fire agencies, satellite feeds, weather stations, and sensor networks operate in silos. By the time information is correlated, the fire has spread.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: The Platform -->
+  <section class="section platform" id="platform">
+    <div class="container">
+      <div class="section-label reveal">The Solution</div>
+      <h2 class="section-title reveal">One Platform.<br>Three Capabilities.</h2>
+      <p class="section-subtitle reveal">ClimaIQ unifies 26 data sources into a single intelligence layer — transforming scattered signals into actionable foresight.</p>
+      <div class="platform-grid">
+        <div class="platform-card reveal">
+          <div class="card-glow"></div>
+          <div class="card-icon predict-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3 class="card-title">Predict</h3>
+          <p class="card-desc">7-day fire risk forecasts powered by ensemble ML — CNN, LSTM, Random Forest, and physics-informed models working together.</p>
+          <div class="card-metric">
+            <span class="metric-value">92%</span>
+            <span class="metric-label">forecast accuracy</span>
+          </div>
+        </div>
+        <div class="platform-card reveal">
+          <div class="card-glow"></div>
+          <div class="card-icon detect-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3 class="card-title">Detect</h3>
+          <p class="card-desc">Sub-30-second satellite fire detection using multi-spectral CNN analysis across 7 spectral channels simultaneously.</p>
+          <div class="card-metric">
+            <span class="metric-value">&lt;30s</span>
+            <span class="metric-label">detection latency</span>
+          </div>
+        </div>
+        <div class="platform-card reveal">
+          <div class="card-glow"></div>
+          <div class="card-icon respond-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h3 class="card-title">Respond</h3>
+          <p class="card-desc">Real-time unified command intelligence — every fire agency, sensor, and satellite feed in one operational dashboard.</p>
+          <div class="card-metric">
+            <span class="metric-value">43ms</span>
+            <span class="metric-label">alert delivery</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: AI Engine -->
+  <section class="section ai-engine" id="ai-engine">
+    <div class="container">
+      <div class="section-label reveal">Under the Hood</div>
+      <h2 class="section-title reveal">Ensemble AI Architecture</h2>
+      <p class="section-subtitle reveal">Four specialized models converge through a meta-learner — combining satellite imagery, temporal patterns, environmental features, and physics simulations.</p>
+      <div class="architecture-wrapper reveal">
+        <canvas id="architectureCanvas" class="architecture-canvas"></canvas>
+      </div>
+      <div class="ai-metrics reveal">
+        <div class="ai-metric">
+          <span class="ai-metric-value">92%</span>
+          <span class="ai-metric-label">Ensemble Accuracy</span>
+        </div>
+        <div class="ai-metric">
+          <span class="ai-metric-value">7-day</span>
+          <span class="ai-metric-label">Forecast Window</span>
+        </div>
+        <div class="ai-metric">
+          <span class="ai-metric-value">870ms</span>
+          <span class="ai-metric-label">Ingestion Latency</span>
+        </div>
+        <div class="ai-metric">
+          <span class="ai-metric-value">20+</span>
+          <span class="ai-metric-label">Engineered Features</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 5: By The Numbers -->
+  <section class="section metrics" id="metrics">
+    <div class="container">
+      <div class="section-label reveal">By The Numbers</div>
+      <h2 class="section-title reveal">Performance That Speaks</h2>
+      <div class="metrics-grid">
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="1.06" data-suffix="B" data-decimals="2">0</span>
+          <span class="metric-text">Records Processed</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="99.94" data-suffix="%" data-decimals="2">0</span>
+          <span class="metric-text">Platform Uptime</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="26" data-decimals="0">0</span>
+          <span class="metric-text">Data Connectors</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="870" data-suffix="ms" data-decimals="0">0</span>
+          <span class="metric-text">Avg Ingestion</span>
+          <span class="metric-sub">345x faster than legacy</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="37" data-suffix="%" data-decimals="0">0</span>
+          <span class="metric-text">Faster Containment</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="43" data-suffix="ms" data-decimals="0">0</span>
+          <span class="metric-text">Critical Alerts</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number counter" data-target="0.13" data-prefix="$" data-decimals="2">0</span>
+          <span class="metric-text">Per Detection</span>
+        </div>
+        <div class="metric-card reveal">
+          <span class="metric-number zero-vuln">0</span>
+          <span class="metric-text">Critical Vulnerabilities</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: Data Sources -->
+  <section class="section data-sources" id="data-sources">
+    <div class="container">
+      <div class="section-label reveal">Data Ecosystem</div>
+      <h2 class="section-title reveal">26 Sources. One Platform.</h2>
+      <p class="section-subtitle reveal">5 batch + 8 real-time + 13 streaming connectors — unified into a single intelligence layer.</p>
+      <div class="sources-visualization reveal">
+        <div class="sources-ring">
+          <div class="source-node" style="--angle: 0deg" data-label="NASA FIRMS">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 51deg" data-label="NOAA">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 102deg" data-label="Copernicus">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a16.2 16.2 0 014 10 16.2 16.2 0 01-4 10"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 153deg" data-label="USGS Landsat">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 204deg" data-label="EPA AirNow">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 19H9a7 7 0 110-14h.5"/><path d="M22 10a5 5 0 00-10 0 5 5 0 005 5h5a5 5 0 000-10z"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 255deg" data-label="IoT Sensors">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.12 19a7 7 0 0113.76 0"/><circle cx="12" cy="12" r="3"/><path d="M8.54 8.54a5 5 0 016.92 0"/><path d="M5.64 5.64a9 9 0 0112.72 0"/></svg>
+            </div>
+          </div>
+          <div class="source-node" style="--angle: 306deg" data-label="Historical DB">
+            <div class="node-inner">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            </div>
+          </div>
+          <!-- Center node -->
+          <div class="source-center">
+            <div class="center-pulse"></div>
+            <div class="center-inner">
+              <span class="logo-clima">C</span><span class="logo-iq">IQ</span>
+            </div>
+          </div>
+          <!-- Animated connection lines (CSS) -->
+          <svg class="connection-lines" viewBox="0 0 400 400">
+            <line class="conn-line" x1="200" y1="50" x2="200" y2="200"/>
+            <line class="conn-line" x1="343" y1="88" x2="200" y2="200"/>
+            <line class="conn-line" x1="350" y1="200" x2="200" y2="200"/>
+            <line class="conn-line" x1="300" y1="330" x2="200" y2="200"/>
+            <line class="conn-line" x1="200" y1="350" x2="200" y2="200"/>
+            <line class="conn-line" x1="80" y1="310" x2="200" y2="200"/>
+            <line class="conn-line" x1="57" y1="113" x2="200" y2="200"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 7: Validation & Impact -->
+  <section class="section validation" id="validation">
+    <div class="container">
+      <div class="section-label reveal">Proven Results</div>
+      <h2 class="section-title reveal">Validated. Quantified. Ready.</h2>
+      <div class="validation-badge reveal">
+        <div class="badge-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15l-2 5l9-13h-5l2-5l-9 13h5z"/></svg>
+        </div>
+        <div class="badge-content">
+          <span class="badge-title">CAL FIRE — 2025 Global Space-Based Data Challenge</span>
+          <span class="badge-subtitle">Winner — 88% validation score across all challenge categories</span>
+        </div>
+      </div>
+      <div class="impact-timeline reveal">
+        <h3 class="timeline-heading">Projected Impact at Scale</h3>
+        <div class="timeline-track">
+          <div class="timeline-node">
+            <div class="timeline-year">Year 5</div>
+            <div class="timeline-stats">
+              <div class="tl-stat">
+                <span class="tl-value">5–15M MT</span>
+                <span class="tl-label">CO&#8322; prevented</span>
+              </div>
+              <div class="tl-stat">
+                <span class="tl-value">25–40M</span>
+                <span class="tl-label">people protected</span>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-connector"></div>
+          <div class="timeline-node">
+            <div class="timeline-year">Year 10</div>
+            <div class="timeline-stats">
+              <div class="tl-stat">
+                <span class="tl-value">15–40M MT</span>
+                <span class="tl-label">CO&#8322; prevented</span>
+              </div>
+              <div class="tl-stat">
+                <span class="tl-value">100M+</span>
+                <span class="tl-label">people protected</span>
+              </div>
+            </div>
+          </div>
+          <div class="timeline-connector"></div>
+          <div class="timeline-node">
+            <div class="timeline-year">Year 20</div>
+            <div class="timeline-stats">
+              <div class="tl-stat">
+                <span class="tl-value">50–150M MT</span>
+                <span class="tl-label">CO&#8322; prevented (global)</span>
+              </div>
+              <div class="tl-stat">
+                <span class="tl-value">500M+</span>
+                <span class="tl-label">people protected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-quote reveal">
+        <p>"Every acre that doesn't burn is carbon that stays stored."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 8: vs. The Competition -->
+  <section class="section competition" id="competition">
+    <div class="container">
+      <div class="section-label reveal">Competitive Edge</div>
+      <h2 class="section-title reveal">Not Just Different.<br>A Different Category.</h2>
+      <div class="comparison-table reveal">
+        <div class="comp-header">
+          <div class="comp-cell comp-feature"></div>
+          <div class="comp-cell comp-us">ClimaIQ</div>
+          <div class="comp-cell comp-them">Technosylva / Legacy</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">Approach</div>
+          <div class="comp-cell comp-us highlight">Predictive (before ignition)</div>
+          <div class="comp-cell comp-them">Reactive (after ignition)</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">AI Model</div>
+          <div class="comp-cell comp-us highlight">ML Ensemble (4 models)</div>
+          <div class="comp-cell comp-them">Physics-only</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">Annual Cost</div>
+          <div class="comp-cell comp-us highlight">$75K / year</div>
+          <div class="comp-cell comp-them">$500K+ / year</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">Data Latency</div>
+          <div class="comp-cell comp-us highlight">870ms real-time</div>
+          <div class="comp-cell comp-them">Manual review</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">Data Sources</div>
+          <div class="comp-cell comp-us highlight">26 unified connectors</div>
+          <div class="comp-cell comp-them">Siloed / limited</div>
+        </div>
+        <div class="comp-row">
+          <div class="comp-cell comp-feature">Forecast Window</div>
+          <div class="comp-cell comp-us highlight">7-day prediction</div>
+          <div class="comp-cell comp-them">Current conditions only</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 9: Team / Founder -->
+  <section class="section team" id="team">
+    <div class="container">
+      <div class="section-label reveal">The Builder</div>
+      <h2 class="section-title reveal">Built by Someone Who<br>Understands the Science</h2>
+      <div class="founder-card reveal">
+        <div class="founder-avatar">
+          <div class="avatar-placeholder">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+        </div>
+        <div class="founder-info">
+          <h3 class="founder-name">Ahmad Khatib</h3>
+          <p class="founder-title">Founder & Lead Engineer</p>
+          <p class="founder-degree">Ph.D. Atmospheric Science — University of Utah</p>
+          <div class="founder-credentials">
+            <div class="credential">
+              <span class="cred-value">$1.14M</span>
+              <span class="cred-label">Research funding secured</span>
+            </div>
+            <div class="credential">
+              <span class="cred-value">2</span>
+              <span class="cred-label">First-author publications</span>
+            </div>
+            <div class="credential">
+              <span class="cred-value">88%</span>
+              <span class="cred-label">CAL FIRE validation score</span>
+            </div>
+          </div>
+          <p class="founder-bio">Domain expertise in atmospheric science meets full-stack engineering. Every line of code is informed by the physics of fire behavior, atmospheric dynamics, and the operational reality of emergency response.</p>
+          <div class="founder-collaborators">
+            <span class="collab-label">Collaborators:</span>
+            <span class="collab-name">Earth Fire Alliance</span>
+            <span class="collab-sep">&bull;</span>
+            <span class="collab-name">Google Research</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 10: Contact / CTA -->
+  <section class="section contact" id="contact">
+    <div id="particles-js-footer" class="particles-bg particles-footer"></div>
+    <div class="container contact-content">
+      <div class="section-label reveal">What's Next</div>
+      <h2 class="contact-headline reveal">The data vacuum is coming.<br><span class="headline-accent">We already built the replacement.</span></h2>
+      <p class="contact-sub reveal">MesoWest — the backbone of U.S. weather data — sunsets December 2026. ClimaIQ is ready to fill the gap with something far more powerful.</p>
+      <div class="contact-actions reveal">
+        <a href="mailto:ahmad@climaiq.tech" class="contact-btn primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          ahmad@climaiq.tech
+        </a>
+        <a href="https://climaiq.tech" class="contact-btn secondary">climaiq.tech</a>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="container">
+        <p>&copy; 2026 ClimaIQ. All rights reserved.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="js/particles-config.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/architecture.js"></script>
+</body>
+</html>

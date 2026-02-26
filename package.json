@@ -1,0 +1,9 @@
+{
+  "name": "climaiq-website",
+  "version": "1.0.0",
+  "description": "ClimaIQ — Wildfire Intelligence Platform",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "private": true
+}
