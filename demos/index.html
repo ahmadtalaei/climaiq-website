@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClimaIQ — Videos</title>
+  <meta name="description" content="Watch 12 videos showcasing the ClimaIQ wildfire intelligence platform — AI-powered prediction, real-time detection, and multi-stakeholder interfaces.">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 0 2rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .top-bar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .logo-flame {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-clima { color: #ffffff; }
+    .logo-iq { color: #ff6b35; }
+
+    .top-bar-title {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 400;
+      margin-left: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .top-bar-back {
+      color: rgba(255, 255, 255, 0.6);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .top-bar-back:hover { color: #ff6b35; }
+
+    /* Hero */
+    .hero {
+      padding: 8rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(255, 107, 53, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 0.5rem 1.25rem;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.25);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #ff6b35;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+      color: #ffffff;
+    }
+
+    .hero-subtitle {
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.55);
+      max-width: 640px;
+      margin: 0 auto 2rem;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat-value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ff6b35;
+    }
+
+    .hero-stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Sections */
+    .section {
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-tag {
+      display: inline-block;
+      padding: 0.35rem 0.9rem;
+      background: rgba(255, 107, 53, 0.08);
+      border: 1px solid rgba(255, 107, 53, 0.2);
+      border-radius: 100px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #ff6b35;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-desc {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.45);
+      max-width: 700px;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .video-grid.single {
+      grid-template-columns: 1fr;
+      max-width: 720px;
+    }
+
+    /* Video Card */
+    .video-card {
+      background: #16161f;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 107, 53, 0.2);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .video-wrapper {
+      position: relative;
+      background: #0d0d14;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16/9;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .video-info {
+      padding: 1.25rem;
+    }
+
+    .video-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .video-tag {
+      padding: 0.2rem 0.6rem;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid rgba(255, 107, 53, 0.2);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #ff6b35;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .video-duration {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.35);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .video-info h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+    }
+
+    .video-info p {
+      font-size: 0.825rem;
+      color: rgba(255, 255, 255, 0.45);
+      line-height: 1.6;
+    }
+
+    /* Divider */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.15), transparent);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: rgba(255, 255, 255, 0.25);
+      font-size: 0.8rem;
+    }
+
+    .footer a {
+      color: #ff6b35;
+      text-decoration: none;
+    }
+
+    .footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 7rem 1.25rem 2rem;
+      }
+
+      .section {
+        padding: 3rem 1.25rem;
+      }
+
+      .top-bar {
+        padding: 0 1rem;
+      }
+
+      .top-bar-title {
+        display: none;
+      }
+
+      .hero-stats {
+        gap: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .video-info h3 {
+        font-size: 0.9rem;
+      }
+
+      .video-info p {
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div style="display:flex;align-items:center;">
+      <a href="../index.html" class="top-bar-logo">
+        <svg class="logo-flame" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" fill="#ff6b35" opacity="0.9"/>
+          <path d="M16 10C16 10 12 15 12 19C12 21.2091 13.7909 23 16 23C18.2091 23 20 21.2091 20 19C20 15 16 10 16 10Z" fill="#ffA040" opacity="0.8"/>
+          <path d="M16 16C16 16 14 18.5 14 20C14 21.1046 14.8954 22 16 22C17.1046 22 18 21.1046 18 20C18 18.5 16 16 16 16Z" fill="#ffcc00" opacity="0.9"/>
+        </svg>
+        <span class="logo-text"><span class="logo-clima">Clima</span><span class="logo-iq">IQ</span></span>
+      </a>
+      <span class="top-bar-title">Videos</span>
+    </div>
+    <a href="../index.html" class="top-bar-back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to Site
+    </a>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge">Wilkes Climate Innovation Prize 2026 &mdash; Video Showcase</div>
+    <h1>See ClimaIQ in Action</h1>
+    <p class="hero-subtitle">12 videos showcasing the wildfire intelligence platform &mdash; from real-time satellite fire detection to AI-powered risk prediction, built to protect communities and accelerate climate resilience.</p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-value">12</span>
+        <span class="hero-stat-label">Videos</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">6+ hrs</span>
+        <span class="hero-stat-label">Total Footage</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">26</span>
+        <span class="hero-stat-label">Data Sources</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">92%</span>
+        <span class="hero-stat-label">AI Accuracy</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section A: Platform Overview -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section A</div>
+      <h2 class="section-title">Platform Overview</h2>
+      <p class="section-desc">End-to-end walkthrough of the ClimaIQ wildfire intelligence platform and its 9-service microservices architecture.</p>
+    </div>
+    <div class="video-grid single">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/01-wildfire-intelligence-platform.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Platform Overview</span>
+            <span class="video-duration">19:34</span>
+          </div>
+          <h3>Wildfire Intelligence Platform &mdash; Complete Walkthrough</h3>
+          <p>Full tour of the ClimaIQ 9-service microservices platform. Demonstrates the Data Ingestion Service (26 live connectors including NASA FIRMS, NOAA HRRR, EPA AirNow), Data Processing Service (real-time normalization and enrichment), Hybrid Data Storage (4-tier HOT/WARM/COLD/ARCHIVE with sub-100ms hot-tier queries), Streaming Service (Apache Kafka with 50K events/sec throughput), Query Service (intelligent query routing), Cache Layer (Redis with 94% hit rate), and the Ensemble AI Engine combining CNN satellite analysis, LSTM temporal prediction, Random Forest classification, and FireSat physics-informed models at 92% ensemble accuracy.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Section B: Climate Data Intelligence -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section B</div>
+      <h2 class="section-title">Climate Data Intelligence</h2>
+      <p class="section-desc">Self-service data exploration portal providing unified access to all wildfire data sources with ML analytics integration.</p>
+    </div>
+    <div class="video-grid single">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/02-climate-data-clearinghouse.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Data Intelligence</span>
+            <span class="video-duration">13:52</span>
+          </div>
+          <h3>Climate Data Clearinghouse &mdash; Enterprise Data Portal</h3>
+          <p>Walkthrough of the self-service data exploration portal providing unified access to all 26 wildfire data sources. Features visual query builder with geographic, temporal, and source-type filters; 45 REST API endpoints for programmatic access; and integrated AI/ML analytics including a Random Forest classifier for fire risk prediction, Gradient Boosting with physics-informed fire behavior modeling, and multi-objective optimization for resource deployment. Demonstrates ML-powered 72-hour risk forecasting, data export in multiple formats (CSV, GeoJSON, NetCDF), built-in data quality scoring, and a comprehensive security framework with role-based access control, API key management, and audit logging for NIST compliance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Section C: Stakeholder Interfaces -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section C</div>
+      <h2 class="section-title">Stakeholder Interfaces</h2>
+      <p class="section-desc">Role-based interfaces demonstrating multi-stakeholder value &mdash; from fire chiefs to data scientists to platform administrators.</p>
+    </div>
+    <div class="video-grid">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/03-incident-command-center.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Stakeholder Interface</span>
+            <span class="video-duration">3:33</span>
+          </div>
+          <h3>Incident Command Center &mdash; Fire Chief Interface</h3>
+          <p>Real-time command dashboard built for fire agency leadership. Interactive California wildfire map with live satellite fire detections (NASA FIRMS MODIS/VIIRS), current conditions panel showing temperature, humidity, and wind data from nearest weather stations, Fire Weather Index calculation, ML-powered fire risk assessments (low/medium/high/extreme) driven by the ensemble AI engine, resource deployment tracker, and incident management workflow. All data refreshes every 30 seconds for real-time situational awareness.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/04-ml-research-workbench.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Stakeholder Interface</span>
+            <span class="video-duration">2:07</span>
+          </div>
+          <h3>Data Scientist Workbench</h3>
+          <p>AI/ML development environment achieving 94.7% model accuracy across wildfire prediction tasks. Features a full ML pipeline with Random Forest, XGBoost, Neural Network, and SVM algorithms for fire risk prediction, trained on 2.3M samples with 47 active experiments. Includes Python-based model training with automated hyperparameter optimization (n_estimators=150, max_depth=12), Jupyter notebook environment for fire season pattern analysis and fire spread simulation, TensorBoard integration for training visualization, and Google Research FireBench for physics-informed fire behavior modeling. Provides access to 7 curated AI-ready datasets spanning 1970&ndash;2024 including MODIS/Landsat satellite imagery, NDVI vegetation health indices, live fuel moisture, and socioeconomic risk factors.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/05-risk-analytics-portal.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Stakeholder Interface</span>
+            <span class="video-duration">0:48</span>
+          </div>
+          <h3>Risk Analytics Portal &mdash; Data Analyst Interface</h3>
+          <p>Business intelligence portal for wildfire risk analysis with 94.2% AI prediction accuracy. Demonstrates access to 2.4M+ processed data points, predictive analytics and statistical analysis powered by the ensemble ML engine, customizable filters by region/time/risk-level, geospatial intelligence with interactive trend visualization, automated report generation with export capabilities, and cross-source correlation analysis for insurance risk assessment and utility infrastructure planning.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/06-platform-governance-console.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Stakeholder Interface</span>
+            <span class="video-duration">1:13</span>
+          </div>
+          <h3>Platform Governance Console &mdash; Admin Interface</h3>
+          <p>System administration and compliance dashboard. Shows management of 127 platform users across 5 roles, granular permission controls, real-time service health monitoring (99.7% uptime across 9 services), comprehensive audit logging for regulatory compliance, security policy configuration, and API usage tracking &mdash; demonstrating enterprise-grade platform governance.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Section D: Real-Time Monitoring -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section D</div>
+      <h2 class="section-title">Real-Time Monitoring</h2>
+      <p class="section-desc">Operational dashboards proving the platform processes live wildfire data at scale with sub-second latency.</p>
+    </div>
+    <div class="video-grid">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/07-realtime-fire-detection.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Monitoring</span>
+            <span class="video-duration">10:26</span>
+          </div>
+          <h3>Real-Time Satellite Fire Detection Engine</h3>
+          <p>Deep dive into the AI-driven fire detection pipeline. Shows live processing of satellite data from 5 NASA instruments (MODIS Terra/Aqua, VIIRS SNPP/NOAA-20/NOAA-21), intelligent spatial-temporal deduplication algorithm that consolidates overlapping detections into unique fire events, ML-based confidence scoring and filtering (80%+ threshold), geographic clustering algorithm, real-time fire activity map with time-series analysis, and metrics proving detection-to-dashboard latency under 30 seconds. Demonstrates how the system reduces raw satellite noise by 97% to surface only confirmed fire incidents.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/08-data-access-analytics.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Monitoring</span>
+            <span class="video-duration">7:07</span>
+          </div>
+          <h3>Self-Service Data Access Analytics</h3>
+          <p>Platform usage analytics showing how different stakeholders access wildfire data and AI model outputs. Tracks query patterns across 5 roles (fire chiefs, scientists, analysts, emergency managers, administrators), monitors sub-200ms average query response time, tracks ML model training workloads and data scientist experiment activity, identifies most-requested data sources and time periods, measures self-service adoption rates, and demonstrates the query routing optimization that maintains performance under concurrent multi-tenant load.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/09-ingestion-pipeline-monitoring.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Monitoring</span>
+            <span class="video-duration">6:39</span>
+          </div>
+          <h3>26-Source Ingestion Pipeline Monitor</h3>
+          <p>Live monitoring dashboard for the data ingestion infrastructure. Visualizes the real-time status of all 26 data source connectors, per-connector latency and throughput metrics, data fidelity scoring, automatic retry and failover handling, ingestion queue depth monitoring, and the validation pipeline that ensures data quality before storage &mdash; demonstrating the reliability needed for mission-critical wildfire operations.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/10-hybrid-storage-architecture.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Monitoring</span>
+            <span class="video-duration">10:07</span>
+          </div>
+          <h3>Hybrid Multi-Tier Storage Architecture</h3>
+          <p>Monitoring dashboard for the 4-tier storage system (HOT/WARM/COLD/ARCHIVE). Demonstrates sub-100ms query performance on the PostgreSQL hot tier, automatic lifecycle management that migrates aging data through tiers, 97.5% cost reduction from hot to archive storage, real-time capacity tracking and growth projections, cross-tier query federation, and the replication strategy ensuring zero data loss.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Section E: Technical Deep Dives -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section E</div>
+      <h2 class="section-title">Technical Deep Dives</h2>
+      <p class="section-desc">Comprehensive technical presentations covering the complete architecture and implementation of ClimaIQ's data ingestion and storage systems.</p>
+    </div>
+    <div class="video-grid">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/11-26-source-ingestion-deep-dive.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Technical Deep Dive</span>
+            <span class="video-duration">2:32:52</span>
+          </div>
+          <h3>26-Source Data Ingestion &mdash; Technical Deep Dive</h3>
+          <p>Complete technical presentation covering the architecture and implementation of all 26 data source connectors. Walks through each data source category (satellite/remote sensing, weather/atmospheric, ground-based sensors, geospatial/terrain, air quality, historical records), the connector framework design, data normalization pipeline, quality validation, error handling, and scalability considerations for national-scale wildfire intelligence operations.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="../videos/Trimmed/12-multi-tier-storage-deep-dive.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">Technical Deep Dive</span>
+            <span class="video-duration">2:09:04</span>
+          </div>
+          <h3>Multi-Tier Storage System &mdash; Technical Deep Dive</h3>
+          <p>Comprehensive technical presentation of the hybrid storage architecture. Covers the 4-tier design rationale, PostgreSQL (hot) to TimescaleDB (warm) to Parquet/S3 (cold) to Glacier (archive) pipeline, automatic lifecycle policies, cross-tier query optimization, disaster recovery with 3x replication, capacity planning models, and cost analysis showing 97.5% storage cost reduction &mdash; validated for climate data platforms requiring long-term retention and real-time access.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>&copy; 2026 <a href="../index.html">ClimaIQ</a>. All rights reserved. &mdash; Wildfire Intelligence Platform</p>
+  </div>
+
+  <script>
+    // Auto-pause other videos when one starts playing
+    document.addEventListener('DOMContentLoaded', function() {
+      const videos = document.querySelectorAll('video');
+      videos.forEach(function(video) {
+        video.addEventListener('play', function() {
+          videos.forEach(function(other) {
+            if (other !== video && !other.paused) {
+              other.pause();
+            }
+          });
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
