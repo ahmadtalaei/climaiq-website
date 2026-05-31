@@ -167,7 +167,7 @@
   <nav class="site-nav">
     <a href="/platform">Platform</a>
     <a href="/dashboard">Dashboards</a>
-    <a href="/map" class="active">Map</a>
+    <a href="/firemap" class="active">Fire Map</a>
     <a href="/videos">Demos</a>
   </nav>
 </header>
@@ -264,7 +264,7 @@ const drawControl = new L.Control.Draw({
 map.addControl(drawControl);
 
 // ─── State ──────────────────────────────────────────────────────────────
-let allFires = [];                 // loaded from /map/data/fires.json
+let allFires = [];                 // loaded from /firemap/data/fires.json
 const firesById = new Map();       // event_uuid → fire dict (for selected fires)
 const firesLayerById = new Map();  // event_uuid → Leaflet layer
 let chartMonth = null;
@@ -497,11 +497,11 @@ map.on(L.Draw.Event.CREATED, (e) => {
 // ─── Boot: load fixture, then restore bbox from URL if present ──────────
 (async function boot() {
   try {
-    const resp = await fetch('/map/data/fires.json');
+    const resp = await fetch('/firemap/data/fires.json');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const fixture = await resp.json();
     allFires = fixture.fires || [];
-    console.info(`Loaded ${allFires.length} fires (total ${fixture.total_acres?.toLocaleString()} acres) from /map/data/fires.json`);
+    console.info(`Loaded ${allFires.length} fires (total ${fixture.total_acres?.toLocaleString()} acres) from /firemap/data/fires.json`);
   } catch (e) {
     document.getElementById('fires-summary').innerHTML =
       `<div style="color: var(--accent)">Failed to load fire data: ${escapeHtml(e.message)}</div>`;
