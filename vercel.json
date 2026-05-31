@@ -6,9 +6,10 @@
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
     { "source": "/videos", "destination": "/videos/index.html" },
-    { "source": "/map", "destination": "/map/index.html" }
+    { "source": "/firemap", "destination": "/firemap/index.html" }
   ],
   "redirects": [
+    { "source": "/map", "destination": "/firemap" },
     { "source": "/fire-chief", "destination": "/platform/fire-chief" },
     { "source": "/architecture", "destination": "/platform/architecture" },
     { "source": "/architecture-live", "destination": "/platform/architecture-live" },
