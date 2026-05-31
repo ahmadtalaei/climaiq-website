@@ -5,7 +5,8 @@
   "rewrites": [
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
-    { "source": "/videos", "destination": "/videos/index.html" }
+    { "source": "/videos", "destination": "/videos/index.html" },
+    { "source": "/map", "destination": "/map/index.html" }
   ],
   "redirects": [
     { "source": "/fire-chief", "destination": "/platform/fire-chief" },

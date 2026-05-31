@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google Analytics (matches existing site convention) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KX4LBXLE5X"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KX4LBXLE5X');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historical Fires Explorer | ClimaIQ</title>
+  <meta name="description" content="Interactive map of California historical wildfire perimeters. Drag a bounding box to see fires, ignition causes, and seasonality patterns for any area.">
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+
+  <!-- Fonts (matches site convention) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Map + charts (same CDN versions used by fire-chief.html) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg:          #0a0a0a;
+      --bg-elev:     #161616;
+      --bg-card:     #1e1e1e;
+      --border:      #2a2a2a;
+      --text:        #e5e5e5;
+      --text-dim:    #999;
+      --text-muted:  #666;
+      --accent:      #ff6b6b;
+      --accent-2:    #feca57;
+      --success:     #4ade80;
+      --info:        #3388ff;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Header — matches the simple ClimaIQ brand bar pattern */
+    header.site-header {
+      background: var(--bg-elev);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+      font-weight: 700; font-size: 16px;
+      letter-spacing: -0.01em;
+    }
+    .brand-mark {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    nav.site-nav { display: flex; gap: 18px; font-size: 13px; }
+    nav.site-nav a {
+      color: var(--text-dim); text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    nav.site-nav a:hover { color: var(--text); }
+    nav.site-nav a.active { color: var(--accent-2); }
+
+    /* Main 2-pane layout under the header */
+    #app {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      height: calc(100vh - 56px);
+    }
+    @media (max-width: 900px) {
+      #app { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
+    }
+    #map { height: 100%; background: #111; }
+    #panel {
+      overflow-y: auto;
+      padding: 18px 20px;
+      background: var(--bg-elev);
+      border-left: 1px solid var(--border);
+    }
+    #panel h2 {
+      margin: 0 0 6px; font-size: 18px; font-weight: 700; color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+    #panel h3 {
+      margin: 18px 0 8px; font-size: 11px; color: var(--accent-2);
+      text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+    }
+    .pill {
+      display: inline-block; background: #262626; color: var(--text);
+      padding: 3px 9px; border-radius: 12px; font-size: 11px;
+      margin-right: 4px; margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+    .empty { color: var(--text-muted); font-size: 13px; padding: 20px 0; text-align: center; }
+    .bbox-hint {
+      background: #222; padding: 11px 13px; border-radius: 6px;
+      font-size: 12px; line-height: 1.5; color: var(--text-dim);
+      border-left: 3px solid var(--success);
+    }
+    .bbox-hint b { color: var(--success); font-weight: 600; }
+    .weather-disabled {
+      background: #1a1a1a; border: 1px dashed var(--border);
+      padding: 12px; border-radius: 6px;
+      font-size: 12px; color: var(--text-muted); line-height: 1.5;
+    }
+    .weather-disabled a { color: var(--accent-2); text-decoration: none; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td {
+      text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+    th {
+      color: var(--text-dim); font-weight: 600;
+      text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em;
+    }
+    tr.fire-row { cursor: pointer; transition: background 0.1s ease; }
+    tr.fire-row:hover { background: #262626; }
+    tr.fire-row.selected { background: #3a2a2a; }
+    .detail {
+      background: var(--bg); padding: 11px 13px; margin-top: 8px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: 12px;
+    }
+    .detail .row { display: flex; justify-content: space-between; padding: 3px 0; }
+    .detail .row .k { color: var(--text-muted); }
+    canvas {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; max-width: 100%;
+    }
+    .url-share {
+      color: var(--text-muted); font-size: 11px; margin-top: 6px;
+    }
+    .url-share b { color: var(--success); font-weight: 500; }
+    .demo-badge {
+      display: inline-block; background: #2a2a1a; color: var(--accent-2);
+      padding: 2px 8px; border-radius: 10px; font-size: 10px;
+      margin-left: 8px; font-weight: 500; letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="/" class="brand">
+    <span class="brand-mark">🔥</span>
+    <span>ClimaIQ</span>
+  </a>
+  <nav class="site-nav">
+    <a href="/platform">Platform</a>
+    <a href="/dashboard">Dashboards</a>
+    <a href="/map" class="active">Map</a>
+    <a href="/videos">Demos</a>
+  </nav>
+</header>
+
+<div id="app">
+  <div id="map"></div>
+  <div id="panel">
+    <h2>🔥 Historical Fires Explorer
+      <span class="demo-badge">DEMO</span>
+    </h2>
+    <div class="bbox-hint" style="margin-top: 8px;">
+      <b>Drag a rectangle</b> on the map to see California fires in that area.
+      Toolbar is in the top-left corner of the map.
+    </div>
+
+    <h3>📍 Selected area</h3>
+    <div id="bbox-info"><div class="empty">No area selected yet</div></div>
+
+    <h3>🌤 Current weather (bbox center)</h3>
+    <div id="weather-info">
+      <div class="weather-disabled">
+        Live weather requires the production backend.
+        This static demo focuses on historical fire perimeters; the full
+        platform queries NOAA NWS for current conditions.
+        <br><br>
+        See the <a href="/platform">full platform</a> for the live pipeline.
+      </div>
+    </div>
+
+    <h3>🔥 Fires in selection</h3>
+    <div id="fires-summary"><div class="empty">Draw a bbox first</div></div>
+    <div id="fires-table-wrap"></div>
+
+    <h3>📅 Fires by month</h3>
+    <canvas id="chart-month" width="380" height="160"></canvas>
+
+    <h3>🪵 Fires by cause</h3>
+    <canvas id="chart-cause" width="380" height="160"></canvas>
+
+    <h3>🔍 Selected fire details</h3>
+    <div id="fire-detail"><div class="empty">Click a fire row above</div></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ─── FRAP CAUSE code → human-readable label ─────────────────────────────
+// Source: CAL FIRE FRAP metadata domain table for the CAUSE column.
+// Single source of truth — update here and the table + chart + detail
+// panel pick it up automatically.
+const FRAP_CAUSE_LABELS = {
+  '1':  'Lightning',
+  '2':  'Equipment Use',
+  '3':  'Smoking',
+  '4':  'Campfire',
+  '5':  'Debris Burning',
+  '6':  'Railroad',
+  '7':  'Arson',
+  '8':  'Playing with Fire',
+  '9':  'Miscellaneous',
+  '10': 'Vehicle',
+  '11': 'Powerline',
+  '12': 'Firefighter Training',
+  '13': 'Non-Firefighter Training',
+  '14': 'Unknown / Unidentified',
+  '15': 'Structure',
+  '16': 'Aircraft',
+  '17': 'Volcanic',
+  '18': 'Escaped Prescribed Burn',
+  '19': 'Border-Crossing Campfire',
+};
+function labelCause(code) {
+  if (code == null || code === '') return 'Unknown';
+  return FRAP_CAUSE_LABELS[String(code)] || String(code);
+}
+
+// ─── Map setup ──────────────────────────────────────────────────────────
+const map = L.map('map').setView([37.5, -119.5], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap',
+  maxZoom: 18,
+}).addTo(map);
+const drawnItems = new L.FeatureGroup().addTo(map);
+const firesLayer = new L.FeatureGroup().addTo(map);
+const drawControl = new L.Control.Draw({
+  draw: {
+    polygon: false, polyline: false, circle: false,
+    marker: false, circlemarker: false,
+    rectangle: { showArea: false, shapeOptions: { color: '#3388ff', weight: 2 } },
+  },
+  edit: { featureGroup: drawnItems, edit: false, remove: false },
+});
+map.addControl(drawControl);
+
+// ─── State ──────────────────────────────────────────────────────────────
+let allFires = [];                 // loaded from /map/data/fires.json
+const firesById = new Map();       // event_uuid → fire dict (for selected fires)
+const firesLayerById = new Map();  // event_uuid → Leaflet layer
+let chartMonth = null;
+let chartCause = null;
+
+// ─── Helpers ────────────────────────────────────────────────────────────
+function fmtAcres(a) { return a == null ? '—' : Math.round(a).toLocaleString(); }
+function fmtDate(s)  { return s ? s.slice(0, 10) : '—'; }
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function colorForYear(year) {
+  if (!year) return '#888';
+  if (year < 1980) return '#5a1a1a';
+  if (year < 2000) return '#8b2c2c';
+  if (year < 2015) return '#c43a3a';
+  if (year < 2020) return '#e74c3c';
+  return '#ff6b6b';
+}
+// Bbox-vs-geometry intersection — client-side filter replacing the
+// PostGIS ST_Intersects call. Uses Leaflet's L.geoJSON to build a layer,
+// reads its bounds, tests intersection with the bbox. Fast for ~100 fires.
+function fireIntersectsBbox(fire, bbox) {
+  if (!fire.geometry) return false;
+  const layer = L.geoJSON(fire.geometry);
+  const b = layer.getBounds();
+  const bboxLL = L.latLngBounds(
+    L.latLng(bbox.lat_min, bbox.lon_min),
+    L.latLng(bbox.lat_max, bbox.lon_max),
+  );
+  return b.intersects(bboxLL);
+}
+
+// ─── URL persistence ────────────────────────────────────────────────────
+// Bbox format: ?bbox=lon_min,lat_min,lon_max,lat_max
+// Standard GIS convention (WMS / WFS BBOX, OSM, Mapbox).
+const BBOX_URL_KEY = 'bbox';
+function writeURLBbox(bbox) {
+  const params = new URLSearchParams(window.location.search);
+  const fmt = (n) => Number(n.toFixed(5)).toString();
+  params.set(BBOX_URL_KEY,
+    [bbox.lon_min, bbox.lat_min, bbox.lon_max, bbox.lat_max].map(fmt).join(','));
+  history.replaceState({}, '', '?' + params.toString());
+}
+function parseURLBbox() {
+  const raw = new URLSearchParams(window.location.search).get(BBOX_URL_KEY);
+  if (!raw) return null;
+  const parts = raw.split(',').map(s => parseFloat(s.trim()));
+  if (parts.length !== 4 || parts.some(n => !Number.isFinite(n))) return null;
+  const [lon_min, lat_min, lon_max, lat_max] = parts;
+  if (lat_min >= lat_max || lon_min >= lon_max) return null;
+  if (Math.abs(lat_min) > 90 || Math.abs(lat_max) > 90) return null;
+  if (Math.abs(lon_min) > 180 || Math.abs(lon_max) > 180) return null;
+  return { lat_min, lat_max, lon_min, lon_max };
+}
+
+// ─── Bbox-load workflow (shared by draw + URL restore) ──────────────────
+function loadBbox(bbox) {
+  drawnItems.clearLayers();
+  firesLayer.clearLayers();
+  firesById.clear();
+  firesLayerById.clear();
+
+  // Draw the bbox rectangle.
+  const bounds = L.latLngBounds(
+    L.latLng(bbox.lat_min, bbox.lon_min),
+    L.latLng(bbox.lat_max, bbox.lon_max),
+  );
+  drawnItems.addLayer(L.rectangle(bounds, { color: '#3388ff', weight: 2, fillOpacity: 0.05 }));
+
+  writeURLBbox(bbox);
+
+  document.getElementById('bbox-info').innerHTML =
+    `<div><span class="pill">lat ${bbox.lat_min.toFixed(3)} → ${bbox.lat_max.toFixed(3)}</span>` +
+    `<span class="pill">lon ${bbox.lon_min.toFixed(3)} → ${bbox.lon_max.toFixed(3)}</span></div>` +
+    `<div class="url-share">📎 <b>URL contains selection</b> — bookmark or share this page to restore.</div>`;
+
+  // Client-side filter — replaces the server-side ST_Intersects query.
+  // For ~100-500 fires this is sub-100ms; for production scale (22k FRAP
+  // records) the live API path is the right choice.
+  const matched = allFires.filter(f => fireIntersectsBbox(f, bbox));
+  renderFires(matched);
+}
+
+// ─── Rendering ──────────────────────────────────────────────────────────
+function renderFires(fires) {
+  const totalAcres = fires.reduce((sum, f) => sum + (f.acres || 0), 0);
+  document.getElementById('fires-summary').innerHTML =
+    `<div><b style="color: var(--success)">${fires.length}</b> fire${fires.length === 1 ? '' : 's'} · ` +
+    `<b style="color: var(--accent-2)">${fmtAcres(totalAcres)}</b> total acres</div>`;
+
+  for (const f of fires) {
+    firesById.set(f.event_uuid, f);
+    if (!f.geometry) continue;
+    const layer = L.geoJSON(f.geometry, {
+      style: { color: colorForYear(f.year), weight: 1, fillOpacity: 0.25 },
+    });
+    layer.bindTooltip(`${f.name} (${f.year}) — ${fmtAcres(f.acres)} ac`);
+    layer.on('click', () => selectFire(f.event_uuid));
+    firesLayer.addLayer(layer);
+    firesLayerById.set(f.event_uuid, layer);
+  }
+
+  if (fires.length === 0) {
+    document.getElementById('fires-table-wrap').innerHTML =
+      '<div class="empty">No fires in this bbox</div>';
+  } else {
+    const sortedFires = [...fires].sort((a, b) => (b.acres || 0) - (a.acres || 0));
+    let html = '<table><thead><tr>' +
+      '<th>Name</th><th>Year</th><th>Acres</th><th>Cause</th>' +
+      '</tr></thead><tbody>';
+    for (const f of sortedFires) {
+      const causeText = labelCause(f.cause);
+      html += `<tr class="fire-row" data-id="${escapeHtml(f.event_uuid)}">` +
+        `<td>${escapeHtml(f.name)}</td>` +
+        `<td>${escapeHtml(f.year)}</td>` +
+        `<td>${fmtAcres(f.acres)}</td>` +
+        `<td>${escapeHtml(causeText)}</td></tr>`;
+    }
+    html += '</tbody></table>';
+    document.getElementById('fires-table-wrap').innerHTML = html;
+    document.querySelectorAll('tr.fire-row').forEach(row => {
+      row.addEventListener('click', () => selectFire(row.dataset.id));
+    });
+  }
+
+  renderCharts(fires);
+  document.getElementById('fire-detail').innerHTML =
+    '<div class="empty">Click a fire row above</div>';
+}
+
+function renderCharts(fires) {
+  // fires_by_month — bucket alarm_date months 1-12.
+  const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthData = new Array(12).fill(0);
+  for (const f of fires) {
+    if (!f.alarm_date) continue;
+    // alarm_date is ISO string from the JSON snapshot.
+    const m = new Date(f.alarm_date).getUTCMonth();  // 0-11
+    if (Number.isFinite(m)) monthData[m] += 1;
+  }
+  if (chartMonth) chartMonth.destroy();
+  chartMonth = new Chart(document.getElementById('chart-month'), {
+    type: 'bar',
+    data: { labels: monthLabels, datasets: [{ data: monthData, backgroundColor: '#ff6b6b' }] },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#999' }, grid: { color: '#2a2a2a' } },
+        y: { ticks: { color: '#999' }, grid: { color: '#2a2a2a' }, beginAtZero: true },
+      },
+    },
+  });
+
+  // fires_by_cause — Counter over the raw codes, then label + sort.
+  const causeCount = new Map();
+  for (const f of fires) {
+    const k = f.cause == null ? 'Unknown' : String(f.cause);
+    causeCount.set(k, (causeCount.get(k) || 0) + 1);
+  }
+  const labeled = [...causeCount.entries()]
+    .map(([code, count]) => ({ code, label: labelCause(code), count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+
+  if (chartCause) chartCause.destroy();
+  chartCause = new Chart(document.getElementById('chart-cause'), {
+    type: 'bar',
+    data: {
+      labels: labeled.map(c => c.label),
+      datasets: [{ data: labeled.map(c => c.count), backgroundColor: '#feca57' }],
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            afterLabel: (ctx) => 'FRAP code: ' + labeled[ctx.dataIndex].code,
+          },
+        },
+      },
+      scales: {
+        x: { ticks: { color: '#999' }, grid: { color: '#2a2a2a' }, beginAtZero: true },
+        y: { ticks: { color: '#999' }, grid: { color: '#2a2a2a' } },
+      },
+    },
+  });
+}
+
+function selectFire(eventUuid) {
+  const f = firesById.get(eventUuid);
+  if (!f) return;
+  document.querySelectorAll('tr.fire-row').forEach(r => r.classList.remove('selected'));
+  const row = document.querySelector(`tr.fire-row[data-id="${eventUuid}"]`);
+  if (row) {
+    row.classList.add('selected');
+    row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+  const layer = firesLayerById.get(eventUuid);
+  if (layer) map.fitBounds(layer.getBounds(), { padding: [40, 40], maxZoom: 12 });
+  const causeLabel = labelCause(f.cause);
+  const causeAnnotation = (f.cause != null && f.cause !== '')
+    ? ` <span style="color: var(--text-muted); font-size: 10px;">(FRAP ${escapeHtml(f.cause)})</span>`
+    : '';
+  document.getElementById('fire-detail').innerHTML = `
+    <div class="detail">
+      <div class="row"><span class="k">name</span><span><b>${escapeHtml(f.name)}</b></span></div>
+      <div class="row"><span class="k">year</span><span>${escapeHtml(f.year)}</span></div>
+      <div class="row"><span class="k">acres</span><span>${fmtAcres(f.acres)}</span></div>
+      <div class="row"><span class="k">cause</span><span>${escapeHtml(causeLabel)}${causeAnnotation}</span></div>
+      <div class="row"><span class="k">alarm_date</span><span>${fmtDate(f.alarm_date)}</span></div>
+      <div class="row"><span class="k">contained_date</span><span>${fmtDate(f.contained_date)}</span></div>
+      <div class="row"><span class="k">unit_id</span><span>${escapeHtml(f.unit_id || '—')}</span></div>
+      <div class="row"><span class="k">agency</span><span>${escapeHtml(f.agency || '—')}</span></div>
+      <div class="row"><span class="k">event_uuid</span><span style="font-size: 10px;">${escapeHtml(f.event_uuid)}</span></div>
+    </div>`;
+}
+
+// ─── Draw handler ───────────────────────────────────────────────────────
+map.on(L.Draw.Event.CREATED, (e) => {
+  const b = e.layer.getBounds();
+  loadBbox({
+    lat_min: b.getSouth(), lat_max: b.getNorth(),
+    lon_min: b.getWest(),  lon_max: b.getEast(),
+  });
+});
+
+// ─── Boot: load fixture, then restore bbox from URL if present ──────────
+(async function boot() {
+  try {
+    const resp = await fetch('/map/data/fires.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const fixture = await resp.json();
+    allFires = fixture.fires || [];
+    console.info(`Loaded ${allFires.length} fires (total ${fixture.total_acres?.toLocaleString()} acres) from /map/data/fires.json`);
+  } catch (e) {
+    document.getElementById('fires-summary').innerHTML =
+      `<div style="color: var(--accent)">Failed to load fire data: ${escapeHtml(e.message)}</div>`;
+    return;
+  }
+
+  // If URL came in with ?bbox=..., auto-restore the selection.
+  const urlBbox = parseURLBbox();
+  if (urlBbox) {
+    const bounds = L.latLngBounds(
+      L.latLng(urlBbox.lat_min, urlBbox.lon_min),
+      L.latLng(urlBbox.lat_max, urlBbox.lon_max),
+    );
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12 });
+    loadBbox(urlBbox);
+  }
+})();
+</script>
+
+</body>
+</html>
