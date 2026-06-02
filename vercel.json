@@ -6,7 +6,8 @@
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
     { "source": "/videos", "destination": "/videos/index.html" },
-    { "source": "/firemap", "destination": "/firemap/index.html" }
+    { "source": "/firemap", "destination": "/firemap/index.html" },
+    { "source": "/api/terrain/sample", "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch" }
   ],
   "redirects": [
     { "source": "/map", "destination": "/firemap" },
