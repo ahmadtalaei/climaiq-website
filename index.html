@@ -25,6 +25,22 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* "Interactive Maps" dropdown (Fire Explorer + Evacuation Planner) */
+    .nav-dd { position: relative; }
+    .nav-dd > a { cursor: pointer; }
+    .nav-dd .nav-dd-menu {
+      display: none; position: absolute; top: 100%; left: 0; min-width: 250px;
+      background: #14181f; border: 1px solid #2a3340; border-radius: 8px;
+      padding: 6px; margin: 6px 0 0; list-style: none; z-index: 1000;
+      box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    }
+    .nav-dd:hover .nav-dd-menu, .nav-dd:focus-within .nav-dd-menu { display: block; }
+    .nav-dd-menu li { display: block; }
+    .nav-dd-menu li a { display: block; padding: 9px 12px; border-radius: 6px; white-space: nowrap; }
+    .nav-dd-menu li a:hover { background: #1f2937; }
+    .nav-dd-menu .dd-sub { display: block; font-size: 11px; color: #8aa0b5; margin-top: 2px; font-weight: 400; }
+  </style>
 </head>
 <body>
 
@@ -42,7 +58,18 @@
         <li><a href="#platform">Platform</a></li>
         <li><a href="#platform-apps">Portals</a></li>
         <li><a href="#dashboards">Dashboards</a></li>
-        <li><a href="firemap/index.html">Fire Map</a></li>
+        <li class="nav-dd">
+          <a href="firemap/index.html" aria-haspopup="true">Interactive Maps ▾</a>
+          <ul class="nav-dd-menu">
+            <li><a href="/firemap">🔥 Fire Explorer<span class="dd-sub">Historical &amp; active fire map</span></a></li>
+            <!-- Evacuation Planner is a LIVE backend app (not a static page like /firemap).
+                 For production on climaiq.tech, expose data-clearing-house (port 8006) via a
+                 Cloudflare tunnel and add a vercel.json rewrite (see /api/terrain/sample for the
+                 pattern), then change this href to "/evacuation-planner". For local demos it
+                 points straight at the running service. -->
+            <li><a href="http://localhost:8006/infrastructure-explorer?bbox=-121.72,39.77,-121.55,39.85">🧭 Evacuation Planner<span class="dd-sub">Infrastructure impact + refuge / escape-route planning</span></a></li>
+          </ul>
+        </li>
         <li><a href="#metrics">Metrics</a></li>
         <li><a href="#validation">Validation</a></li>
         <li><a href="videos/index.html">Videos</a></li>
