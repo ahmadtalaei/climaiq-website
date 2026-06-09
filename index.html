@@ -62,12 +62,11 @@
           <a href="firemap/index.html" aria-haspopup="true">Interactive Maps ▾</a>
           <ul class="nav-dd-menu">
             <li><a href="/firemap">🔥 Fire Explorer<span class="dd-sub">Historical &amp; active fire map</span></a></li>
-            <!-- Evacuation Planner is a LIVE backend app (not a static page like /firemap).
-                 For production on climaiq.tech, expose data-clearing-house (port 8006) via a
-                 Cloudflare tunnel and add a vercel.json rewrite (see /api/terrain/sample for the
-                 pattern), then change this href to "/evacuation-planner". For local demos it
-                 points straight at the running service. -->
-            <li><a href="http://localhost:8006/infrastructure-explorer?bbox=-121.72,39.77,-121.55,39.85">🧭 Evacuation Planner<span class="dd-sub">Infrastructure impact + refuge / escape-route planning</span></a></li>
+            <!-- Static snapshot of the live explorer (PARK-fire demo bbox), bundled
+                 the same way as /firemap: website/evacuation-planner/ + data/snapshot.json.
+                 Regenerate with scripts/export_evac_snapshot.py. The full interactive
+                 tool (any bbox, live data) needs the backend behind a tunnel. -->
+            <li><a href="/evacuation-planner">🧭 Evacuation Planner<span class="dd-sub">Infrastructure impact + refuge / escape-route planning</span></a></li>
           </ul>
         </li>
         <li><a href="#metrics">Metrics</a></li>

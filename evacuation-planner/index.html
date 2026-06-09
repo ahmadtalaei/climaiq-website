@@ -1,0 +1,1772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>
+(function(){
+  var realFetch = window.fetch.bind(window);
+  var xhr = new XMLHttpRequest(); xhr.open('GET', '/evacuation-planner/data/snapshot.json', false); xhr.send();
+  var SNAP = JSON.parse(xhr.responseText); window.__SNAPSHOT__ = SNAP;
+  if (location.search.indexOf('bbox=') === -1) {
+    var bb = SNAP.bbox;
+    history.replaceState({}, '', location.pathname + '?bbox=' + [bb.lon_min,bb.lat_min,bb.lon_max,bb.lat_max].join(','));
+  }
+  function near(a,b){ return Math.abs(a-b) < 0.02; }
+  function findRoute(coords){
+    var p = coords.split(';'); if(p.length<2) return null;
+    var f = p[0].split(',').map(Number), t = p[1].split(',').map(Number); // lon,lat
+    for (var i=0;i<SNAP.routes.length;i++){ var r = SNAP.routes[i];
+      if (near(r.from[1],f[0]) && near(r.from[0],f[1]) && near(r.to[1],t[0]) && near(r.to[0],t[1])) return r; }
+    return null;
+  }
+  window.fetch = function(url, opts){
+    if (typeof url === 'string' && url.indexOf('/api/infrastructure/') !== -1) {
+      var body;
+      if (url.indexOf('/by-bbox') !== -1) body = SNAP.by_bbox;
+      else if (url.indexOf('/evac-plan') !== -1) body = SNAP.evac_plan;
+      else if (url.indexOf('/route') !== -1) {
+        var m = url.match(/coords=([^&]+)/);
+        var rr = m ? findRoute(decodeURIComponent(m[1])) : null;
+        body = rr ? {route: rr.route, distance_km: rr.distance_km, duration_min: rr.duration_min} : {route: null};
+      }
+      if (body !== undefined) return Promise.resolve(new Response(JSON.stringify(body), {status:200, headers:{'Content-Type':'application/json'}}));
+    }
+    return realFetch(url, opts);
+  };
+})();
+</script>
+
+  <meta charset="utf-8" />
+  <title>Infrastructure Bbox Explorer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; font-family: system-ui, -apple-system, sans-serif; background: #1a1a1a; color: #e0e0e0; }
+    #app { display: grid; grid-template-columns: 1fr 480px; height: 100vh; }
+    #map { height: 100%; }
+    /* Kill the browser focus outline on clicked SVG vectors — otherwise clicking
+       a path (e.g. a long N–S highway) draws a black bounding-box rectangle. */
+    .leaflet-interactive, .leaflet-container svg, .leaflet-container path,
+    .leaflet-interactive:focus, .leaflet-interactive:focus-visible,
+    .leaflet-container svg:focus, .leaflet-container path:focus,
+    .leaflet-container path:focus-visible, .leaflet-container *:focus { outline: none !important; }
+    #panel { overflow-y: auto; padding: 16px; background: #222; border-left: 1px solid #333; }
+    #panel h2 { margin: 0 0 4px; font-size: 16px; color: #48dbfb; }
+    #panel h3 { margin: 16px 0 6px; font-size: 12px; color: #feca57; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pill { display: inline-block; background: #333; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-right: 4px; }
+    .empty { color: #666; font-size: 13px; padding: 16px 0; text-align: center; }
+    .bbox-hint { background: #2a2a2a; padding: 10px; border-radius: 4px; font-size: 12px; line-height: 1.4; }
+    .bbox-hint b { color: #4ade80; }
+    .links { font-size: 12px; margin-top: 8px; }
+    .links a { color: #48dbfb; text-decoration: none; }
+    .links a:hover { text-decoration: underline; }
+    .loading { color: #feca57; font-size: 12px; padding: 8px 0; }
+    .error { color: #ff6b6b; font-size: 12px; padding: 8px 0; }
+
+    /* Incident-summary count tiles */
+    .tiles { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; margin: 6px 0; }
+    .tile {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px;
+      padding: 6px 8px; text-align: center;
+    }
+    .tile .num   { font-size: 18px; font-weight: 700; line-height: 1.1; }
+    .tile .label { font-size: 9.5px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tile.total      .num { color: #48dbfb; }
+    .tile.scored     .num { color: #4ade80; }
+    .tile.fire       .num { color: #ff6b6b; }
+    .tile.smoke      .num { color: #feca57; }
+    .tile.psps       .num { color: #f9ca24; }
+    .tile.closure    .num { color: #f0932b; }
+    .tile.unreach    .num { color: #ee5253; }
+    .tile.incident   .num { color: #e74c3c; }
+
+    /* Layer-control panel */
+    .layer-ctrl { display: flex; flex-direction: column; gap: 4px; font-size: 12px; }
+    .layer-ctrl label {
+      display: flex; align-items: center; gap: 6px; cursor: pointer;
+      padding: 3px 6px; border-radius: 3px;
+    }
+    .layer-ctrl label:hover { background: #2a2a2a; }
+    .layer-ctrl input { margin: 0; }
+    .layer-ctrl .legend-dot {
+      width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+      border: 1px solid #444;
+    }
+    .color-mode { font-size: 11px; margin-top: 6px; display: flex; gap: 6px; align-items: center; }
+    .color-mode select { background: #1a1a1a; color: #e0e0e0; border: 1px solid #444; padding: 2px 4px; }
+
+    /* Priority ranking table */
+    .priority-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .priority-table th, .priority-table td { padding: 4px 6px; border-bottom: 1px solid #2a2a2a; }
+    .priority-table th { color: #888; font-weight: 600; text-align: left; }
+    .priority-table tr { cursor: pointer; }
+    .priority-table tr:hover { background: #2a2a2a; }
+    .priority-table tr.selected { background: #1e3a4a; }
+    .priority-table .rank { color: #feca57; font-weight: 700; width: 22px; }
+    .priority-table .score { color: #4ade80; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+    .priority-table .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+    /* Filter chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 0; }
+    .chip {
+      cursor: pointer; padding: 3px 8px; border-radius: 12px;
+      font-size: 11px; background: #2a2a2a; border: 1px solid #333;
+      display: inline-flex; align-items: center; gap: 6px; user-select: none;
+    }
+    .chip .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .chip.off { opacity: 0.35; text-decoration: line-through; }
+    .chip:hover { background: #333; }
+
+    /* Provider badges (reused in detail panel + table) */
+    .provider-pill {
+      display: inline-block; padding: 1px 6px; border-radius: 8px;
+      font-size: 10px; text-transform: uppercase; color: #1a1a1a; font-weight: 700;
+    }
+    .provider-osm    { background: #4ade80; }
+    .provider-hifld  { background: #feca57; }
+    .provider-usgs   { background: #48dbfb; }
+    .provider-tiger  { background: #f0932b; }
+    .provider-fema   { background: #ee5253; }
+    .provider-nifc   { background: #e74c3c; color: white; }
+
+    /* Modifier visualization (asset detail panel) */
+    .mod-block {
+      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 4px;
+      padding: 10px; margin: 6px 0;
+    }
+    .mod-block .title { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+    .mod-formula { font-family: ui-monospace, monospace; font-size: 11px; color: #48dbfb; background: #0e1a23; padding: 6px 8px; border-radius: 3px; margin: 4px 0; word-break: break-all; }
+    .mod-equation { font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.8; }
+    .mod-equation .label { color: #888; display: inline-block; width: 130px; }
+    .mod-equation .val { color: #e0e0e0; font-weight: 700; }
+    .mod-equation .op  { color: #888; }
+    .mod-equation .final { color: #4ade80; border-top: 1px solid #444; padding-top: 4px; margin-top: 4px; font-size: 14px; }
+    .mod-bar-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 2px 0; }
+    .mod-bar-row .k { width: 90px; color: #888; font-family: ui-monospace, monospace; }
+    .mod-bar-row .v { width: 50px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .mod-bar-row .bar { flex: 1; height: 8px; background: #2a2a2a; border-radius: 4px; overflow: hidden; position: relative; }
+    .mod-bar-row .bar-fill { height: 100%; position: absolute; left: 50%; }
+    .mod-bar-row .bar-tick { position: absolute; top: 0; bottom: 0; width: 1px; left: 50%; background: #555; }
+
+    /* Variant + state badges */
+    .badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+    .badge-on     { background: #4ade80; color: #1a1a1a; }
+    .badge-off    { background: #2a2a2a; color: #888; border: 1px solid #444; }
+    .badge-warn   { background: #feca57; color: #1a1a1a; }
+    .badge-alert  { background: #ee5253; color: white; }
+    .badge-info   { background: #48dbfb; color: #1a1a1a; }
+
+    /* Generic key/value rows */
+    .kv { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; gap: 8px; border-bottom: 1px dashed #2a2a2a; }
+    .kv:last-child { border-bottom: none; }
+    .kv .k { color: #888; flex: 0 0 130px; }
+    .kv .v { word-break: break-all; text-align: right; flex: 1; }
+
+    /* Asset table */
+    .asset-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .asset-table th, .asset-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #2a2a2a; }
+    .asset-table th { color: #888; font-weight: 600; cursor: pointer; user-select: none; }
+    .asset-table th.sort-asc::after  { content: ' ▲'; color: #4ade80; }
+    .asset-table th.sort-desc::after { content: ' ▼'; color: #4ade80; }
+    .asset-table tr.asset-row { cursor: pointer; }
+    .asset-table tr.asset-row:hover { background: #2a2a2a; }
+    .asset-table tr.asset-row.selected { background: #1e3a4a; }
+    .type-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+    /* Collapsible <details> for the big tables */
+    details summary { cursor: pointer; color: #feca57; text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; padding: 4px 0; }
+    details[open] summary { margin-bottom: 6px; }
+    .truncated { color: #feca57; font-size: 11px; padding: 4px 0; }
+
+    /* Score histogram (click-to-filter) */
+    .histo { display: flex; align-items: flex-end; gap: 3px; height: 70px; padding: 2px 0; }
+    .histo-bar { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; cursor: pointer; }
+    .histo-bar:hover .histo-fill { background: #6cd3ff; }
+    .histo-bar.active .histo-fill { background: #4ade80; }
+    .histo-fill { width: 100%; background: #48dbfb; border-radius: 2px 2px 0 0; min-height: 2px; }
+    .histo-n { font-size: 9px; color: #888; margin-top: 1px; }
+    .histo-axis { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-top: 2px; }
+    .histo-clear { color: #feca57; cursor: pointer; }
+    .histo-clear:hover { text-decoration: underline; }
+
+    /* Top-10 rank-mode toggle */
+    .rank-toggle { display: inline-flex; margin-bottom: 6px; font-size: 11px; }
+    .rank-toggle button { background: #1a1a1a; color: #888; border: 1px solid #333; padding: 3px 8px; cursor: pointer; }
+    .rank-toggle button:first-child { border-radius: 3px 0 0 3px; }
+    .rank-toggle button:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+    .rank-toggle button.on { background: #1e3a4a; color: #48dbfb; border-color: #48dbfb; }
+    .legend-dot.wind { background: #b06be8; }
+
+    /* 🔥 Fire Response Brief */
+    .brief-head { background:#2a1818; border-left:3px solid #e74c3c; border-radius:4px; padding:8px 10px; margin-bottom:8px; }
+    .brief-fire { font-weight:700; color:#ff6b6b; font-size:14px; }
+    .brief-sub { font-size:11px; color:#aaa; margin-top:2px; }
+    .brief-group { margin:8px 0; }
+    .brief-glabel { font-size:11px; color:#feca57; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:2px; }
+    .brief-row { display:flex; align-items:center; gap:6px; padding:3px 4px; border-radius:3px; cursor:pointer; font-size:12px; }
+    .brief-row:hover { background:#2a2a2a; }
+    .brief-rank { width:15px; color:#feca57; font-weight:700; text-align:center; flex:0 0 15px; }
+    .brief-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .brief-meta { font-size:10px; color:#9aa; white-space:nowrap; }
+    .brief-score { width:38px; text-align:right; color:#4ade80; font-weight:700; font-variant-numeric:tabular-nums; flex:0 0 38px; }
+    .evac-go { margin-top:6px; background:#16321c; border:1px solid #2e7d32; border-radius:3px; padding:4px 6px; font-size:12px; color:#9be7a8; }
+    .tbadge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; font-weight:700; color:#1a1a1a; }
+    .t-CRITICAL { background:#e74c3c; color:#fff; }
+    .t-HIGH { background:#f0932b; }
+    .t-MODERATE { background:#feca57; }
+    .t-LOW { background:#4ade80; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+  <div id="panel">
+    <h2>🏗 Infrastructure Explorer · Phase 4 Architecture</h2>
+    <div class="bbox-hint">
+      <b>Drag a rectangle</b> on the map to surface assets, modifier breakdowns,
+      routing state, and priority ranking. Toolbar in top-left of map.
+    </div>
+    <div class="links">
+      🔥 <a href="/fires-explorer">Switch to Fires Explorer</a>
+    </div>
+
+    <h3>📍 Selected Area</h3>
+    <div id="bbox-info"><div class="empty">No area selected yet</div></div>
+
+    <h3>🧭 Evacuation &amp; Response Plan</h3>
+    <div id="evac-plan"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>🏘 Per-Town Evacuation</h3>
+    <div id="town-evac"><div class="empty">Draw a bbox over a fire first</div></div>
+
+    <h3>🚨 Incident Summary</h3>
+    <div id="incident-summary"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>📊 Score Distribution</h3>
+    <div id="score-histogram"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>🎚 Layer Controls</h3>
+    <div id="layer-controls"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>⭐ Priority Ranking · Top 10</h3>
+    <div id="top-priorities"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>🏷 Asset-Type Filter</h3>
+    <div id="type-chips"><div class="empty">Draw a bbox first</div></div>
+
+    <h3>🔍 Selected Asset</h3>
+    <div id="asset-detail"><div class="empty">Click an asset on the map or in the ranking</div></div>
+
+    <details style="margin-top:14px">
+      <summary>📋 Full Asset Table</summary>
+      <div id="assets-table-wrap"><div class="empty">Draw a bbox first</div></div>
+    </details>
+
+    <details style="margin-top:8px">
+      <summary>📊 Distribution Charts</summary>
+      <div style="margin-top:6px">
+        <div style="font-size:11px; color:#888; margin: 6px 0 2px">Assets by category</div>
+        <canvas id="chart-category" width="440" height="80"></canvas>
+        <div style="font-size:11px; color:#888; margin: 8px 0 2px">Assets by type</div>
+        <canvas id="chart-type" width="440" height="180"></canvas>
+        <div style="font-size:11px; color:#888; margin: 8px 0 2px">Assets by provider</div>
+        <canvas id="chart-provider" width="440" height="120"></canvas>
+      </div>
+    </details>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+'use strict';
+
+// ─── Map setup ──────────────────────────────────────────────────────────
+const map = L.map('map').setView([37.5, -119.5], 6);
+
+// ── Base-map layers (Google-Maps-style switcher, top-right). All key-free
+// providers. Real-time traffic / transit tiles require a keyed provider
+// (Google/HERE/Mapbox) and can be slotted in here when a key is configured.
+const baseLayers = {
+  'Streets (OSM)': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap', maxZoom: 19 }),
+  'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Imagery © Esri', maxZoom: 19 }),
+  'Terrain (topo)': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenTopoMap (CC-BY-SA)', maxZoom: 17 }),
+  'Hybrid (sat + labels)': L.layerGroup([
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }),
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }),
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }),
+  ], { attribution: 'Imagery © Esri' }),
+  'Dark': L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    { attribution: '© CARTO', maxZoom: 19 }),
+};
+baseLayers['Streets (OSM)'].addTo(map);   // default base
+L.control.layers(baseLayers, null, { position: 'topright', collapsed: true }).addTo(map);
+
+// Three Leaflet feature groups — each one toggleable as a "map layer"
+// per the architecture's vocabulary. The drawnItems group is internal
+// (operator's bbox rectangle); the other two are visible toggles.
+const drawnItems       = new L.FeatureGroup().addTo(map);
+const windConeLayer    = new L.FeatureGroup().addTo(map);  // L2 — wind spread cones (under fire/assets so markers stay clickable)
+const dispatchLayer    = new L.FeatureGroup().addTo(map);  // demo — straight-line dispatch vectors from top responders to the fire
+const refugeLayer      = new L.FeatureGroup().addTo(map);  // evacuation refuges (scored cities) + escape-ladder road routes
+const cityInfraLayer   = new L.FeatureGroup().addTo(map);  // on-demand: infrastructure of the city you clicked (decluttered)
+const firePerimsLayer  = new L.FeatureGroup().addTo(map);
+const assetsLayer      = new L.FeatureGroup().addTo(map);
+
+const drawControl = new L.Control.Draw({
+  draw: { polygon: false, polyline: false, circle: false, marker: false,
+          circlemarker: false, rectangle: { showArea: false } },
+  edit: { featureGroup: drawnItems, edit: false, remove: false },
+});
+map.addControl(drawControl);
+
+// ─── State ──────────────────────────────────────────────────────────────
+let assetsById      = new Map();   // event_uuid → asset dict
+let seenCommunities = new Set();    // dedup community boundaries (Place vs Urban-Area) per render cycle
+let layersById      = new Map();   // event_uuid → Leaflet layer
+let activeTypes     = new Set();   // asset_type values currently visible
+let layerVisibility = {            // toggleable map layers (Phase 4 architecture vocabulary)
+  fire:     true,
+  wind:     true,
+  dispatch: true,
+  refuge:   true,
+  assets:   true,
+};
+let colorMode       = 'type';      // 'type' | 'category' | 'score' | 'threat'
+let scoreFilter     = null;        // {min,max} bucket from the score histogram, or null
+let topMode         = 'overall';   // 'overall' | 'family' — Top-10 ranking mode
+let lastResponse    = null;
+let lastEvac        = null;        // evacuation/threat model output for the current bbox
+let chartCategory   = null;
+let chartType       = null;
+let chartProvider   = null;
+let tableSortKey    = 'score';
+let tableSortDir    = 'desc';
+
+// ─── Helpers ────────────────────────────────────────────────────────────
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtDate(s) { return s ? s.slice(0, 19).replace('T', ' ') : '—'; }
+function fmtFloat(n, d=3) { return (n == null || !Number.isFinite(n)) ? '—' : n.toFixed(d); }
+
+async function fetchJSON(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`${resp.status} ${resp.statusText}: ${text.slice(0, 200)}`);
+  }
+  return resp.json();
+}
+
+// Fetch a real road route (OSRM, via the /api/infrastructure/route proxy)
+// between two [lat,lon] points. Returns [[lat,lon],...] or null on failure
+// (caller falls back to a straight line). Coords go to OSRM as lon,lat.
+async function fetchRoute(fromLatLon, toLatLon) {
+  const coords = `${fromLatLon[1]},${fromLatLon[0]};${toLatLon[1]},${toLatLon[0]}`;
+  try {
+    const r = await fetchJSON(`/api/infrastructure/route?coords=${encodeURIComponent(coords)}`);
+    return (r && r.route && r.route.length > 1) ? r : null;
+  } catch (_) { return null; }
+}
+
+// Color palettes derived from the modifier-pipeline vocabulary. The
+// "score" mode renders a gradient that maps higher scores → hotter
+// colors (operators read "darker red = more critical" immediately).
+const CATEGORY_COLORS = { utility: '#48dbfb', hazard: '#ee5253', exposure: '#feca57', unscored: '#888888' };
+
+function colorForScore(score, scoreMin, scoreMax) {
+  if (score == null || !Number.isFinite(score)) return '#666';
+  // Linear interpolate within the visible-bbox score range so the
+  // gradient stays useful even when scores are clustered. Defensive
+  // when min == max (single-score bbox).
+  const span = (scoreMax - scoreMin) || 1;
+  const t = Math.min(1, Math.max(0, (score - scoreMin) / span));
+  // Cool (low score, blue) → hot (high score, red). HSL hue 220° → 0°.
+  const hue = 220 - 220 * t;
+  return `hsl(${hue.toFixed(0)}, 75%, 55%)`;
+}
+
+function pickColor(asset, scoreMin, scoreMax) {
+  if (colorMode === 'category')
+    return CATEGORY_COLORS[asset.score_category] || CATEGORY_COLORS.unscored;
+  if (colorMode === 'score') return colorForScore(asset.score, scoreMin, scoreMax);
+  if (colorMode === 'threat')
+    return asset._threat ? THREAT_COLORS[asset._threat.level] : (asset.color || '#888');  // type color when no threat (e.g. refuge-city assets)
+  return asset.color || '#888';
+}
+
+// Modifier-bar coloring: modifier semantics are "1.0 = neutral, <1 =
+// dampening, >1 = uplift". So the visual zero point sits at 1.0 with
+// downweighting (red) extending left and uplift (orange/yellow) right.
+function modifierColor(v) {
+  if (v == null) return '#444';
+  if (v < 0.5)  return '#ee5253';  // strong dampening (asset close to fire)
+  if (v < 1.0)  return '#feca57';  // mild dampening
+  if (v === 1.0 || Math.abs(v - 1.0) < 0.001) return '#4ade80'; // neutral
+  if (v < 1.5)  return '#f9ca24';  // mild uplift
+  return '#f0932b';                 // strong uplift
+}
+
+// ─── URL persistence ────────────────────────────────────────────────────
+const BBOX_URL_KEY = 'bbox';
+function writeURLBbox(bbox) {
+  const params = new URLSearchParams(window.location.search);
+  const fmt = (n) => Number(n.toFixed(5)).toString();
+  params.set(BBOX_URL_KEY,
+    [bbox.lon_min, bbox.lat_min, bbox.lon_max, bbox.lat_max].map(fmt).join(','));
+  history.replaceState({}, '', '?' + params.toString());
+}
+function parseURLBbox() {
+  const raw = new URLSearchParams(window.location.search).get(BBOX_URL_KEY);
+  if (!raw) return null;
+  const parts = raw.split(',').map(s => parseFloat(s.trim()));
+  if (parts.length !== 4 || parts.some(n => !Number.isFinite(n))) return null;
+  const [lon_min, lat_min, lon_max, lat_max] = parts;
+  if (lat_min >= lat_max || lon_min >= lon_max) return null;
+  if (Math.abs(lat_min) > 90  || Math.abs(lat_max) > 90)  return null;
+  if (Math.abs(lon_min) > 180 || Math.abs(lon_max) > 180) return null;
+  return { lat_min, lat_max, lon_min, lon_max };
+}
+
+// ─── Bbox-load workflow ─────────────────────────────────────────────────
+async function loadBbox(bbox) {
+  drawnItems.clearLayers();
+  windConeLayer.clearLayers();
+  dispatchLayer.clearLayers();
+  refugeLayer.clearLayers();
+  cityInfraLayer.clearLayers();
+  firePerimsLayer.clearLayers();
+  assetsLayer.clearLayers();
+  assetsById.clear();
+  layersById.clear();
+  scoreFilter = null;
+
+  const leafletBounds = L.latLngBounds(
+    L.latLng(bbox.lat_min, bbox.lon_min),
+    L.latLng(bbox.lat_max, bbox.lon_max),
+  );
+  drawnItems.addLayer(L.rectangle(leafletBounds,
+    { color: '#48dbfb', weight: 2, fillOpacity: 0.05 }));
+  writeURLBbox(bbox);
+
+  document.getElementById('bbox-info').innerHTML =
+    `<div><span class="pill">lat ${bbox.lat_min.toFixed(3)} → ${bbox.lat_max.toFixed(3)}</span>` +
+    `<span class="pill">lon ${bbox.lon_min.toFixed(3)} → ${bbox.lon_max.toFixed(3)}</span></div>` +
+    `<div style="margin-top:6px;font-size:11px;color:#888">📎 URL contains the selection — bookmark or share to restore</div>`;
+
+  const qs = new URLSearchParams(bbox).toString();
+  document.getElementById('incident-summary').innerHTML = '<div class="loading">Loading…</div>';
+
+  try {
+    const data = await fetchJSON(`/api/infrastructure/by-bbox?${qs}&limit=2000`);
+    lastResponse = data;
+    activeTypes = new Set((data.summary.by_type || []).map(t => t.type));
+    // Lead with the life-safety view when there's an active fire.
+    colorMode = (data.active_incidents && data.active_incidents.length) ? 'threat' : 'type';
+    renderAll();
+  } catch (err) {
+    document.getElementById('incident-summary').innerHTML =
+      `<div class="error">Failed: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+map.on(L.Draw.Event.CREATED, async (e) => {
+  const b = e.layer.getBounds();
+  await loadBbox({
+    lat_min: b.getSouth(), lat_max: b.getNorth(),
+    lon_min: b.getWest(),  lon_max: b.getEast(),
+  });
+});
+
+(async function restoreFromURL() {
+  const urlBbox = parseURLBbox();
+  if (!urlBbox) return;
+  map.fitBounds(
+    L.latLngBounds(L.latLng(urlBbox.lat_min, urlBbox.lon_min),
+                   L.latLng(urlBbox.lat_max, urlBbox.lon_max)),
+    { padding: [60, 60], maxZoom: 12 },
+  );
+  await loadBbox(urlBbox);
+})();
+
+// ─── Rendering ──────────────────────────────────────────────────────────
+
+function renderAll() {
+  if (!lastResponse) return;
+  lastEvac = computeThreat(lastResponse.active_incidents || [], lastResponse.assets || []);
+  renderEvacPlan();
+  renderIncidentSummary(lastResponse.summary);
+  renderLayerControls();
+  renderTopPriorities();
+  renderChips(lastResponse.summary);
+  renderScoreHistogram(lastResponse.assets || []);
+  renderFirePerimeters(lastResponse.active_incidents || []);
+  renderFireSpreadModel(lastResponse.active_incidents || [], lastResponse.assets || []);
+  renderDispatchLines(lastResponse.active_incidents || [], lastResponse.assets || []);
+  renderRefuges(lastEvac ? lastEvac.fm : null);   // bbox-independent refuge cities + escape ladder
+  renderAssetsOnMap(lastResponse.assets || []);
+  renderTable(lastResponse.assets || []);
+  renderCharts(lastResponse.summary);
+}
+
+function renderIncidentSummary(summary) {
+  // Eight count tiles — operators glance once to see what's happening.
+  // Each tile encodes one of the architectural axes the Phase 4 pipeline
+  // surfaces: scoring coverage, fire-context, modifier coverage, routing.
+  const t = (cls, num, label) =>
+    `<div class="tile ${cls}"><div class="num">${(num || 0).toLocaleString()}</div><div class="label">${label}</div></div>`;
+  document.getElementById('incident-summary').innerHTML =
+    '<div class="tiles">' +
+      t('total',    summary.total_assets,          'Assets') +
+      t('scored',   summary.scored_count,          'Scored') +
+      t('incident', summary.active_incident_count, 'Active Fires') +
+      t('fire',     summary.affected_by_fire,      'Fire-affected') +
+      t('smoke',    summary.affected_by_smoke,     'Smoke-affected') +
+      t('psps',     summary.affected_by_psps,      'PSPS-affected') +
+      t('closure',  summary.affected_by_closures,  'Closures') +
+      t('unreach',  summary.unreachable_count,     'Unreachable') +
+    '</div>';
+}
+
+function renderLayerControls() {
+  // Toggleable Leaflet layer groups + the color-mode dropdown — together
+  // form the "Layer Controls" pane from the architecture vocabulary.
+  // The "Fire Perimeters" toggle directly corresponds to Map Layer 2
+  // (Fire Situation Context); the score/category color modes expose the
+  // three-axis scoring contract (utility/hazard/exposure × per-asset rank).
+  const fireOn     = layerVisibility.fire     ? 'checked' : '';
+  const windOn     = layerVisibility.wind     ? 'checked' : '';
+  const dispatchOn = layerVisibility.dispatch ? 'checked' : '';
+  const refugeOn   = layerVisibility.refuge   ? 'checked' : '';
+  const assetsOn   = layerVisibility.assets   ? 'checked' : '';
+  document.getElementById('layer-controls').innerHTML = `
+    <div class="layer-ctrl">
+      <label>
+        <input type="checkbox" id="layer-fire" ${fireOn}>
+        <span class="legend-dot" style="background:#e74c3c"></span>
+        Fire Perimeters
+        <span style="color:#888;font-size:11px">(${(lastResponse?.active_incidents || []).length})</span>
+      </label>
+      <label>
+        <input type="checkbox" id="layer-wind" ${windOn}>
+        <span class="legend-dot wind"></span>
+        Fire Spread Model
+        <span style="color:#888;font-size:11px">(${(lastResponse?.active_incidents || []).length})</span>
+      </label>
+      <label>
+        <input type="checkbox" id="layer-dispatch" ${dispatchOn}>
+        <span class="legend-dot" style="background:#4ade80"></span>
+        Dispatch Lines
+      </label>
+      <label>
+        <input type="checkbox" id="layer-refuge" ${refugeOn}>
+        <span class="legend-dot" style="background:#16a34a"></span>
+        Evacuation Refuges + ladder
+      </label>
+      <label>
+        <input type="checkbox" id="layer-assets" ${assetsOn}>
+        <span class="legend-dot" style="background:#48dbfb"></span>
+        Infrastructure Assets
+        <span style="color:#888;font-size:11px">(${(lastResponse?.assets || []).length})</span>
+      </label>
+      <div class="color-mode">
+        <span style="color:#888">Color by:</span>
+        <select id="color-mode-sel">
+          <option value="type"     ${colorMode==='type'    ?'selected':''}>Asset Type</option>
+          <option value="category" ${colorMode==='category'?'selected':''}>Score Category (utility / hazard / exposure)</option>
+          <option value="score"    ${colorMode==='score'   ?'selected':''}>Final Score (gradient)</option>
+          <option value="threat"   ${colorMode==='threat'  ?'selected':''}>Evacuation Threat (model)</option>
+        </select>
+      </div>
+    </div>`;
+  document.getElementById('layer-fire').addEventListener('change', (e) => {
+    layerVisibility.fire = e.target.checked;
+    if (layerVisibility.fire) map.addLayer(firePerimsLayer);
+    else map.removeLayer(firePerimsLayer);
+  });
+  document.getElementById('layer-wind').addEventListener('change', (e) => {
+    layerVisibility.wind = e.target.checked;
+    if (layerVisibility.wind) map.addLayer(windConeLayer);
+    else map.removeLayer(windConeLayer);
+  });
+  document.getElementById('layer-dispatch').addEventListener('change', (e) => {
+    layerVisibility.dispatch = e.target.checked;
+    if (layerVisibility.dispatch) map.addLayer(dispatchLayer);
+    else map.removeLayer(dispatchLayer);
+  });
+  document.getElementById('layer-refuge').addEventListener('change', (e) => {
+    layerVisibility.refuge = e.target.checked;
+    if (layerVisibility.refuge) map.addLayer(refugeLayer);
+    else map.removeLayer(refugeLayer);
+  });
+  document.getElementById('layer-assets').addEventListener('change', (e) => {
+    layerVisibility.assets = e.target.checked;
+    if (layerVisibility.assets) map.addLayer(assetsLayer);
+    else map.removeLayer(assetsLayer);
+  });
+  document.getElementById('color-mode-sel').addEventListener('change', (e) => {
+    colorMode = e.target.value;
+    assetsLayer.clearLayers(); seenCommunities.clear();
+    layersById.clear();
+    renderAssetsOnMap(lastResponse.assets || []);
+  });
+}
+
+function bestPerFamily(assets) {
+  // D — "best per formula_family": highest scorer within each family
+  // (best fire_station, best hospital, …) rather than the global top-N,
+  // which a single high-scoring asset_type can dominate.
+  const best = new Map();
+  for (const a of assets) {
+    if (a.score == null || a.asset_type === 'active_incident') continue;
+    const fam = a.formula_family || '—';
+    const cur = best.get(fam);
+    if (!cur || a.score > cur.score) best.set(fam, a);
+  }
+  return [...best.values()].sort((x, y) => y.score - x.score).slice(0, 10);
+}
+
+function wireRankToggle() {
+  const o = document.getElementById('rank-overall');
+  const f = document.getElementById('rank-family');
+  if (o) o.addEventListener('click', () => { topMode = 'overall'; renderTopPriorities(); });
+  if (f) f.addEventListener('click', () => { topMode = 'family';  renderTopPriorities(); });
+}
+
+function renderTopPriorities() {
+  const el = document.getElementById('top-priorities');
+  const top = topMode === 'family'
+    ? bestPerFamily(lastResponse?.assets || [])
+    : (lastResponse?.top_priorities || []);
+  const toggle =
+    '<div class="rank-toggle">' +
+    `<button id="rank-overall" class="${topMode === 'overall' ? 'on' : ''}">Overall score</button>` +
+    `<button id="rank-family" class="${topMode === 'family' ? 'on' : ''}">Best per family</button>` +
+    '</div>';
+
+  if (top.length === 0) {
+    el.innerHTML = toggle + '<div class="empty">No scored assets in this bbox</div>';
+    wireRankToggle();
+    return;
+  }
+  let html = toggle + '<table class="priority-table"><thead><tr>' +
+    '<th>#</th><th>Asset</th><th>Type</th><th>Family</th><th style="text-align:right">Score</th>' +
+    '</tr></thead><tbody>';
+  top.forEach((a, i) => {
+    const swatch = `<span class="swatch" style="background:${escapeHtml(a.color)}"></span>`;
+    html += `<tr data-id="${escapeHtml(a.event_uuid)}">` +
+      `<td class="rank">${i + 1}</td>` +
+      `<td>${escapeHtml(a.name || '(unnamed)')}</td>` +
+      `<td>${swatch}${escapeHtml(a.asset_type)}</td>` +
+      `<td style="color:#888">${escapeHtml(a.formula_family || '—')}</td>` +
+      `<td class="score">${fmtFloat(a.score, 2)}</td>` +
+      `</tr>`;
+  });
+  html += '</tbody></table>' +
+    `<div style="font-size:10px;color:#666;padding:4px 0">${topMode === 'family'
+      ? 'Highest scorer within each formula_family.'
+      : 'Scores are within-asset-type ranks — DO NOT compare across types.'}</div>`;
+  el.innerHTML = html;
+  el.querySelectorAll('.priority-table tr[data-id]').forEach(row => {
+    row.addEventListener('click', () => selectAsset(row.dataset.id));
+  });
+  wireRankToggle();
+}
+
+function renderChips(summary) {
+  const types = summary.by_type || [];
+  if (types.length === 0) {
+    document.getElementById('type-chips').innerHTML =
+      '<div class="empty">No assets in this bbox</div>';
+    return;
+  }
+  const html = '<div class="chips">' + types.map(t => {
+    const off = activeTypes.has(t.type) ? '' : 'off';
+    return `<span class="chip ${off}" data-type="${escapeHtml(t.type)}">
+      <span class="swatch" style="background:${escapeHtml(t.color)}"></span>
+      ${escapeHtml(t.label)} <span style="color:#888">(${t.count})</span>
+    </span>`;
+  }).join('') + '</div>';
+  document.getElementById('type-chips').innerHTML = html;
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const t = chip.dataset.type;
+      if (activeTypes.has(t)) activeTypes.delete(t);
+      else activeTypes.add(t);
+      // Re-draw map + table — the type filter is a cross-cutting concern.
+      assetsLayer.clearLayers(); seenCommunities.clear();
+      layersById.clear();
+      renderChips(lastResponse.summary);
+      renderAssetsOnMap(lastResponse.assets || []);
+      renderTable(lastResponse.assets || []);
+    });
+  });
+}
+
+function renderFirePerimeters(incidents) {
+  // Map Layer 2 — Fire Situation Context.
+  // (a) REAL fire perimeter (FRAP/CAL FIRE) = THE fire, rendered red, when one
+  //     truly intersects the view.
+  const fp = lastResponse && lastResponse.fire_perimeter;
+  if (fp && fp.geometry) {
+    const layer = L.geoJSON(fp.geometry, {
+      style: () => ({ color: '#e74c3c', weight: 2.5, fillColor: '#e74c3c', fillOpacity: 0.22, dashArray: '4,3' }),
+    });
+    layer.bindTooltip(
+      `<b>🔥 ${escapeHtml(fp.name || 'Fire')} Fire (${escapeHtml(fp.year ?? '')})</b><br>` +
+      `${(fp.acres || 0).toLocaleString()} acres · ${fp.km2_in_view ? fp.km2_in_view.toFixed(1) : '?'} km² in view<br>` +
+      `<span style="color:#aaa">FRAP/CAL FIRE perimeter</span>`
+    );
+    firePerimsLayer.addLayer(layer);
+  }
+  // (b) NIFC active_incident rows. A region-wide situational polygon
+  //     (area > 5,000 km²) is NOT a fire perimeter — render it as a faint
+  //     boundary so it never masquerades as "the fire covering all of CA".
+  for (const inc of incidents) {
+    if (!inc.geometry) continue;
+    const regional = (inc.area_km2 || 0) > 5000;
+    const layer = L.geoJSON(inc.geometry, regional
+      ? { style: () => ({ color: '#7a7a7a', weight: 1, fill: false, opacity: 0.45, dashArray: '2,7' }) }
+      : { style: () => ({ color: '#e74c3c', weight: 2, fillColor: '#e74c3c', fillOpacity: 0.18, dashArray: '4,4' }) });
+    const x = inc.incident_attrs || {};
+    layer.bindTooltip(regional
+      ? `NIFC regional situational area — ${escapeHtml(inc.name || '')} (~${Math.round(inc.area_km2).toLocaleString()} km²)<br><span style="color:#f0932b">⚠ situational rollup, NOT a fire perimeter</span>`
+      : `<b>🔥 ${escapeHtml(inc.name || 'Active Incident')}</b><br>GACC ${escapeHtml(x.GACC || '—')} · PL ${escapeHtml(x.PreparednessLevel ?? '—')}`);
+    layer.on('click', () => selectAsset(inc.event_uuid));
+    firePerimsLayer.addLayer(layer);
+    assetsById.set(inc.event_uuid, inc);
+    layersById.set(inc.event_uuid, layer);
+  }
+}
+
+function renderAssetsOnMap(assets) {
+  // Compute score min/max once per render so the gradient stays stable
+  // across hovers (recomputing per-row would make the legend jitter).
+  const scores = assets.filter(a => a.score != null).map(a => a.score);
+  const scoreMin = scores.length ? Math.min(...scores) : 0;
+  const scoreMax = scores.length ? Math.max(...scores) : 1;
+
+  for (const a of assets) {
+    assetsById.set(a.event_uuid, a);
+    if (!a.geometry) continue;
+    if (!activeTypes.has(a.asset_type)) continue;
+    if (scoreFilter && (a.score == null || a.score < scoreFilter.min || a.score > scoreFilter.max)) continue;
+
+    const color = pickColor(a, scoreMin, scoreMax);
+    // SPATIAL HIERARCHY: a community's admin boundary is context only — draw it
+    // faint/neutral and show threat as a DOT at the populated centroid. A fire in
+    // a wildland part inside the boundary (Upper Bidwell Park inside Chico) thus
+    // never paints the whole city polygon. Applies to every community, not Chico.
+    if (a.asset_type === 'urban_area') {
+      // Show the city BOUNDARY (kept, per request), coloured by the POPULATED-CORE
+      // threat (not the wildland edge) — so a fire in a park inside the boundary
+      // doesn't paint it red. Deduped (Place vs Urban-Area). The refuge layer
+      // carries the labelled marker, so no extra dot here (avoids 3-dots).
+      const key = (a.name || '').split(',')[0].trim().toLowerCase();
+      if (key && seenCommunities.has(key)) continue;
+      if (key) seenCommunities.add(key);
+      // SOFT score-matched colour — unsafe → pale yellow-green, safe → light
+      // green-blue, gradient by the city's threat. Kept in the background (light
+      // fill) but the boundary stays clearly visible.
+      const SOFT_COMMUNITY = { CRITICAL: '#d9d36b', HIGH: '#c2d97a', MODERATE: '#9ed699', LOW: '#86cdc2' };
+      const ccol = a._threat ? (SOFT_COMMUNITY[a._threat.level] || '#9ccab0') : '#9ccab0';
+      // DISPLAY-ONLY (interactive:false): clicking empty land inside a city's
+      // polygon must do nothing — the city's clickable control is its centroid marker.
+      const boundary = L.geoJSON(a.geometry, {
+        interactive: false,
+        style: () => ({ color: ccol, weight: 1.8, opacity: 0.6, fillColor: ccol, fillOpacity: 0.12 }),
+      });
+      assetsLayer.addLayer(boundary);
+      continue;
+    }
+    // Roads thick (egress vs danger must be obvious); rivers/water thin + faint
+    // (595 NHD flowline reaches otherwise drown the map).
+    const isRiver = (a.asset_type === 'river');
+    const isWater = isRiver || a.asset_type === 'lake' || a.asset_type === 'reservoir';
+    const isRoad  = (a.asset_type === 'road_major' || a.asset_type === 'road_local');
+    // Rivers RECEDE: the dense NHD flowlines must not bury other infrastructure,
+    // so they're a thin, low-opacity muted blue rather than a dominant purple.
+    const wt  = isRoad ? 4 : (isRiver ? 0.4 : (isWater ? 1 : 2));
+    const op  = isRiver ? 0.10 : (isWater ? 0.32 : 1);
+    const fop = isWater ? 0.05 : 0.25;
+    const drawCol = isRiver ? '#cfe2f3' : (isWater ? '#7aa6cc' : color);   // rivers = near-transparent very pale blue; lakes light blue
+    const layer = L.geoJSON(a.geometry, {
+      style: () => ({ color: drawCol, weight: wt, opacity: op, fillOpacity: fop }),
+      pointToLayer: (_, latlng) => L.circleMarker(latlng, {
+        radius: 5, color, fillColor: color, fillOpacity: 0.85, weight: 1,
+      }),
+    });
+    const scoreText = a.score != null ? ` · score ${fmtFloat(a.score, 2)}` : '';
+    const routeText = a.distance_km != null
+      ? `<br>${fmtFloat(a.distance_km, 1)} km · ${fmtFloat(a.travel_time_min, 1)} min`
+      : '';
+    layer.bindTooltip(
+      `<b>${escapeHtml(a.name || a.asset_type)}</b><br>` +
+      `${escapeHtml(a.asset_type)} · ${escapeHtml(a.provider)}${scoreText}${routeText}`
+    );
+    // Click → popup with SELECTABLE text (name, type, score, coords) so it can be copied.
+    const coordTxt = (a.latitude != null && a.longitude != null)
+      ? `<br><span style="color:#888">${a.latitude.toFixed(5)}, ${a.longitude.toFixed(5)}</span>` : '';
+    layer.bindPopup(
+      `<b>${escapeHtml(a.name || a.asset_type)}</b><br>${escapeHtml(a.asset_type)} · ${escapeHtml(a.provider)}${scoreText}${routeText}${coordTxt}`
+    );
+    layer.on('click', () => selectAsset(a.event_uuid));
+    assetsLayer.addLayer(layer);
+    layersById.set(a.event_uuid, layer);
+
+    // B — unreachable highlight: red dashed ring at the asset centroid so
+    // operators spot "can't get there" without opening the detail panel.
+    if (a.reachable_emergency === false && a.latitude != null && a.longitude != null) {
+      const ring = L.circleMarker([a.latitude, a.longitude], {
+        radius: 11, color: '#ff2d2d', weight: 2, fill: false, dashArray: '3,3',
+      });
+      ring.on('click', () => selectAsset(a.event_uuid));
+      assetsLayer.addLayer(ring);
+    }
+  }
+}
+
+function renderTable(assets) {
+  const visible = assets.filter(a => activeTypes.has(a.asset_type)
+    && (!scoreFilter || (a.score != null && a.score >= scoreFilter.min && a.score <= scoreFilter.max)));
+  if (visible.length === 0) {
+    document.getElementById('assets-table-wrap').innerHTML =
+      '<div class="empty">No matching assets (try toggling chips above)</div>';
+    return;
+  }
+  const dir = tableSortDir === 'asc' ? 1 : -1;
+  const sorted = [...visible].sort((a, b) => {
+    let av = a[tableSortKey], bv = b[tableSortKey];
+    if (tableSortKey === 'name') { av = av || a.asset_id; bv = bv || b.asset_id; }
+    if (av == null) av = tableSortDir === 'asc' ? Infinity : -Infinity;
+    if (bv == null) bv = tableSortDir === 'asc' ? Infinity : -Infinity;
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+  const arrow = (k) => k === tableSortKey ? (tableSortDir === 'asc' ? 'sort-asc' : 'sort-desc') : '';
+  let html = '<table class="asset-table"><thead><tr>' +
+    `<th class="${arrow('asset_type')}" data-k="asset_type">Type</th>` +
+    `<th class="${arrow('name')}" data-k="name">Name</th>` +
+    `<th class="${arrow('distance_km')}" data-k="distance_km" style="text-align:right">Dist km</th>` +
+    `<th class="${arrow('travel_time_min')}" data-k="travel_time_min" style="text-align:right">ETA min</th>` +
+    `<th class="${arrow('score')}" data-k="score" style="text-align:right">Score</th>` +
+    `<th class="${arrow('provider')}" data-k="provider">Src</th>` +
+    '</tr></thead><tbody>';
+  for (const a of sorted) {
+    const swatch = `<span class="type-swatch" style="background:${escapeHtml(a.color)}"></span>`;
+    const provClass = `provider-${(a.provider || '').toLowerCase()}`;
+    html += `<tr class="asset-row" data-id="${escapeHtml(a.event_uuid)}">` +
+      `<td>${swatch}${escapeHtml(a.asset_type)}</td>` +
+      `<td>${escapeHtml(a.name || '(unnamed)')}</td>` +
+      `<td style="text-align:right;font-variant-numeric:tabular-nums;color:#9aa">${fmtFloat(a.distance_km, 1)}</td>` +
+      `<td style="text-align:right;font-variant-numeric:tabular-nums;color:#9aa">${fmtFloat(a.travel_time_min, 1)}</td>` +
+      `<td style="text-align:right;font-variant-numeric:tabular-nums">${fmtFloat(a.score, 2)}</td>` +
+      `<td><span class="provider-pill ${provClass}">${escapeHtml(a.provider)}</span></td>` +
+      `</tr>`;
+  }
+  html += '</tbody></table>';
+  document.getElementById('assets-table-wrap').innerHTML = html;
+  document.querySelectorAll('.asset-table tr.asset-row').forEach(row => {
+    row.addEventListener('click', () => selectAsset(row.dataset.id));
+  });
+  document.querySelectorAll('.asset-table th[data-k]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      if (k === tableSortKey) tableSortDir = tableSortDir === 'asc' ? 'desc' : 'asc';
+      else { tableSortKey = k; tableSortDir = k === 'score' ? 'desc' : 'asc'; }
+      renderTable(lastResponse.assets || []);
+    });
+  });
+}
+
+function renderCharts(summary) {
+  // Category chart (utility / hazard / exposure / unscored)
+  const byCat = summary.by_category || {};
+  const catLabels = Object.keys(byCat);
+  if (chartCategory) chartCategory.destroy();
+  chartCategory = new Chart(document.getElementById('chart-category'), {
+    type: 'bar',
+    data: { labels: catLabels,
+            datasets: [{ data: catLabels.map(k => byCat[k]),
+                         backgroundColor: catLabels.map(k => CATEGORY_COLORS[k] || '#888') }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } },
+               scales: { x: { ticks: { color: '#888' }, beginAtZero: true },
+                         y: { ticks: { color: '#888' } } } },
+  });
+
+  // Type chart
+  const byType = summary.by_type || [];
+  if (chartType) chartType.destroy();
+  chartType = new Chart(document.getElementById('chart-type'), {
+    type: 'bar',
+    data: { labels: byType.map(t => t.label),
+            datasets: [{ data: byType.map(t => t.count),
+                         backgroundColor: byType.map(t => t.color) }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } },
+               scales: { x: { ticks: { color: '#888' }, beginAtZero: true },
+                         y: { ticks: { color: '#888' } } } },
+  });
+
+  // Provider chart
+  const byProv = summary.by_provider || {};
+  const provLabels = Object.keys(byProv).sort((a, b) => byProv[b] - byProv[a]);
+  const provColors = {
+    osm:'#4ade80', hifld:'#feca57', usgs:'#48dbfb',
+    tiger:'#f0932b', fema:'#ee5253', nifc:'#e74c3c',
+  };
+  if (chartProvider) chartProvider.destroy();
+  chartProvider = new Chart(document.getElementById('chart-provider'), {
+    type: 'bar',
+    data: { labels: provLabels,
+            datasets: [{ data: provLabels.map(p => byProv[p]),
+                         backgroundColor: provLabels.map(p => provColors[p] || '#888') }] },
+    options: { plugins: { legend: { display: false } },
+               scales: { x: { ticks: { color: '#888' } },
+                         y: { ticks: { color: '#888' }, beginAtZero: true } } },
+  });
+}
+
+// ─── A — Wind spread cone (Map Layer 2 / Fire Situation Context) ────────
+// Wind metadata (speed/direction) lives on ASSETS, not on the active_incident
+// row, so we sample the nearest scored asset that carries wind values and draw
+// a downwind cone at the incident centroid. wind_direction_deg is meteorological
+// (the direction wind COMES FROM); fire/smoke spread TOWARD direction + 180°.
+function destPoint(lat, lon, bearingDeg, distKm) {
+  const R = 6371;
+  const br = bearingDeg * Math.PI / 180;
+  const lat1 = lat * Math.PI / 180, lon1 = lon * Math.PI / 180;
+  const dr = distKm / R;
+  const lat2 = Math.asin(Math.sin(lat1) * Math.cos(dr) +
+                         Math.cos(lat1) * Math.sin(dr) * Math.cos(br));
+  const lon2 = lon1 + Math.atan2(
+    Math.sin(br) * Math.sin(dr) * Math.cos(lat1),
+    Math.cos(dr) - Math.sin(lat1) * Math.sin(lat2));
+  return [lat2 * 180 / Math.PI, lon2 * 180 / Math.PI];
+}
+
+function incidentWind(inc) {
+  // Wind is NOAA-backfilled onto the active_incident (Phase 4.5a), not assets.
+  const x = inc.incident_attrs || {};
+  const spd = parseFloat(x.WindSpd), dir = parseFloat(x.WindDir);
+  if (Number.isFinite(spd) && Number.isFinite(dir))
+    return { speed: spd, dir: dir, src: x.WindSource || 'NIFC/backfill' };
+  return null;
+}
+
+function nearestWind(centerLat, centerLon, assets) {
+  // Fallback: if an incident lacks wind, sample the nearest asset that carries it.
+  let best = null, bestD = Infinity;
+  for (const a of assets) {
+    if (a.wind_speed_mph == null || a.wind_direction_deg == null) continue;
+    if (a.latitude == null || a.longitude == null) continue;
+    const d = (a.latitude - centerLat) ** 2 + (a.longitude - centerLon) ** 2;
+    if (d < bestD) { bestD = d; best = a; }
+  }
+  return best ? { speed: best.wind_speed_mph, dir: best.wind_direction_deg,
+                  src: best.wind_source || 'nearest asset' } : null;
+}
+
+// ─── Fire-behavior model (wind-driven spread + per-asset threat) ────────
+function haversineKm(la1, lo1, la2, lo2) {
+  const R = 6371, dLa = (la2 - la1) * Math.PI / 180, dLo = (lo2 - lo1) * Math.PI / 180;
+  const a = Math.sin(dLa / 2) ** 2 +
+            Math.cos(la1 * Math.PI / 180) * Math.cos(la2 * Math.PI / 180) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+function bearingDeg(la1, lo1, la2, lo2) {
+  const p1 = la1 * Math.PI / 180, p2 = la2 * Math.PI / 180, dl = (lo2 - lo1) * Math.PI / 180;
+  const y = Math.sin(dl) * Math.cos(p2);
+  const x = Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+function angDiff(a, b) { const d = Math.abs(((a - b) % 360 + 360) % 360); return d > 180 ? 360 - d : d; }
+const COMPASS16 = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+function compass(deg) { return COMPASS16[Math.round((deg % 360) / 22.5) % 16]; }
+const THREAT_COLORS = { CRITICAL: '#e74c3c', HIGH: '#f0932b', MODERATE: '#feca57', LOW: '#4ade80' };
+
+// Estimate the fire origin from the data. The NIFC "active_incident" row is a
+// region-wide situational polygon (≈165,000 km²), useless for local geometry —
+// but the per-asset `distance_km` (distance to fire) is a real, varied signal,
+// so the fire sits where distance_km → 0: the weighted centroid of the assets
+// closest to it.
+function estimateFireOrigin(assets) {
+  const withD = (assets || []).filter(a =>
+    a.distance_km != null && a.latitude != null && a.longitude != null && a.asset_type !== 'active_incident');
+  if (!withD.length) return null;
+  const closest = withD.slice().sort((a, b) => a.distance_km - b.distance_km).slice(0, 20);
+  let sw = 0, slat = 0, slon = 0;
+  for (const a of closest) {
+    const w = 1 / (a.distance_km + 0.3);   // nearest assets dominate
+    sw += w; slat += a.latitude * w; slon += a.longitude * w;
+  }
+  return { lat: slat / sw, lng: slon / sw };
+}
+
+// Build the spread model: estimated fire origin + NOAA-backfilled wind → head/
+// flank/back rates of spread.
+function fireModel(inc, assets) {
+  let origin = null;
+  // Prefer the REAL fire perimeter (FRAP/CAL FIRE) when one intersects the view.
+  if (lastResponse && lastResponse.fire_perimeter && lastResponse.fire_perimeter.centroid_lat != null) {
+    origin = { lat: lastResponse.fire_perimeter.centroid_lat, lng: lastResponse.fire_perimeter.centroid_lon };
+  }
+  if (!origin) origin = estimateFireOrigin(assets);
+  if (!origin && inc && inc.geometry) {
+    try { const c = L.geoJSON(inc.geometry).getBounds().getCenter(); origin = { lat: c.lat, lng: c.lng }; } catch (_) {}
+  }
+  if (!origin) return null;
+  const w = inc ? incidentWind(inc) : null;
+  if (!w) return { lat: origin.lat, lng: origin.lng, speed: 0, fromDeg: null, towardDeg: null,
+                   rosHead: 0, rosFlank: 0, rosBack: 0, src: null };
+  // Estimated head rate-of-spread for wind-driven brush/grass: a fraction of the
+  // 20-ft wind, floored. Flanks ~0.35x, backing ~0.12x. Triage estimate — not a
+  // certified fire-behavior forecast.
+  let rosHead = Math.max(0.5, 0.18 * w.speed);
+  let towardDeg = (w.dir + 180) % 360;
+  // Terrain-aware (USGS 3DEP): slope accelerates the head fire (fire runs
+  // uphill), and the run direction blends wind with upslope by steepness.
+  const terrain = lastResponse ? lastResponse.terrain : null;
+  let slopeFactor = 1, slopeDeg = null, upslopeDeg = null;
+  if (terrain && terrain.slope_deg != null) {
+    slopeDeg = terrain.slope_deg;
+    const sr = slopeDeg * Math.PI / 180;
+    slopeFactor = Math.min(4, 1 + 3 * Math.tan(sr) ** 2);   // ≈ doubles by ~25–30°
+    rosHead *= slopeFactor;
+    if (terrain.aspect_deg != null) {
+      upslopeDeg = (terrain.aspect_deg + 180) % 360;         // aspect = downhill → upslope
+      const wWind = Math.max(1, w.speed), wSlope = 12 * Math.tan(sr);
+      towardDeg = blendBearings(towardDeg, wWind, upslopeDeg, wSlope);
+    }
+  }
+  return { lat: origin.lat, lng: origin.lng, speed: w.speed, fromDeg: w.dir,
+           towardDeg, rosHead, rosFlank: rosHead * 0.35, rosBack: rosHead * 0.12,
+           src: w.src, slopeFactor, slopeDeg, upslopeDeg };
+}
+
+function blendBearings(b1, w1, b2, w2) {
+  const r = d => d * Math.PI / 180;
+  const x = w1 * Math.cos(r(b1)) + w2 * Math.cos(r(b2));
+  const y = w1 * Math.sin(r(b1)) + w2 * Math.sin(r(b2));
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+// Directional spread overlay: graduated head-fire time bands (30/60/120 min),
+// flank wedges, and a safe-egress arrow pointing away from the head.
+function renderFireSpreadModel(incidents, assets) {
+  windConeLayer.clearLayers();
+  const fm = lastEvac ? lastEvac.fm : fireModel(incidents[0], assets);
+  if (!fm || fm.towardDeg == null) return;
+  const C = [fm.lat, fm.lng];
+  // ── Spread CONE. The fire fans out around the head direction; each time band
+  // (30 / 60 / 120 min) is a TRIPLE wavefront — 3 concentric arcs — CUT at the
+  // cone edges (left flank → right flank), not a full circle. Colour: 30 red,
+  // 60 orange, 120 yellow. Dashed radial lines mark the cone sides.
+  const km = (min) => fm.rosHead * (min / 60) * 1.60934;
+  const HEAD = 38;          // head cone half-angle (deg)
+  const FLANK = 76;         // flanks creep out to here laterally
+  const bands = [
+    { lo: 0,  hi: 30,  col: '#e53935' },   // red    — current → +30 min
+    { lo: 30, hi: 60,  col: '#fb8c00' },   // orange — +30 → +60 min
+    { lo: 60, hi: 120, col: '#fdd835' },   // yellow — +60 → +120 min
+  ];
+  for (const band of bands) {
+    // 4 arcs spread across the WHOLE band area (lo → hi minutes), not bunched
+    // at the front edge. The outermost (the band boundary) is emphasised+labelled.
+    [0.25, 0.5, 0.75, 1.0].forEach((frac) => {
+      const tMin = band.lo + (band.hi - band.lo) * frac;
+      const r = km(tMin);
+      const edge = frac === 1.0;
+      const arc = [];
+      for (let a = -HEAD; a <= HEAD; a += 3) arc.push(destPoint(fm.lat, fm.lng, fm.towardDeg + a, r));
+      const line = L.polyline(arc, {
+        color: band.col, weight: edge ? 3.5 : 1.8, opacity: edge ? 0.95 : 0.55, lineCap: 'round',
+      });
+      if (edge) line.bindTooltip(`🔥 Predicted fire front ≈ +${band.hi} min (est.)<br>head ~${r.toFixed(1)} km ${compass(fm.towardDeg)}`);
+      windConeLayer.addLayer(line);
+    });
+  }
+  // Dashed cone-edge lines (the sides) → reads as a CONE, not a circle.
+  // Highlighted enough to spot without zooming, but not overpowering.
+  const outerKm = km(120);
+  for (const s of [-HEAD, HEAD]) {
+    windConeLayer.addLayer(L.polyline([C, destPoint(fm.lat, fm.lng, fm.towardDeg + s, outerKm)],
+      { color: '#ffd54a', weight: 2.5, opacity: 0.9, dashArray: '9,6' }));
+  }
+  // Flank spread (slower lateral creep): a wedge on EACH side, from the head-cone
+  // edge (±HEAD) out to ±FLANK, capped at the ~45-min radius (midway 30–60), its
+  // apex anchored ON the fire so one side is flush with the perimeter (no gap).
+  const rFlank = km(45);
+  for (const dir of [1, -1]) {
+    const wedge = [C];
+    for (let a = HEAD; a <= FLANK; a += 4) wedge.push(destPoint(fm.lat, fm.lng, fm.towardDeg + dir * a, rFlank));
+    wedge.push(C);
+    const poly = L.polygon(wedge, {
+      color: '#fb8c00', weight: 1, opacity: 0.5, fillColor: '#fb8c00', fillOpacity: 0.10, dashArray: '4,4',
+    });
+    poly.bindTooltip('Flank spread (slower lateral run · ~45-min reach)');
+    windConeLayer.addLayer(poly);
+  }
+  // Evacuation egress (refuge cities + escape-ladder road routes) is drawn
+  // separately by renderRefuges() — it's bbox-independent (the safe valley
+  // city is usually outside the fire view).
+}
+
+// ─── C — Score histogram (click a bar to filter map + table) ────────────
+function renderScoreHistogram(assets) {
+  const el = document.getElementById('score-histogram');
+  const scored = assets.filter(a => a.score != null && a.asset_type !== 'active_incident');
+  if (scored.length === 0) {
+    el.innerHTML = '<div class="empty">No scored assets in this bbox</div>';
+    return;
+  }
+  const scores = scored.map(a => a.score);
+  const min = Math.min(...scores), max = Math.max(...scores);
+  const N = 10;
+  const width = (max - min) / N || 1;
+  const buckets = Array.from({ length: N }, (_, i) =>
+    ({ lo: min + i * width, hi: min + (i + 1) * width, n: 0 }));
+  for (const s of scores) {
+    let idx = Math.floor((s - min) / width);
+    if (idx >= N) idx = N - 1;
+    if (idx < 0) idx = 0;
+    buckets[idx].n++;
+  }
+  const maxN = Math.max(...buckets.map(b => b.n));
+  let html = '<div class="histo">';
+  buckets.forEach(b => {
+    const h = maxN ? Math.round(b.n / maxN * 58) + 2 : 2;
+    const active = (scoreFilter && Math.abs(scoreFilter.min - b.lo) < 1e-9) ? 'active' : '';
+    html += `<div class="histo-bar ${active}" data-lo="${b.lo}" data-hi="${b.hi}" ` +
+      `title="${b.lo.toFixed(2)}–${b.hi.toFixed(2)}: ${b.n} asset${b.n === 1 ? '' : 's'}">` +
+      `<div class="histo-fill" style="height:${h}px"></div>` +
+      `<div class="histo-n">${b.n}</div></div>`;
+  });
+  html += '</div>';
+  html += '<div class="histo-axis"><span>' + min.toFixed(2) + '</span>' +
+    (scoreFilter
+      ? `<span class="histo-clear">✕ clear filter (${scoreFilter.min.toFixed(2)}–${scoreFilter.max.toFixed(2)})</span>`
+      : '<span style="color:#666">click a bar to filter</span>') +
+    '<span>' + max.toFixed(2) + '</span></div>';
+  el.innerHTML = html;
+  el.querySelectorAll('.histo-bar').forEach(barEl => {
+    barEl.addEventListener('click', () => {
+      const lo = parseFloat(barEl.dataset.lo), hi = parseFloat(barEl.dataset.hi);
+      if (scoreFilter && Math.abs(scoreFilter.min - lo) < 1e-9) scoreFilter = null;
+      else scoreFilter = { min: lo, max: hi };
+      applyScoreFilter();
+    });
+  });
+  const clr = el.querySelector('.histo-clear');
+  if (clr) clr.addEventListener('click', () => { scoreFilter = null; applyScoreFilter(); });
+}
+
+function applyScoreFilter() {
+  // Re-draw the assets layer (rings included) + table + histogram. Fire
+  // perimeters and wind cones are untouched — the score filter is an
+  // asset-only concern.
+  assetsLayer.clearLayers();
+  renderAssetsOnMap(lastResponse?.assets || []);
+  renderTable(lastResponse?.assets || []);
+  renderScoreHistogram(lastResponse?.assets || []);
+}
+
+// ─── 🧭 Evacuation & response model (wind-aware threat per asset) ───────
+// computeThreat annotates every asset with a ._threat object (sector vs the
+// head fire, estimated time-to-impact, threat level, recommended egress
+// heading) and returns an AOI-level evacuation summary used by the panel.
+function computeThreat(incidents, assets) {
+  const fm = fireModel(incidents[0], assets);
+  if (fm && lastResponse && lastResponse.bbox) {
+    const bb = lastResponse.bbox;
+    fm.popLat = (bb.lat_min + bb.lat_max) / 2;
+    fm.popLon = (bb.lon_min + bb.lon_max) / 2;
+  }
+  const ev = { fm, counts: { CRITICAL: 0, HIGH: 0, MODERATE: 0, LOW: 0 },
+               evac: [], hospitals: [], egressRoads: [], dangerRoads: [],
+               pspsAreas: [], closures: 0, unreachable: 0 };
+  for (const a of assets) {
+    a._threat = null;
+    if (!fm || a.latitude == null || a.longitude == null) continue;
+    // SPATIAL HIERARCHY: for communities (admin polygons), threat is measured to
+    // the POPULATED CORE (centroid), NOT the admin-boundary edge — so a fire in a
+    // wildland part inside the boundary (e.g. Upper Bidwell Park inside Chico)
+    // does not flag the whole city. Other assets use real edge distance.
+    const d = (a.asset_type === 'urban_area')
+            ? haversineKm(fm.lat, fm.lng, a.latitude, a.longitude)
+            : (a.dist_to_fire_km != null ? a.dist_to_fire_km
+              : (a.distance_km != null ? a.distance_km : haversineKm(fm.lat, fm.lng, a.latitude, a.longitude)));
+    const brg = (a.asset_type === 'urban_area' || a.bearing_from_fire == null)
+            ? bearingDeg(fm.lat, fm.lng, a.latitude, a.longitude)
+            : a.bearing_from_fire;
+    let sector = 'back', ros = fm.rosBack;
+    if (fm.towardDeg != null) {
+      const off = angDiff(brg, fm.towardDeg);
+      if (off <= 40)      { sector = 'head';  ros = fm.rosHead; }
+      else if (off <= 95) { sector = 'flank'; ros = fm.rosFlank; }
+      else                { sector = 'back';  ros = fm.rosBack; }
+    }
+    const distMi = d / 1.60934;
+    const tti = ros > 0 ? distMi / ros * 60 : Infinity;   // minutes for the front to reach the asset
+    let level = 'LOW';
+    if (sector === 'head')       level = tti <= 30 ? 'CRITICAL' : tti <= 90 ? 'HIGH' : 'MODERATE';
+    else if (sector === 'flank') level = tti <= 45 ? 'HIGH' : tti <= 150 ? 'MODERATE' : 'LOW';
+    else                         level = d < 2 ? 'MODERATE' : 'LOW';
+    if (d < 1.0) level = 'CRITICAL';
+    const reachable = a.reachable_emergency !== false;
+    let safe;
+    if (sector === 'head') {
+      const left = (fm.towardDeg + 90) % 360, right = (fm.towardDeg + 270) % 360;
+      safe = angDiff(left, brg) < angDiff(right, brg) ? left : right;   // cross-wind out of the cone
+    } else { safe = brg; }                                              // continue away from the fire
+    a._threat = { d, brg, sector, tti, level, reachable, safe };
+    ev.counts[level]++;
+    if (a.reachable_emergency === false) ev.unreachable++;
+    if ((a.closure_count || 0) > 0) ev.closures += a.closure_count;
+    if (a.psps_in_zone) ev.pspsAreas.push(a);
+    if (a.asset_type === 'road_major') {
+      (sector === 'head' || (a.closure_count || 0) > 0 ? ev.dangerRoads : ev.egressRoads).push(a);
+    }
+  }
+  ev.evac = assets
+    .filter(a => a._threat && (a._threat.level === 'CRITICAL' || a._threat.level === 'HIGH')
+              && ['urban_area','shelter','hospital','fire_station'].includes(a.asset_type))
+    .sort((x, y) => x._threat.tti - y._threat.tti).slice(0, 6);
+  let hosp = assets.filter(a => a.asset_type === 'hospital' && a._threat && a._threat.reachable && a._threat.sector !== 'head');
+  if (hosp.length === 0) hosp = assets.filter(a => a.asset_type === 'hospital' && a._threat && a._threat.reachable);
+  ev.hospitals = hosp.sort((x, y) => (x.travel_time_min ?? 1e9) - (y.travel_time_min ?? 1e9)).slice(0, 4);
+  // NOTE: evacuation egress is NO LONGER chosen from in-bbox assets (that gave
+  // the Magalia foothill death-trap, because the valley cities sit outside the
+  // view bbox). renderRefuges() calls the bbox-independent /evac-plan endpoint,
+  // which scores cities region-wide (fire-distance+bearing/route/terrain/services).
+  return ev;
+}
+
+function renderThreatSection(a) {
+  const t = a._threat;
+  if (!t) return '';
+  const sectorLabel = { head: 'Down-wind HEAD (primary spread path)',
+                        flank: 'Flank (lateral spread)',
+                        back: 'Up-wind / backing (safer)' }[t.sector];
+  return `
+    <div class="mod-block" style="border-left:3px solid ${THREAT_COLORS[t.level]}">
+      <div class="title">Threat &amp; Evacuation (model)</div>
+      <div class="kv"><span class="k">threat level</span><span class="v"><span class="tbadge t-${t.level}">${t.level}</span></span></div>
+      <div class="kv"><span class="k">position vs fire</span><span class="v">${sectorLabel}<br>${compass(t.brg)} · ${t.d.toFixed(1)} km from fire</span></div>
+      <div class="kv"><span class="k">est. time to fire</span><span class="v">${t.tti < 999 ? '≈ ' + t.tti.toFixed(0) + ' min' : '—'}</span></div>
+      <div class="kv"><span class="k">access</span><span class="v">${t.reachable ? '<span class="badge badge-on">reachable</span>' : '<span class="badge badge-alert">UNREACHABLE</span>'}</span></div>
+      <div class="kv"><span class="k">recommended egress</span><span class="v"><b style="color:#4ade80">head ${compass(t.safe)}</b> (${t.safe.toFixed(0)}°)</span></div>
+      <div style="font-size:10px;color:#666;margin-top:4px">Spread direction &amp; ROS are wind-driven estimates for triage — not a certified fire-behavior forecast.</div>
+    </div>`;
+}
+
+function renderEvacPlan() {
+  const el = document.getElementById('evac-plan');
+  if (!lastResponse) { el.innerHTML = '<div class="empty">Draw a bbox first</div>'; return; }
+  const ev = lastEvac, fm = ev && ev.fm, inc = (lastResponse.active_incidents || [])[0];
+  if (!inc || !fm || fm.towardDeg == null) {
+    el.innerHTML = '<div class="empty">No active fire / wind in this view — the threat model needs an active incident</div>';
+    return;
+  }
+  const c = ev.counts;
+  const lvl = l => `<span class="tbadge t-${l}">${l}</span>`;
+  const head = `<div class="brief-head">
+    <div class="brief-fire">🔥 ${escapeHtml(inc.name || 'Active fire')} — evacuation model</div>
+    <div class="brief-sub">Fire spreading <b>${compass(fm.towardDeg)}</b> (${fm.towardDeg.toFixed(0)}°) · wind ${fm.speed.toFixed(0)} mph from ${fm.fromDeg.toFixed(0)}° · est. head ROS ~${fm.rosHead.toFixed(1)} mph</div>
+    ${fm.slopeDeg != null ? `<div class="brief-sub">⛰ Terrain (USGS 3DEP): ${fm.slopeDeg.toFixed(0)}° mean slope${fm.slopeFactor > 1.05 ? ` · fire runs upslope ×${fm.slopeFactor.toFixed(1)} ROS toward ${compass(fm.upslopeDeg)}` : ' (gentle — minimal terrain effect)'}</div>` : ''}
+    <div class="brief-sub" style="color:#888">wind: ${escapeHtml(fm.src || 'n/a')} — regional sample, not yet measured at the fire</div>
+    <div class="brief-sub">${lvl('CRITICAL')} ${c.CRITICAL} · ${lvl('HIGH')} ${c.HIGH} · ${c.MODERATE} moderate · ${ev.unreachable} unreachable · ${ev.pspsAreas.length} in PSPS · ${ev.closures} closures</div>
+    <div class="evac-go" id="evac-egress">🧭 computing region-wide evacuation refuges…</div>
+  </div>`;
+  const sec = (title, inner) => `<div class="brief-group"><div class="brief-glabel">${title}</div>${inner || '<div class="brief-sub" style="padding-left:6px">— none in view —</div>'}</div>`;
+  const evac = ev.evac.map(a => `<div class="brief-row" data-id="${escapeHtml(a.event_uuid)}">
+      <span class="brief-name">${escapeHtml(a.name || a.asset_type)} <span style="color:#888">${escapeHtml(a.asset_type)}</span></span>
+      <span class="brief-meta">${a._threat.tti < 999 ? '≈' + a._threat.tti.toFixed(0) + ' min' : ''} ${a._threat.reachable ? '' : '⛔'}</span>
+      <span>${lvl(a._threat.level)}</span></div>`).join('');
+  const hosp = ev.hospitals.map(a => `<div class="brief-row" data-id="${escapeHtml(a.event_uuid)}">
+      <span class="brief-name">${escapeHtml(a.name || 'hospital')}</span>
+      <span class="brief-meta">${fmtFloat(a.travel_time_min, 0)} min · ${a._threat.sector === 'head' ? '⚠ in fire path' : 'out of path'}${a.psps_in_zone ? ' · ⚡PSPS' : ''}</span></div>`).join('');
+  const avoid = [];
+  if (ev.dangerRoads.length) avoid.push(`<div class="brief-sub" style="padding-left:6px">🚧 ${ev.dangerRoads.length} road(s) toward the fire or closed — avoid for egress</div>`);
+  if (ev.pspsAreas.length)   avoid.push(`<div class="brief-sub" style="padding-left:6px">⚡ ${ev.pspsAreas.length} asset(s) in PSPS — signals/comms may be down</div>`);
+  if (ev.unreachable)        avoid.push(`<div class="brief-sub" style="padding-left:6px">⛔ ${ev.unreachable} asset(s) already cut off (unreachable)</div>`);
+  el.innerHTML = head
+    + sec('🚨 Evacuate now — in the fire path', evac)
+    + sec('🏥 Closest hospitals (out of path, reachable)', hosp)
+    + sec('⚠ Hazards to route around', avoid.join(''));
+  el.querySelectorAll('.brief-row').forEach(r => r.addEventListener('click', () => selectAsset(r.dataset.id)));
+}
+
+// Dispatch vectors — straight lines from the top reachable responders to the
+// fire centroid, labelled with the (real, pipeline-computed) ETA. Straight-line
+// geometry because closure-adjusted route polylines aren't persisted yet (#60).
+function renderDispatchLines(incidents, assets) {
+  dispatchLayer.clearLayers();
+  const inc = incidents[0];
+  if (!inc || !inc.geometry) return;
+  let center;
+  try { center = L.geoJSON(inc.geometry).getBounds().getCenter(); } catch (_) { return; }
+  const responders = assets
+    .filter(a => ['fire_station','hospital','helibase','air_tanker_base'].includes(a.asset_type)
+              && a.score != null && a.latitude != null && a.longitude != null
+              && a.reachable_emergency !== false)
+    .sort((x, y) => y.score - x.score)
+    .slice(0, 6);
+  const fireC = [center.lat, center.lng];
+  const token = lastResponse;
+  for (const a of responders) {
+    const from = [a.latitude, a.longitude];
+    // Straight placeholder shown instantly, upgraded to the real OSRM road
+    // route when it resolves (or kept if OSRM is unreachable).
+    const straight = L.polyline([from, fireC], { color: '#4ade80', weight: 2, opacity: 0.5, dashArray: '6,5' });
+    straight.on('click', () => selectAsset(a.event_uuid));
+    dispatchLayer.addLayer(straight);
+    fetchRoute(from, fireC).then(r => {
+      if (lastResponse !== token || !r) return;
+      dispatchLayer.removeLayer(straight);
+      const road = L.polyline(r.route, { color: '#4ade80', weight: 3, opacity: 0.85 });
+      road.bindTooltip(`<b>${escapeHtml(a.name || a.asset_type)}</b> → fire (road route)<br>${fmtFloat(r.duration_min, 0)} min · ${fmtFloat(r.distance_km, 1)} km`);
+      road.on('click', () => selectAsset(a.event_uuid));
+      dispatchLayer.addLayer(road);
+    });
+  }
+}
+
+// ─── 🏁 Evacuation refuges (bbox-INDEPENDENT) + escape ladder ────────────
+// Calls /api/infrastructure/evac-plan, which scores candidate cities REGION-
+// WIDE (not just inside the view bbox) — so the safe valley city (Chico) is
+// found even though it sits outside the fire view. Each city carries a 6-factor
+// score + a refuge LABEL; click a marker for the full breakdown + reasons.
+const REFUGE_LABELS = {
+  strategic: { col: '#2563eb', icon: '🔵', txt: 'Strategic Refuge' },   // safe now + under wind shifts + onward escape
+  safe:      { col: '#16a34a', icon: '🟢', txt: 'Safe Refuge' },        // safe now, limited onward options
+  temporary: { col: '#f59e0b', icon: '🟡', txt: 'Temporary Refuge' },   // short-term waypoint only
+  unsafe:    { col: '#dc2626', icon: '🔴', txt: 'Unsafe' },             // in path / fails wind-shift / no escape
+};
+const refugeLabel = (c) => REFUGE_LABELS[c.label] || REFUGE_LABELS.temporary;
+
+// On-demand: render ONE city's infrastructure (clicked) into its own layer,
+// clearing any previously-shown city — keeps the map decluttered, you opt in per
+// city. Works for any community (refuge OR threatened: Paradise, Magalia, Chico…).
+async function showCityInfra(lat, lon, cityName) {
+  cityInfraLayer.clearLayers();
+  if (lat == null || lon == null) return;
+  const dd = 0.09;   // ≈10 km box around the city
+  let resp;
+  try {
+    resp = await fetchJSON(`/api/infrastructure/by-bbox?lat_min=${lat - dd}&lat_max=${lat + dd}&lon_min=${lon - dd}&lon_max=${lon + dd}&limit=2000`);
+  } catch (_) { return; }
+  const assets = (resp.assets || []).filter(a => a.geometry
+    && a.asset_type !== 'active_incident' && a.asset_type !== 'road_local'
+    && a.asset_type !== 'urban_area' && a.asset_type !== 'river');   // rivers excluded — clicking a city shows its infrastructure, not creeks
+  for (const a of assets) {
+    const color = a.color || '#888';
+    const isWater = (a.asset_type === 'lake' || a.asset_type === 'reservoir');
+    const isRoad  = (a.asset_type === 'road_major');
+    const drawCol = isWater ? '#7aa6cc' : color;
+    const layer = L.geoJSON(a.geometry, {
+      style: () => ({ color: drawCol, weight: isRoad ? 3 : (isWater ? 1 : 2), opacity: isWater ? 0.35 : 0.9, fillOpacity: isWater ? 0.07 : 0.2 }),
+      pointToLayer: (_, ll) => L.circleMarker(ll, { radius: 5, color, fillColor: color, fillOpacity: 0.85, weight: 1 }),
+    });
+    const sTxt = a.score != null ? ` · score ${fmtFloat(a.score, 2)}` : '';
+    const coord = (a.latitude != null) ? `<br><span style="color:#888">${a.latitude.toFixed(5)}, ${a.longitude.toFixed(5)}</span>` : '';
+    layer.bindPopup(`<b>${escapeHtml(a.name || a.asset_type)}</b><br>${escapeHtml(a.asset_type)} · ${escapeHtml(a.provider)}${sTxt}${coord}`);
+    cityInfraLayer.addLayer(layer);
+  }
+}
+
+async function renderRefuges(fm) {
+  refugeLayer.clearLayers();
+  const egEl = document.getElementById('evac-egress');
+  if (!fm || fm.towardDeg == null) { if (egEl) egEl.textContent = ''; return; }
+  const token = lastResponse;
+  let plan;
+  try {
+    plan = await fetchJSON(`/api/infrastructure/evac-plan?fire_lat=${fm.lat}&fire_lon=${fm.lng}&toward=${fm.towardDeg.toFixed(1)}`);
+  } catch (_) { if (egEl) egEl.textContent = '🧭 evacuation refuges unavailable'; return; }
+  if (lastResponse !== token) return;
+  const cities = plan.cities || [], chain = plan.chain || [];
+  const byName = {};
+  for (const c of cities) {
+    byName[c.name] = c;
+    const inChain = chain.includes(c.name);
+    const lab = refugeLabel(c);
+    const m = L.circleMarker([c.lat, c.lon], {
+      radius: inChain ? 10 : 6, color: inChain ? '#0b3b7a' : '#222',
+      weight: inChain ? 3 : 1, fillColor: lab.col, fillOpacity: 0.85,
+    });
+    const bd = c.breakdown || {};
+    m.bindPopup(
+      `<b>${escapeHtml(c.name)}</b> ${lab.icon} <b>${lab.txt}</b> — ${c.score}/100` +
+      (inChain ? ` <span style="color:#16a34a">★ recommended</span>` : '') +
+      `<br>${c.dist_km} km from fire · ${c.elev_m != null ? c.elev_m + ' m' : 'elev n/a'} · ${c.diversity} escape dir · wind-shift ${Math.round((c.wind_survival || 0) * 5)}/5 · ${c.downstream} onward · ${c.hospitals} hosp` +
+      `<br><span style="color:#888">fire ${bd.fire}/35 · persistence ${bd.persistence}/20 · diversity ${bd.diversity}/15 · terrain ${bd.terrain}/15 · wind ${bd.windshift}/10 · services ${bd.services}/5</span>` +
+      `<br>${(c.reasons || []).map(escapeHtml).join('<br>')}` +
+      `<br><span style="color:#48dbfb">📍 click → this city's infrastructure on the map</span>`
+    );
+    m.on('click', () => showCityInfra(c.lat, c.lon, c.name));   // on-demand infrastructure
+    refugeLayer.addLayer(m);
+  }
+  // Escape-ladder road routes: fire → hop1 → hop2 (real OSRM roads, highlighted).
+  const seq = [[fm.lat, fm.lng], ...chain.map(n => byName[n]).filter(Boolean).map(c => [c.lat, c.lon])];
+  for (let i = 0; i + 1 < seq.length; i++) {
+    const from = seq[i], to = seq[i + 1], hopName = chain[i] || '';
+    fetchRoute(from, to).then(r => {
+      if (lastResponse !== token) return;
+      const pts = (r && r.route) ? r.route : [from, to];
+      const road = L.polyline(pts, { color: '#16a34a', weight: 5, opacity: 0.95 });
+      road.bindTooltip(`🚗 Escape ladder · hop ${i + 1} → ${escapeHtml(hopName)}<br>` +
+        (r ? `${fmtFloat(r.duration_min, 0)} min · ${fmtFloat(r.distance_km, 1)} km by road` : 'straight-line (no road route)'));
+      refugeLayer.addLayer(road);
+    });
+  }
+  if (egEl) {
+    if (chain.length) {
+      const cc = chain.map(n => byName[n]).filter(Boolean);
+      egEl.innerHTML = '🧭 Escape ladder: <b>' + chain.map(escapeHtml).join('</b> → <b>') + '</b>' +
+        ' <span style="color:#9be7a8">(' + cc.map(c => `${c.name} ${c.score}/100`).join(' · ') + ')</span>';
+    } else {
+      egEl.textContent = '🧭 No survivable refuge city found in range (ingest more valley cities to extend the ladder).';
+    }
+  }
+  renderTownEvac(fm, cities, byName);   // per-town: each threatened town → its own refuge + route
+  // Infrastructure for refuge cities is shown ON DEMAND (click a refuge marker)
+  // via showCityInfra() — auto-rendering every refuge's assets cluttered the map.
+  // bbox-UX: nudge the view to include the fire bbox + the NEAREST refuge only
+  // (not the whole ladder out to Oroville) — keeps the in-bbox infrastructure
+  // assets visible at detail rather than shrinking them out of view.
+  if (chain.length && lastResponse === token) {
+    const bb = lastResponse.bbox;
+    const pts = [[bb.lat_min, bb.lon_min], [bb.lat_max, bb.lon_max]];
+    const first = byName[chain[0]];
+    if (first) pts.push([first.lat, first.lon]);
+    try { map.fitBounds(L.latLngBounds(pts).pad(0.08), { maxZoom: 13, animate: true }); } catch (_) {}
+  }
+}
+
+// ─── 🏘 Per-town evacuation: each threatened community → its OWN refuge ──
+// Mirrors how evacuation is actually planned (Paradise→Chico, Concow→Oroville).
+// Hard rule: a town's refuge route may NOT head into the projected spread
+// sector — even if the city scores well otherwise.
+function renderTownEvac(fm, cities, byName) {
+  const el = document.getElementById('town-evac');
+  if (!el) return;
+  if (!fm || fm.towardDeg == null) { el.innerHTML = '<div class="empty">No active fire in view</div>'; return; }
+  const toward = fm.towardDeg;
+  const seenTown = new Set();
+  const towns = (lastResponse.assets || [])
+    .filter(a => a.asset_type === 'urban_area' && a._threat)
+    .sort((a, b) => a._threat.tti - b._threat.tti)
+    .filter(a => {                                            // dedup Place vs Urban-Area duplicates
+      const k = (a.name || '').split(',')[0].trim().toLowerCase();
+      if (seenTown.has(k)) return false; seenTown.add(k); return true;
+    });
+  if (!towns.length) {
+    el.innerHTML = '<div class="empty">No mapped community polygons in view — ingest the TIGER Places layer for finer towns (Paradise, Concow…).</div>';
+    return;
+  }
+  // TTI-driven urgency: a town with little time-to-impact should flee to the
+  // NEAREST survivable refuge (minimise travel); a town with hours can aim for
+  // the BEST long-term refuge. urgency = 1 at TTI≤30 min, 0 at TTI≥4 h.
+  const refugesFor = (town) => {
+    const tti = town._threat.tti;
+    const urgency = Math.min(1, Math.max(0, (240 - tti) / 210));
+    return cities.filter(c => {
+      if (c.name === town.name) return false;
+      if (!(c.label === 'strategic' || c.label === 'safe')) return false;  // only real refuges (valley + wind-shift safe + escape corridors)
+      if (c.dist_km <= (town._threat.d || 0) + 1) return false;        // must be further from the fire than the town
+      const b = bearingDeg(town.latitude, town.longitude, c.lat, c.lon);
+      if (angDiff(b, toward) <= 40) return false;                      // HARD RULE: don't route into the spread sector
+      return true;
+    }).map(c => {
+      const travelKm = haversineKm(town.latitude, town.longitude, c.lat, c.lon);
+      return { c, rank: c.score - urgency * travelKm * 3 };            // urgent towns penalise distant refuges
+    }).sort((x, y) => y.rank - x.rank).map(o => o.c);
+  };
+
+  let html = '<div class="brief-sub" style="margin-bottom:6px;color:#9aa">🔵 Strategic · 🟢 Safe · 🟡 Temporary · 🔴 Unsafe</div>';
+  for (const town of towns) {
+    const t = town._threat, lvlc = THREAT_COLORS[t.level] || '#888';
+    const urgency = Math.min(1, Math.max(0, (240 - t.tti) / 210));
+    const mode = t.tti <= 30 ? 'URGENT → nearest survivable refuge'
+               : t.tti >= 240 ? 'time available → best long-term refuge'
+               : 'balanced (nearest vs best, by time)';
+    const cand = refugesFor(town), rec = cand[0], bak = cand[1];
+    const uid = String(town.event_uuid);
+    html += `<div class="mod-block" style="border-left:3px solid ${lvlc}">
+      <div class="title">🏘 ${escapeHtml(town.name)}</div>
+      <div class="kv"><span class="k">threat</span><span class="v"><span class="tbadge t-${t.level}">${t.level}</span></span></div>
+      <div class="kv"><span class="k">time to fire</span><span class="v">${t.tti < 999 ? '≈ ' + t.tti.toFixed(0) + ' min' : '—'}</span></div>
+      <div class="kv"><span class="k">spread dir</span><span class="v">${compass(toward)}</span></div>
+      <div class="kv"><span class="k">strategy</span><span class="v" style="font-size:11px;color:#9aa">${mode}</span></div>
+      <div class="kv"><span class="k">recommended refuge</span><span class="v">${rec ? refugeLabel(rec).icon + ' <b style="color:#16a34a">' + escapeHtml(rec.name) + '</b> (' + rec.score + '/100)' : '<span style="color:#ee5253">none clear of the spread!</span>'}</span></div>
+      <div class="kv"><span class="k">route</span><span class="v" id="troute-${uid}">${rec ? 'computing…' : '—'}</span></div>
+      <div class="kv"><span class="k">backup refuge</span><span class="v">${bak ? refugeLabel(bak).icon + ' ' + escapeHtml(bak.name) + ' (' + bak.score + '/100)' : '—'}</span></div>
+    </div>`;
+    if (rec) {
+      const from = [town.latitude, town.longitude], to = [rec.lat, rec.lon], token = lastResponse;
+      fetchRoute(from, to).then(rt => {
+        if (lastResponse !== token) return;
+        const pts = (rt && rt.route && rt.route.length > 1) ? rt.route : [from, to];
+        const nxt = pts[Math.min(3, pts.length - 1)];
+        const b0 = bearingDeg(from[0], from[1], nxt[0], nxt[1]);
+        const risk = angDiff(b0, toward) <= 35 ? 'HIGH' : angDiff(b0, toward) <= 70 ? 'MED' : 'LOW';
+        const riskCol = risk === 'LOW' ? '#4ade80' : risk === 'MED' ? '#feca57' : '#ee5253';
+        const road = L.polyline(pts, { color: '#16a34a', weight: 4, opacity: 0.9 });
+        road.bindTooltip(`🚗 ${escapeHtml(town.name)} → ${escapeHtml(rec.name)}<br>${rt ? fmtFloat(rt.duration_min, 0) + ' min · ' + fmtFloat(rt.distance_km, 1) + ' km' : 'straight-line'} · risk ${risk}`);
+        refugeLayer.addLayer(road);
+        const cell = document.getElementById('troute-' + uid);
+        if (cell) cell.innerHTML = (rt ? fmtFloat(rt.duration_min, 0) + ' min · ' + fmtFloat(rt.distance_km, 1) + ' km' : 'straight-line') +
+          ` · risk <b style="color:${riskCol}">${risk}</b>`;
+      });
+    }
+  }
+  el.innerHTML = html;
+}
+
+// ─── Selection + asset-detail rendering ─────────────────────────────────
+
+function selectAsset(eventUuid) {
+  const a = assetsById.get(eventUuid);
+  if (!a) return;
+
+  // Highlight the priority-table row + asset-table row if either is visible.
+  document.querySelectorAll('.priority-table tr, .asset-table tr.asset-row')
+    .forEach(r => r.classList.remove('selected'));
+  document.querySelectorAll(`tr[data-id="${eventUuid}"]`)
+    .forEach(r => { r.classList.add('selected'); r.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+
+  const layer = layersById.get(eventUuid);
+  if (layer) {
+    try {
+      const b = layer.getBounds();
+      map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+    } catch (_) {
+      map.setView([a.latitude, a.longitude], 14);
+    }
+  }
+
+  // active_incident has no score / modifiers — render a slimmer panel.
+  if (a.asset_type === 'active_incident') {
+    document.getElementById('asset-detail').innerHTML = renderIncidentDetail(a);
+    return;
+  }
+  document.getElementById('asset-detail').innerHTML = renderAssetDetail(a);
+}
+
+function renderIncidentDetail(inc) {
+  const x = inc.incident_attrs || {};
+  return `
+    <div style="background:#2a1818;padding:8px;border-radius:4px;border-left:3px solid #e74c3c;margin-bottom:8px">
+      <div style="font-weight:700;color:#ff6b6b">🔥 Active Fire Incident</div>
+      <div style="font-size:11px;color:#888">${escapeHtml(inc.name || 'Unnamed incident')} · ${escapeHtml(inc.provider)}</div>
+    </div>
+    <div class="mod-block">
+      <div class="title">NIFC Dispatch Context</div>
+      <div class="kv"><span class="k">GACC</span><span class="v">${escapeHtml(x.GACC || '—')} · ${escapeHtml(x.RegionId || '')}</span></div>
+      <div class="kv"><span class="k">Preparedness Level</span><span class="v"><b>${escapeHtml(x.PreparednessLevel ?? '—')}</b> / 5</span></div>
+      <div class="kv"><span class="k">New fires today</span><span class="v">${escapeHtml(x.SITREP_NewFires ?? '—')}</span></div>
+      <div class="kv"><span class="k">Active large fires</span><span class="v">${escapeHtml(x.Active_Large_Fires ?? '—')}</span></div>
+      <div class="kv"><span class="k">New large fires</span><span class="v">${escapeHtml(x.SITREP_NewLargeFires ?? '—')}</span></div>
+      <div class="kv"><span class="k">Initial attack activity</span><span class="v">${escapeHtml(x.Initial_Attack_Activity ?? '—')}</span></div>
+      <div class="kv"><span class="k">Wind (drives cone)</span><span class="v">${(x.WindSpd != null && x.WindDir != null) ? escapeHtml(x.WindSpd) + ' mph from ' + escapeHtml(x.WindDir) + '°' + (x.WindSource ? ' (' + escapeHtml(x.WindSource) + ')' : '') : '—'}</span></div>
+    </div>
+    <div class="mod-block">
+      <div class="title">Provenance</div>
+      <div class="kv"><span class="k">provider</span><span class="v"><span class="provider-pill provider-${(inc.provider || '').toLowerCase()}">${escapeHtml(inc.provider)}</span></span></div>
+      <div class="kv"><span class="k">upstream_id</span><span class="v" style="font-size:10px">${escapeHtml(inc.provider_original_id)}</span></div>
+      <div class="kv"><span class="k">ingested</span><span class="v">${fmtDate(inc.ingestion_timestamp)}</span></div>
+      <div class="kv"><span class="k">event_uuid</span><span class="v" style="font-size:10px">${escapeHtml(inc.event_uuid)}</span></div>
+    </div>`;
+}
+
+function renderAssetDetail(a) {
+  // Build the asset-detail panel section-by-section. Each section maps to
+  // one of the architecture's Phase 4 layers; sections are omitted when
+  // the underlying data isn't populated so the panel stays compact.
+  const sections = [];
+  sections.push(renderIdentitySection(a));
+  if (a._threat) sections.push(renderThreatSection(a));
+  if (a.score != null)        sections.push(renderScoreSection(a));
+  if (a.modifiers && Object.keys(a.modifiers).length > 0) sections.push(renderModifierSection(a));
+  if (a.psps_in_zone != null || a.psps_response_class) sections.push(renderInfrastructureStateSection(a));
+  if (a.travel_time_min != null || a.reachable_emergency != null) sections.push(renderRoutingSection(a));
+  if (a.wind_source || a.wind_speed_mph != null) sections.push(renderWindSection(a));
+  sections.push(renderProvenanceSection(a));
+  return sections.filter(Boolean).join('');
+}
+
+function renderIdentitySection(a) {
+  return `
+    <div class="mod-block">
+      <div class="title">Identity</div>
+      <div class="kv"><span class="k">name</span><span class="v"><b>${escapeHtml(a.name || '(unnamed)')}</b></span></div>
+      <div class="kv"><span class="k">asset_type</span><span class="v"><span class="type-swatch" style="background:${escapeHtml(a.color)}"></span>${escapeHtml(a.asset_type)}</span></div>
+      <div class="kv"><span class="k">provider</span><span class="v"><span class="provider-pill provider-${(a.provider || '').toLowerCase()}">${escapeHtml(a.provider)}</span></span></div>
+      <div class="kv"><span class="k">lat,lon</span><span class="v" style="font-family:ui-monospace,monospace">${fmtFloat(a.latitude, 5)}, ${fmtFloat(a.longitude, 5)}</span></div>
+      <div class="kv"><span class="k">geometry</span><span class="v">${escapeHtml(a.geometry?.type || '—')}</span></div>
+    </div>`;
+}
+
+function renderScoreSection(a) {
+  // Modifier breakdown — derive the base score from final = base × total
+  // (or the product of available modifiers when `total` is absent). This
+  // is the visual expression of how the modifier pipeline arrived at the
+  // operator-facing priority value.
+  const mods = a.modifiers || {};
+  const total = (mods.total != null) ? mods.total
+    : ((mods.fire != null ? mods.fire : 1) *
+       (mods.smoke != null ? mods.smoke : 1) *
+       (mods.psps  != null ? mods.psps  : 1));
+  const base = (total && total > 0) ? (a.score / total) : null;
+
+  const eq = (k, v, op) =>
+    `<div><span class="label">${k}</span><span class="op">${op}</span> <span class="val" style="color:${modifierColor(v)}">${fmtFloat(v, 4)}</span></div>`;
+
+  const equationLines = [
+    `<div><span class="label">Base Score</span><span class="val">${fmtFloat(base, 4)}</span></div>`,
+  ];
+  if (mods.fire   != null) equationLines.push(eq('Fire',  mods.fire,  '×'));
+  if (mods.smoke  != null) equationLines.push(eq('Smoke', mods.smoke, '×'));
+  if (mods.psps   != null) equationLines.push(eq('PSPS',  mods.psps,  '×'));
+  if (mods.total  != null) equationLines.push(`<div style="border-top:1px dashed #444;margin-top:2px;padding-top:2px"><span class="label">Total modifier</span><span class="val" style="color:${modifierColor(mods.total)}">${fmtFloat(mods.total, 4)}</span></div>`);
+  equationLines.push(`<div class="final"><span class="label">Final Score</span><span class="val">${fmtFloat(a.score, 4)}</span></div>`);
+
+  return `
+    <div class="mod-block">
+      <div class="title">Score Breakdown · ${escapeHtml(a.score_category || '—')} · ${escapeHtml(a.formula_family || '—')} v${escapeHtml(a.formula_version ?? '?')}</div>
+      ${a.formula_text ? `<div class="mod-formula">${escapeHtml(a.formula_text)}</div>` : ''}
+      <div class="mod-equation">
+        ${equationLines.join('')}
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:6px;line-height:1.45">
+        Raw weighted score (formula above) × situational modifiers. <b>Not a 0–1 global rank</b> —
+        scales differ by asset type, and it is <b>relative to THIS fire</b> (distance via ${escapeHtml(a.distance_proxy_used || 'km')}),
+        so assets far from the fire score near 0. Higher = more operationally critical for this incident.
+      </div>
+    </div>`;
+}
+
+function renderModifierSection(a) {
+  // Per-modifier bars. Each row shows the multiplier value plus a bar
+  // centered at 1.0 — left of center = dampening (<1), right = uplift (>1).
+  // Variant + response_class fields directly below show the architectural
+  // "state vs effect" distinction.
+  const mods = a.modifiers || {};
+  const bar = (k, v) => {
+    if (v == null) return '';
+    // Map value to bar fill: 0 = full-left, 1 = center, 2+ = full-right.
+    const clamped = Math.min(2, Math.max(0, v));
+    const widthPct = Math.abs(clamped - 1) * 50;
+    const leftPct  = clamped < 1 ? (50 - widthPct) : 50;
+    const color = modifierColor(v);
+    return `
+      <div class="mod-bar-row">
+        <span class="k">${k}</span>
+        <div class="bar">
+          <div class="bar-tick"></div>
+          <div class="bar-fill" style="background:${color};left:${leftPct}%;width:${widthPct}%"></div>
+        </div>
+        <span class="v" style="color:${color}">${fmtFloat(v, 3)}</span>
+      </div>`;
+  };
+
+  const variantBadge = (label, variant) => {
+    if (!variant) return '';
+    const isNeutral = (variant.startsWith('no_') || variant === 'perimeter_only');
+    const cls = isNeutral ? 'badge-off' : 'badge-info';
+    return `<div class="kv"><span class="k">${label}</span><span class="v"><span class="badge ${cls}">${escapeHtml(variant)}</span></span></div>`;
+  };
+
+  return `
+    <div class="mod-block">
+      <div class="title">Modifier Visualization · v${escapeHtml(a.modifier_version ?? '?')}</div>
+      <div style="margin: 4px 0 8px">
+        ${bar('fire',           mods.fire)}
+        ${bar('fire_perimeter', mods.fire_perimeter)}
+        ${bar('fire_wind',      mods.fire_wind)}
+        ${bar('smoke',          mods.smoke)}
+        ${bar('psps',           mods.psps)}
+        ${mods.total != null ? bar('total',  mods.total) : ''}
+      </div>
+      ${variantBadge('fire_variant',  a.fire_modifier_variant)}
+      ${variantBadge('smoke_variant', a.smoke_modifier_variant)}
+      ${variantBadge('psps_variant',  a.psps_modifier_variant)}
+      ${a.smoke_response_class ? `<div class="kv"><span class="k">smoke_response</span><span class="v">${escapeHtml(a.smoke_response_class)}</span></div>` : ''}
+      ${a.smoke_density_class  ? `<div class="kv"><span class="k">smoke_density</span><span class="v">${escapeHtml(a.smoke_density_class)}</span></div>` : ''}
+    </div>`;
+}
+
+function renderInfrastructureStateSection(a) {
+  // Phase 4.5d "State vs Effect" panel — operationally what this asset
+  // IS (inside a PSPS zone or not) is separate from what it RECEIVES
+  // (the PSPS multiplier). Both are rendered here for completeness.
+  const zoneBadge = a.psps_in_zone
+    ? '<span class="badge badge-alert">IN PSPS ZONE</span>'
+    : '<span class="badge badge-off">Not in PSPS zone</span>';
+  return `
+    <div class="mod-block">
+      <div class="title">Infrastructure State (Phase 4.5d)</div>
+      <div class="kv"><span class="k">PSPS</span><span class="v">${zoneBadge}</span></div>
+      ${a.psps_response_class ? `<div class="kv"><span class="k">psps_response_class</span><span class="v"><b>${escapeHtml(a.psps_response_class)}</b></span></div>` : ''}
+      <div style="font-size:10px;color:#666;margin-top:4px">
+        State = "what this asset IS". Effect = the psps multiplier in the modifier breakdown.
+      </div>
+    </div>`;
+}
+
+function renderRoutingSection(a) {
+  // Routing state — Phase 4.1 enrichment. Shows real-vs-Haversine source
+  // so analysts can filter out estimated rows when precision matters.
+  const reachable = a.reachable_emergency === true;
+  const reachableBadge = a.reachable_emergency == null
+    ? '<span class="badge badge-off">unknown</span>'
+    : (reachable
+        ? '<span class="badge badge-on">REACHABLE</span>'
+        : '<span class="badge badge-alert">UNREACHABLE</span>');
+  const closureBadge = (a.closure_count > 0)
+    ? `<span class="badge badge-warn">${a.closure_count} closure${a.closure_count===1?'':'s'}</span>`
+    : '<span class="badge badge-off">no closures</span>';
+  const sourceBadge = a.travel_time_source === 'osrm'
+    ? '<span class="badge badge-on">osrm</span>'
+    : (a.travel_time_source === 'estimated'
+        ? '<span class="badge badge-warn">haversine-estimate</span>'
+        : `<span class="badge badge-off">${escapeHtml(a.travel_time_source || '—')}</span>`);
+  return `
+    <div class="mod-block">
+      <div class="title">Routing State · v${escapeHtml(a.routing_version ?? '?')}</div>
+      <div class="kv"><span class="k">travel_time</span><span class="v"><b style="color:#48dbfb">${fmtFloat(a.travel_time_min, 1)}</b> min · ${fmtFloat(a.travel_distance_km, 1)} km</span></div>
+      <div class="kv"><span class="k">source</span><span class="v">${sourceBadge}</span></div>
+      <div class="kv"><span class="k">reachable</span><span class="v">${reachableBadge}</span></div>
+      <div class="kv"><span class="k">closures</span><span class="v">${closureBadge}</span></div>
+    </div>`;
+}
+
+function renderWindSection(a) {
+  return `
+    <div class="mod-block">
+      <div class="title">Wind Enrichment · v${escapeHtml(a.wind_enrichment_version ?? '?')}</div>
+      <div class="kv"><span class="k">source</span><span class="v">${escapeHtml(a.wind_source || '—')}</span></div>
+      <div class="kv"><span class="k">speed</span><span class="v">${fmtFloat(a.wind_speed_mph, 1)} mph</span></div>
+      <div class="kv"><span class="k">direction</span><span class="v">${fmtFloat(a.wind_direction_deg, 0)}°</span></div>
+    </div>`;
+}
+
+function renderProvenanceSection(a) {
+  return `
+    <div class="mod-block">
+      <div class="title">Provenance</div>
+      <div class="kv"><span class="k">asset_id</span><span class="v" style="font-size:10px">${escapeHtml(a.asset_id)}</span></div>
+      <div class="kv"><span class="k">upstream_id</span><span class="v" style="font-size:10px">${escapeHtml(a.provider_original_id)}</span></div>
+      <div class="kv"><span class="k">ingested</span><span class="v">${fmtDate(a.ingestion_timestamp)}</span></div>
+      ${a.source_url ? `<div class="kv"><span class="k">source_url</span><span class="v"><a href="${escapeHtml(a.source_url)}" target="_blank" style="color:#48dbfb;font-size:10px">${escapeHtml(a.source_url.slice(0, 50))}…</a></span></div>` : ''}
+      <div class="kv"><span class="k">event_uuid</span><span class="v" style="font-size:10px">${escapeHtml(a.event_uuid)}</span></div>
+    </div>`;
+}
+</script>
+<div style="position:fixed;bottom:8px;left:8px;z-index:9999;background:#14181f;border:1px solid #2a3340;border-radius:6px;padding:6px 10px;font:12px system-ui;color:#9aa">📸 Static snapshot — PARK Fire demo (fixed area). Live tool supports any bbox.</div>
+</body>
+</html>
