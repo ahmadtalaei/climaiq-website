@@ -11,6 +11,7 @@
     { "source": "/api/terrain/sample", "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch" }
   ],
   "redirects": [
+    { "source": "/fuels-explorer", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/explorer", "permanent": false },
     { "source": "/map", "destination": "/firemap" },
     { "source": "/fire-chief", "destination": "/platform/fire-chief" },
     { "source": "/architecture", "destination": "/platform/architecture" },
