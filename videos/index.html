@@ -12,7 +12,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ClimaIQ — Videos</title>
-  <meta name="description" content="Watch 12 videos showcasing the ClimaIQ wildfire intelligence platform — AI-powered prediction, real-time detection, and multi-stakeholder interfaces.">
+  <meta name="description" content="Watch 20 videos showcasing the ClimaIQ wildfire intelligence platform — AI-powered prediction, real-time detection, multi-stakeholder interfaces — plus the 3D under-canopy fuels research demo series.">
   <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
   <link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -376,10 +376,10 @@
   <div class="hero">
     <div class="hero-badge">Wilkes Climate Innovation Prize 2026 &mdash; Video Showcase</div>
     <h1>See ClimaIQ in Action</h1>
-    <p class="hero-subtitle">12 videos showcasing the wildfire intelligence platform &mdash; from real-time satellite fire detection to AI-powered risk prediction, built to protect communities and accelerate climate resilience.</p>
+    <p class="hero-subtitle">20 videos &mdash; the wildfire intelligence platform (real-time satellite detection to AI-powered risk prediction) plus our 3D under-canopy fuels research demo series, built to protect communities and accelerate climate resilience.</p>
     <div class="hero-stats">
       <div class="hero-stat">
-        <span class="hero-stat-value">12</span>
+        <span class="hero-stat-value">20</span>
         <span class="hero-stat-label">Videos</span>
       </div>
       <div class="hero-stat">
@@ -642,6 +642,147 @@
           </div>
           <h3>Multi-Tier Storage System &mdash; Technical Deep Dive</h3>
           <p>Comprehensive technical presentation of the hybrid storage architecture. Covers the 4-tier design rationale, PostgreSQL (hot) to TimescaleDB (warm) to Parquet/S3 (cold) to Glacier (archive) pipeline, automatic lifecycle policies, cross-tier query optimization, disaster recovery with 3x replication, capacity planning models, and cost analysis showing 97.5% storage cost reduction &mdash; validated for climate data platforms requiring long-term retention and real-time access.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Section F: 3D Under-Canopy Fuels -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">Section F</div>
+      <h2 class="section-title">3D Under-Canopy Fuels &mdash; Research Demo Series</h2>
+      <p class="section-desc">Estimating meter-scale under-canopy fuel structure &mdash; the near-surface layer that drives fire behavior yet is hidden below the canopy &mdash; from multi-sensor evidence, with every estimate carrying an explicit confidence set by how much was actually measured versus inferred, and validated against terrestrial laser scanning.</p>
+    </div>
+    <div class="video-grid single">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-0-main-presentation.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">7:29</span>
+          </div>
+          <h3>Demo 0 &mdash; Main Presentation</h3>
+          <p>Overview of the 3D surface-fuels intelligence engine: estimating meter-scale under-canopy fuel structure from multi-sensor evidence, with each estimate carrying an explicit confidence driven by how much was measured versus inferred &mdash; separating fuel <em>amount</em> (mass) from fuel <em>structure</em> (arrangement).</p>
+        </div>
+      </div>
+    </div>
+    <div class="video-grid" style="margin-top:1.5rem">
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-1-evidence-explorer.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">14:27</span>
+          </div>
+          <h3>Demo 1 &mdash; The Evidence Explorer</h3>
+          <p>Walkthrough of the interactive Explorer: draw an area of interest, discover the available evidence (aerial, radar, terrain, terrestrial laser scans), and inspect the reconstructed 3D fuel cube. Every product is labeled Measured / Derived / Inferred, so you can see exactly what each estimate rests on.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-2-innovation-methodology.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">4:34</span>
+          </div>
+          <h3>Demo 2 &mdash; Innovation &amp; Methodology</h3>
+          <p>The core method: treat fuel amount and fuel structure as independent, and use terrestrial-laser-scan evidence of the ecological state to generate realistic under-canopy structure through a mechanistic canopy &rarr; shade &rarr; litter &rarr; grass &rarr; shrub assembly rather than a black-box fit.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-3-validation.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">5:04</span>
+          </div>
+          <h3>Demo 3 &mdash; Validation</h3>
+          <p>Honest validation against held-out terrestrial laser scanning: mass recovery at R&sup2;&asymp;0.61 on the Fort Stewart benchmark, blind occupancy-versus-structure checks across three real-TLS ecosystems, and explicit reporting of where the model is confident and where it is not.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-4-operational-utility.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">4:05</span>
+          </div>
+          <h3>Demo 4 &mdash; Operational Utility</h3>
+          <p>Operational use, including closed-loop active sensing: ranking the next observations that would most reduce fuel uncertainty for a given area, so limited field and scan effort is spent where it changes the answer the most.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-5-scalability.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">5:06</span>
+          </div>
+          <h3>Demo 5 &mdash; Scalability</h3>
+          <p>How the approach scales from single plots to landscape and national extents, and the design for extending the meter-scale reconstruction beyond the validated sites.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-6-interoperability.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">3:34</span>
+          </div>
+          <h3>Demo 6 &mdash; Interoperability</h3>
+          <p>End-to-end interoperability: exporting the reconstructed fuels into standard fire-modeling pipelines &mdash; a live path from the 3D fuel cube through FastFuels into a QUIC-Fire simulation.</p>
+        </div>
+      </div>
+
+      <div class="video-card">
+        <div class="video-wrapper">
+          <video controls preload="metadata">
+            <source src="/videos/3d-fuels/demo-7-visualization.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="video-info">
+          <div class="video-meta">
+            <span class="video-tag">3D Fuels</span>
+            <span class="video-duration">3:31</span>
+          </div>
+          <h3>Demo 7 &mdash; Visualization</h3>
+          <p>The 3D visualization layer: exploring the reconstructed under-canopy fuel volume interactively, from the canopy down to the near-surface grass, shrub, and litter layers.</p>
         </div>
       </div>
     </div>

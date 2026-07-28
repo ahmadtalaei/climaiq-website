@@ -29,6 +29,34 @@
     navToggle.classList.toggle('active');
   });
 
+  // --- "Interactive Maps" dropdown ---
+  // The trigger is a real link (firemap/index.html) as a no-JS fallback, but with JS a click/tap
+  // must OPEN the submenu (Fire Explorer / Evacuation Planner) instead of navigating away.
+  document.querySelectorAll('.nav-dd > a').forEach(function (toggle) {
+    var dd = toggle.parentElement;
+    toggle.addEventListener('click', function (e) {
+      e.preventDefault();
+      var isOpen = dd.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+  });
+
+  function closeDropdowns() {
+    document.querySelectorAll('.nav-dd.open').forEach(function (dd) {
+      dd.classList.remove('open');
+      var t = dd.querySelector('a');
+      if (t) { t.setAttribute('aria-expanded', 'false'); }
+    });
+  }
+  // close when clicking outside an open dropdown (clicks on the trigger/sub-items are inside it)
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-dd')) { closeDropdowns(); }
+  });
+  // close on Escape
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeDropdowns(); }
+  });
+
   // --- Navbar scroll effect ---
   var nav = document.getElementById('nav');
   var lastScroll = 0;
