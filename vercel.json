@@ -3,6 +3,19 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/fuelmap", "destination": "https://structured-radar-casa-network.trycloudflare.com/explorer" },
+    { "source": "/explorer", "destination": "https://structured-radar-casa-network.trycloudflare.com/explorer" },
+    { "source": "/aoi/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/aoi/:path*" },
+    { "source": "/static/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/static/:path*" },
+    { "source": "/intelimon/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/intelimon/:path*" },
+    { "source": "/fuels/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/fuels/:path*" },
+    { "source": "/tiles/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/tiles/:path*" },
+    { "source": "/sites", "destination": "https://structured-radar-casa-network.trycloudflare.com/sites" },
+    { "source": "/sites/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/sites/:path*" },
+    { "source": "/rasters", "destination": "https://structured-radar-casa-network.trycloudflare.com/rasters" },
+    { "source": "/rasters/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/rasters/:path*" },
+    { "source": "/cubes", "destination": "https://structured-radar-casa-network.trycloudflare.com/cubes" },
+    { "source": "/cubes/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/cubes/:path*" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
     { "source": "/videos", "destination": "/videos/index.html" },
@@ -11,7 +24,6 @@
     { "source": "/api/terrain/sample", "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch" }
   ],
   "redirects": [
-    { "source": "/fuelmap", "destination": "https://fuelmap.climaiq.tech/explorer", "permanent": false },
     { "source": "/map", "destination": "/firemap" },
     { "source": "/fire-chief", "destination": "/platform/fire-chief" },
     { "source": "/architecture", "destination": "/platform/architecture" },
