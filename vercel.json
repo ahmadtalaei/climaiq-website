@@ -3,50 +3,161 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/fuelmap", "destination": "https://structured-radar-casa-network.trycloudflare.com/explorer" },
-    { "source": "/explorer", "destination": "https://structured-radar-casa-network.trycloudflare.com/explorer" },
-    { "source": "/aoi/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/aoi/:path*" },
-    { "source": "/static/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/static/:path*" },
-    { "source": "/intelimon/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/intelimon/:path*" },
-    { "source": "/fuels/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/fuels/:path*" },
-    { "source": "/tiles/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/tiles/:path*" },
-    { "source": "/sites", "destination": "https://structured-radar-casa-network.trycloudflare.com/sites" },
-    { "source": "/sites/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/sites/:path*" },
-    { "source": "/rasters", "destination": "https://structured-radar-casa-network.trycloudflare.com/rasters" },
-    { "source": "/rasters/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/rasters/:path*" },
-    { "source": "/cubes", "destination": "https://structured-radar-casa-network.trycloudflare.com/cubes" },
-    { "source": "/cubes/:path*", "destination": "https://structured-radar-casa-network.trycloudflare.com/cubes/:path*" },
-    { "source": "/dashboard", "destination": "/dashboard/index.html" },
-    { "source": "/platform", "destination": "/platform/index.html" },
-    { "source": "/videos", "destination": "/videos/index.html" },
-    { "source": "/firemap", "destination": "/firemap/index.html" },
-    { "source": "/evacuation-planner", "destination": "/evacuation-planner/index.html" },
-    { "source": "/api/terrain/sample", "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch" }
+    {
+      "source": "/fuelmap",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/explorer"
+    },
+    {
+      "source": "/explorer",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/explorer"
+    },
+    {
+      "source": "/aoi/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/aoi/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/static/:path*"
+    },
+    {
+      "source": "/intelimon/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/intelimon/:path*"
+    },
+    {
+      "source": "/fuels/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/fuels/:path*"
+    },
+    {
+      "source": "/tiles/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/tiles/:path*"
+    },
+    {
+      "source": "/sites",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/sites"
+    },
+    {
+      "source": "/sites/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/sites/:path*"
+    },
+    {
+      "source": "/rasters",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/rasters"
+    },
+    {
+      "source": "/rasters/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/rasters/:path*"
+    },
+    {
+      "source": "/cubes",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/cubes"
+    },
+    {
+      "source": "/cubes/:path*",
+      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/cubes/:path*"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard/index.html"
+    },
+    {
+      "source": "/platform",
+      "destination": "/platform/index.html"
+    },
+    {
+      "source": "/videos",
+      "destination": "/videos/index.html"
+    },
+    {
+      "source": "/firemap",
+      "destination": "/firemap/index.html"
+    },
+    {
+      "source": "/evacuation-planner",
+      "destination": "/evacuation-planner/index.html"
+    },
+    {
+      "source": "/api/terrain/sample",
+      "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch"
+    }
   ],
   "redirects": [
-    { "source": "/map", "destination": "/firemap" },
-    { "source": "/fire-chief", "destination": "/platform/fire-chief" },
-    { "source": "/architecture", "destination": "/platform/architecture" },
-    { "source": "/architecture-live", "destination": "/platform/architecture-live" },
-    { "source": "/analyst-portal", "destination": "/platform/analyst-portal" },
-    { "source": "/scientist-workbench", "destination": "/platform/scientist-workbench" },
-    { "source": "/admin-console", "destination": "/platform/admin-console" },
-    { "source": "/analytics-platform", "destination": "/dashboard/analytics-platform" },
-    { "source": "/ingestion-latency", "destination": "/dashboard/ingestion-latency" },
-    { "source": "/latency-fidelity-enhanced", "destination": "/dashboard/latency-fidelity-enhanced" },
-    { "source": "/platform-health", "destination": "/dashboard/platform-health" },
-    { "source": "/storage-lifecycle", "destination": "/dashboard/storage-lifecycle" },
-    { "source": "/storage-tiers", "destination": "/dashboard/storage-tiers" },
-    { "source": "/system-performance", "destination": "/dashboard/system-performance" },
-    { "source": "/wildfire-overview", "destination": "/dashboard/wildfire-overview" }
+    {
+      "source": "/map",
+      "destination": "/firemap"
+    },
+    {
+      "source": "/fire-chief",
+      "destination": "/platform/fire-chief"
+    },
+    {
+      "source": "/architecture",
+      "destination": "/platform/architecture"
+    },
+    {
+      "source": "/architecture-live",
+      "destination": "/platform/architecture-live"
+    },
+    {
+      "source": "/analyst-portal",
+      "destination": "/platform/analyst-portal"
+    },
+    {
+      "source": "/scientist-workbench",
+      "destination": "/platform/scientist-workbench"
+    },
+    {
+      "source": "/admin-console",
+      "destination": "/platform/admin-console"
+    },
+    {
+      "source": "/analytics-platform",
+      "destination": "/dashboard/analytics-platform"
+    },
+    {
+      "source": "/ingestion-latency",
+      "destination": "/dashboard/ingestion-latency"
+    },
+    {
+      "source": "/latency-fidelity-enhanced",
+      "destination": "/dashboard/latency-fidelity-enhanced"
+    },
+    {
+      "source": "/platform-health",
+      "destination": "/dashboard/platform-health"
+    },
+    {
+      "source": "/storage-lifecycle",
+      "destination": "/dashboard/storage-lifecycle"
+    },
+    {
+      "source": "/storage-tiers",
+      "destination": "/dashboard/storage-tiers"
+    },
+    {
+      "source": "/system-performance",
+      "destination": "/dashboard/system-performance"
+    },
+    {
+      "source": "/wildfire-overview",
+      "destination": "/dashboard/wildfire-overview"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
       ]
     }
   ]
