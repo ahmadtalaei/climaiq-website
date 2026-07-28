@@ -3,6 +3,12 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
+    { "source": "/fuelmap", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/explorer" },
+    { "source": "/explorer", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/explorer" },
+    { "source": "/aoi/:path*", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/aoi/:path*" },
+    { "source": "/fuels/:path*", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/fuels/:path*" },
+    { "source": "/static/:path*", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/static/:path*" },
+    { "source": "/tiles/:path*", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/tiles/:path*" },
     { "source": "/dashboard", "destination": "/dashboard/index.html" },
     { "source": "/platform", "destination": "/platform/index.html" },
     { "source": "/videos", "destination": "/videos/index.html" },
@@ -11,7 +17,6 @@
     { "source": "/api/terrain/sample", "destination": "https://colours-howto-managers-aka.trycloudflare.com/ingest/batch" }
   ],
   "redirects": [
-    { "source": "/fuels-explorer", "destination": "https://ricky-epinions-perspective-template.trycloudflare.com/explorer", "permanent": false },
     { "source": "/map", "destination": "/firemap" },
     { "source": "/fire-chief", "destination": "/platform/fire-chief" },
     { "source": "/architecture", "destination": "/platform/architecture" },
