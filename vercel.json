@@ -5,55 +5,55 @@
   "rewrites": [
     {
       "source": "/fuelmap",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/explorer"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/explorer"
     },
     {
       "source": "/explorer",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/explorer"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/explorer"
     },
     {
       "source": "/aoi/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/aoi/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/aoi/:path*"
     },
     {
       "source": "/static/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/static/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/static/:path*"
     },
     {
       "source": "/intelimon/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/intelimon/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/intelimon/:path*"
     },
     {
       "source": "/fuels/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/fuels/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/fuels/:path*"
     },
     {
       "source": "/tiles/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/tiles/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/tiles/:path*"
     },
     {
       "source": "/sites",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/sites"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/sites"
     },
     {
       "source": "/sites/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/sites/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/sites/:path*"
     },
     {
       "source": "/rasters",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/rasters"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/rasters"
     },
     {
       "source": "/rasters/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/rasters/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/rasters/:path*"
     },
     {
       "source": "/cubes",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/cubes"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/cubes"
     },
     {
       "source": "/cubes/:path*",
-      "destination": "https://grown-tune-bid-achieving.trycloudflare.com/cubes/:path*"
+      "destination": "https://exec-adequate-chicken-inn.trycloudflare.com/cubes/:path*"
     },
     {
       "source": "/dashboard",
