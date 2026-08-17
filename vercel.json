@@ -5,55 +5,55 @@
   "rewrites": [
     {
       "source": "/fuelmap",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/explorer"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/explorer"
     },
     {
       "source": "/explorer",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/explorer"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/explorer"
     },
     {
       "source": "/aoi/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/aoi/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/aoi/:path*"
     },
     {
       "source": "/static/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/static/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/static/:path*"
     },
     {
       "source": "/intelimon/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/intelimon/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/intelimon/:path*"
     },
     {
       "source": "/fuels/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/fuels/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/fuels/:path*"
     },
     {
       "source": "/tiles/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/tiles/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/tiles/:path*"
     },
     {
       "source": "/sites",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/sites"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/sites"
     },
     {
       "source": "/sites/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/sites/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/sites/:path*"
     },
     {
       "source": "/rasters",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/rasters"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/rasters"
     },
     {
       "source": "/rasters/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/rasters/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/rasters/:path*"
     },
     {
       "source": "/cubes",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/cubes"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/cubes"
     },
     {
       "source": "/cubes/:path*",
-      "destination": "https://florida-true-earliest-dec.trycloudflare.com/cubes/:path*"
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/cubes/:path*"
     },
     {
       "source": "/dashboard",
