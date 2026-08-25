@@ -56,6 +56,18 @@
       "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/cubes/:path*"
     },
     {
+      "source": "/fuelmap/sjer",
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/explorer/sjer"
+    },
+    {
+      "source": "/explorer/:path*",
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/explorer/:path*"
+    },
+    {
+      "source": "/demo/:path*",
+      "destination": "https://suited-competitive-jimmy-candle.trycloudflare.com/demo/:path*"
+    },
+    {
       "source": "/dashboard",
       "destination": "/dashboard/index.html"
     },
