@@ -5,67 +5,67 @@
   "rewrites": [
     {
       "source": "/fuelmap",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/explorer"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/explorer"
     },
     {
       "source": "/explorer",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/explorer"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/explorer"
     },
     {
       "source": "/aoi/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/aoi/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/aoi/:path*"
     },
     {
       "source": "/static/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/static/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/static/:path*"
     },
     {
       "source": "/intelimon/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/intelimon/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/intelimon/:path*"
     },
     {
       "source": "/fuels/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/fuels/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/fuels/:path*"
     },
     {
       "source": "/tiles/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/tiles/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/tiles/:path*"
     },
     {
       "source": "/sites",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/sites"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/sites"
     },
     {
       "source": "/sites/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/sites/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/sites/:path*"
     },
     {
       "source": "/rasters",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/rasters"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/rasters"
     },
     {
       "source": "/rasters/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/rasters/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/rasters/:path*"
     },
     {
       "source": "/cubes",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/cubes"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/cubes"
     },
     {
       "source": "/cubes/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/cubes/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/cubes/:path*"
     },
     {
       "source": "/fuelmap/sjer",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/explorer/sjer"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/explorer/sjer"
     },
     {
       "source": "/explorer/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/explorer/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/explorer/:path*"
     },
     {
       "source": "/demo/:path*",
-      "destination": "https://hold-graduated-format-dana.trycloudflare.com/demo/:path*"
+      "destination": "https://automatic-different-included-earned.trycloudflare.com/demo/:path*"
     },
     {
       "source": "/dashboard",
