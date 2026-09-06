@@ -180,5 +180,6 @@
         }
       ]
     }
-  ]
+  ],
+  "trailingSlash": false
 }
