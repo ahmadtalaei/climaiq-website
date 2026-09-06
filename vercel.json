@@ -60,6 +60,22 @@
       "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/sjer"
     },
     {
+      "source": "/fuelmap/utah",
+      "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/utah"
+    },
+    {
+      "source": "/fuelmap/utah/nisar",
+      "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/utah/nisar"
+    },
+    {
+      "source": "/fuelmap/utah/13a",
+      "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/utah/13a"
+    },
+    {
+      "source": "/fuelmap/utah/13A",
+      "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/utah/13A"
+    },
+    {
       "source": "/explorer/:path*",
       "destination": "https://knife-counseling-launch-seafood.trycloudflare.com/explorer/:path*"
     },
