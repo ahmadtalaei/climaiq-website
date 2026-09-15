@@ -5,75 +5,75 @@
   "rewrites": [
     {
       "source": "/fuelmap",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer"
     },
     {
       "source": "/explorer",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer"
     },
     {
       "source": "/aoi/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/aoi/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/aoi/:path*"
     },
     {
       "source": "/static/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/static/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/static/:path*"
     },
     {
       "source": "/intelimon/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/intelimon/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/intelimon/:path*"
     },
     {
       "source": "/fuels/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/fuels/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/fuels/:path*"
     },
     {
       "source": "/tiles/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/tiles/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/tiles/:path*"
     },
     {
       "source": "/sites",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/sites"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/sites"
     },
     {
       "source": "/sites/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/sites/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/sites/:path*"
     },
     {
       "source": "/rasters",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/rasters"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/rasters"
     },
     {
       "source": "/rasters/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/rasters/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/rasters/:path*"
     },
     {
       "source": "/cubes",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/cubes"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/cubes"
     },
     {
       "source": "/cubes/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/cubes/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/cubes/:path*"
     },
     {
       "source": "/fuelmap/sjer",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer/sjer"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/sjer"
     },
     {
       "source": "/fuelmap/utah",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer/utah"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/utah"
     },
     {
       "source": "/fuelmap/utah/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer/utah/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/utah/:path*"
     },
     {
       "source": "/explorer/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/explorer/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/:path*"
     },
     {
       "source": "/demo/:path*",
-      "destination": "https://charges-named-wallpapers-nobody.trycloudflare.com/demo/:path*"
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/demo/:path*"
     },
     {
       "source": "/dashboard",
