@@ -16,6 +16,10 @@
       "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/aoi/:path*"
     },
     {
+      "source": "/utah/:path*",
+      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/utah/:path*"
+    },
+    {
       "source": "/static/:path*",
       "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/static/:path*"
     },
