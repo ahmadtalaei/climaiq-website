@@ -5,79 +5,79 @@
   "rewrites": [
     {
       "source": "/fuelmap",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer"
     },
     {
       "source": "/explorer",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer"
     },
     {
       "source": "/aoi/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/aoi/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/aoi/:path*"
     },
     {
       "source": "/utah/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/utah/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/utah/:path*"
     },
     {
       "source": "/static/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/static/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/static/:path*"
     },
     {
       "source": "/intelimon/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/intelimon/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/intelimon/:path*"
     },
     {
       "source": "/fuels/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/fuels/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/fuels/:path*"
     },
     {
       "source": "/tiles/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/tiles/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/tiles/:path*"
     },
     {
       "source": "/sites",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/sites"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/sites"
     },
     {
       "source": "/sites/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/sites/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/sites/:path*"
     },
     {
       "source": "/rasters",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/rasters"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/rasters"
     },
     {
       "source": "/rasters/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/rasters/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/rasters/:path*"
     },
     {
       "source": "/cubes",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/cubes"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/cubes"
     },
     {
       "source": "/cubes/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/cubes/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/cubes/:path*"
     },
     {
       "source": "/fuelmap/sjer",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/sjer"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer/sjer"
     },
     {
       "source": "/fuelmap/utah",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/utah"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer/utah"
     },
     {
       "source": "/fuelmap/utah/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/utah/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer/utah/:path*"
     },
     {
       "source": "/explorer/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/explorer/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/explorer/:path*"
     },
     {
       "source": "/demo/:path*",
-      "destination": "https://encoding-whole-headed-roommates.trycloudflare.com/demo/:path*"
+      "destination": "https://election-hypothetical-docs-hewlett.trycloudflare.com/demo/:path*"
     },
     {
       "source": "/dashboard",
