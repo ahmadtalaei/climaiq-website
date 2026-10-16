@@ -1,667 +1,338 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KX4LBXLE5X"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-KX4LBXLE5X');
-  </script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ClimaIQ — Wildfire Intelligence Platform</title>
-  <meta name="description" content="AI-powered wildfire prediction before ignition. 1.06B records processed, 92% accuracy, 43ms critical alerts. The future of wildfire intelligence.">
-  <meta property="og:title" content="ClimaIQ — Wildfire Intelligence Platform">
-  <meta property="og:description" content="AI-powered prediction before ignition. Not reaction after.">
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://climaiq.tech">
-  <meta property="og:image" content="https://climaiq.tech/assets/og-image.png">
-  <meta name="twitter:card" content="summary_large_image">
-  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
-  <style>
-    /* "Interactive Maps" dropdown (Fire Explorer + Evacuation Planner) */
-    .nav-dd { position: relative; }
-    .nav-dd > a { cursor: pointer; }
-    .nav-dd .nav-dd-menu {
-      display: none; position: absolute; top: 100%; left: 0; min-width: 250px;
-      background: #14181f; border: 1px solid #2a3340;
-      /* 6px transparent top border = a hover bridge that touches the trigger, so moving the
-         pointer down to the sub-items never crosses a dead-zone (the old margin:6px gap did). */
-      border-top: 6px solid transparent; background-clip: padding-box;
-      border-radius: 8px; margin: 0;
-      padding: 6px; list-style: none; z-index: 1000;
-      box-shadow: 0 8px 24px rgba(0,0,0,.45);
-    }
-    /* open on hover / keyboard focus / click-tap (.open) — the last one is what makes it work on
-       touch and on a plain click without navigating away. */
-    .nav-dd:hover .nav-dd-menu,
-    .nav-dd:focus-within .nav-dd-menu,
-    .nav-dd.open .nav-dd-menu { display: block; }
-    .nav-dd-menu li { display: block; }
-    .nav-dd-menu li a { display: block; padding: 9px 12px; border-radius: 6px; white-space: nowrap; }
-    .nav-dd-menu li a:hover { background: #1f2937; }
-    .nav-dd-menu li a::after { display: none; }  /* suppress the nav underline effect inside the menu */
-    .nav-dd-menu .dd-sub { display: block; font-size: 11px; color: #8aa0b5; margin-top: 2px; font-weight: 400; }
-    @media (max-width: 768px) {
-      /* inside the mobile vertical menu, let the submenu flow inline instead of floating */
-      .nav-dd .nav-dd-menu {
-        position: static; border: none; border-top: none; box-shadow: none;
-        background: transparent; padding: 2px 0 6px 16px; min-width: 0;
-      }
-      .nav-dd:hover .nav-dd-menu { display: none; }   /* touch has no true hover — use tap (.open) */
-      .nav-dd.open .nav-dd-menu { display: block; }
-    }
-    /* Validation badge → official CAL FIRE announcement (clickable) */
-    .validation-badge-link { display: block; text-decoration: none; color: inherit; transition: transform .2s; }
-    .validation-badge-link:hover { transform: translateY(-2px); }
-    .badge-link-hint { display: block; font-size: 12px; color: #ff6b35; margin-top: 8px; font-weight: 600; opacity: .85; }
-    .validation-badge-link:hover .badge-link-hint { opacity: 1; text-decoration: underline; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClimaIQ — Fuel Intelligence Engine</title>
+<meta name="description" content="ClimaIQ fuses satellite, radar, and field measurements into an open, uncertainty-aware map of vegetation condition and change — explorable down to a single acre.">
+<link rel="canonical" href="https://climaiq.tech/">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:title" content="ClimaIQ — Fuel Intelligence Engine">
+<meta property="og:description" content="An open, uncertainty-aware map of vegetation condition and change. Explore it live.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://climaiq.tech/">
+<meta property="og:image" content="https://climaiq.tech/assets/explorer-hero.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ClimaIQ — Fuel Intelligence Engine">
+<meta name="twitter:description" content="An open, uncertainty-aware map of vegetation condition and change. Explore it live.">
+<meta name="twitter:image" content="https://climaiq.tech/assets/explorer-hero.jpg">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KX4LBXLE5X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-KX4LBXLE5X');
+</script>
+<style>
+:root{
+  --ground:#0a0e17; --panel:#0f1524; --panel2:#0c1220; --panel3:#16203a;
+  --line:#26314d; --line2:#334155;
+  --ink:#e6edf7; --ink2:#c7d2e8; --muted:#7d8db0; --faint:#4a5878;
+  --accent:#43b3a4; --accent-hi:#4ec5b4; --accent-ink:#06201c; --data:#5ec8f2;
+  --good:#22c55e; --warn:#eab308; --bad:#ef4444;
+  --glass:rgba(12,18,32,.86); --glass-bd:rgba(150,170,210,.16);
+  --sh1:0 4px 16px rgba(0,0,0,.45); --sh2:0 20px 60px rgba(0,0,0,.6);
+  --r2:8px; --r3:10px; --r4:12px;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --maxw:1180px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.sec{padding:96px 0;position:relative}
+.sec-head{max-width:640px;margin-bottom:40px}
+.sec-head h2{font-size:clamp(26px,3vw,38px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin:14px 0 0}
+.sec-head p{color:var(--ink2);font-size:17px;margin-top:14px}
+.btn{font-family:var(--mono);font-size:13px;letter-spacing:.03em;padding:12px 18px;border-radius:var(--r2);
+  border:1px solid transparent;display:inline-flex;align-items:center;gap:8px;transition:.2s;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{background:var(--accent-hi)}
+.btn.ghost{color:var(--ink2);border-color:var(--line2)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--ink)}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:50;background:var(--glass);backdrop-filter:saturate(1.15) blur(9px);border-bottom:1px solid var(--glass-bd)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:16px;letter-spacing:.02em}
+.mark{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#2d8a7e);display:grid;place-items:center;color:var(--accent-ink);font-size:12px;font-weight:800}
+.iq{color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:26px;list-style:none}
+.nav-links a{color:var(--ink2);font-size:13.5px}
+.nav-links a:hover{color:var(--ink)}
+@media(max-width:760px){.nav-links li:not(.nav-cta){display:none}}
+
+/* HERO */
+.hero{padding:70px 0 40px;background:
+  radial-gradient(1100px 460px at 72% -10%, rgba(67,179,164,.12), transparent),
+  radial-gradient(800px 420px at 10% 0%, rgba(94,200,242,.07), transparent),
+  var(--ground)}
+.hero .wrap{display:grid;grid-template-columns:1fr 1.18fr;gap:44px;align-items:center}
+.hero h1{font-size:clamp(38px,4.6vw,62px);font-weight:700;letter-spacing:-.025em;line-height:1.02;margin:16px 0 0}
+.hero h1 .a{color:var(--accent)}
+.hero .lede{color:var(--ink2);font-size:18px;line-height:1.6;margin:20px 0 28px;max-width:48ch}
+.hero .cta-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.hero .micro{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:22px;letter-spacing:.02em}
+.frame{border:1px solid var(--line2);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh2);background:var(--panel);display:block;transition:.25s}
+.frame:hover{border-color:var(--accent);transform:translateY(-3px)}
+.framebar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.dot{width:9px;height:9px;border-radius:50%}
+.furl{margin-left:8px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.frame img{width:100%;display:block}
+.frame .open-hint{font-family:var(--mono);font-size:10.5px;color:var(--accent);margin-left:auto}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr}}
+
+/* STRIP of real figures */
+.strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel2)}
+.strip .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.fig{padding:26px 22px;border-right:1px solid var(--line)}
+.fig:last-child{border-right:none}
+.fig .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;letter-spacing:-.01em}
+.fig .v .u{font-size:14px;color:var(--muted)}
+.fig .l{font-size:12.5px;color:var(--muted);margin-top:6px}
+@media(max-width:760px){.strip .wrap{grid-template-columns:repeat(2,1fr)}.fig:nth-child(2){border-right:none}}
+
+/* EVIDENCE LADDER */
+.ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+.lad{background:var(--panel);border:1px solid var(--line);border-radius:var(--r3);padding:18px}
+.lad .k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.lad .k.a{color:var(--good)} .lad .k.b{color:var(--accent)} .lad .k.c{color:var(--data)} .lad .k.d{color:var(--muted)}
+.lad .t{font-size:15px;font-weight:600;margin-top:8px}
+.lad .d{font-size:13px;color:var(--ink2);margin-top:5px}
+@media(max-width:760px){.ladder{grid-template-columns:repeat(2,1fr)}}
+
+/* TWO EXPLORERS */
+.explorers{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.exp{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh1);transition:.2s}
+.exp:hover{border-color:var(--accent);transform:translateY(-2px)}
+.exp img{width:100%;height:230px;object-fit:cover;object-position:top left;border-bottom:1px solid var(--line)}
+.exp .body{padding:20px}
+.exp .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.exp h3{font-size:18px;font-weight:600;margin:9px 0 0}
+.exp p{font-size:13.5px;color:var(--ink2);margin:8px 0 14px;line-height:1.55}
+@media(max-width:760px){.explorers{grid-template-columns:1fr}}
+
+/* HOW IT WORKS */
+.how{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.howcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);padding:24px;position:relative}
+.howcard .n{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.1em}
+.howcard h3{font-size:19px;font-weight:600;margin:10px 0 0}
+.howcard h3 .a{color:var(--accent)} .howcard h3 .c{color:var(--data)}
+.howcard p{font-size:14px;color:var(--ink2);margin-top:10px;line-height:1.6}
+@media(max-width:760px){.how{grid-template-columns:1fr}}
+
+/* DATA TABLE */
+.tbl{width:100%;border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;font-family:var(--mono);font-size:13px;margin-top:6px}
+.tr{display:grid;grid-template-columns:1.6fr 1fr 1.2fr;border-bottom:1px solid var(--line)}
+.tr:last-child{border-bottom:none}
+.tr.h{background:var(--panel2);color:var(--muted);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase}
+.cell{padding:12px 16px}
+.num{text-align:right;font-variant-numeric:tabular-nums;color:var(--data)}
+.nm{color:var(--ink2)}
+.g{color:var(--good)} .w{color:var(--warn)}
+.note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px}
+
+/* VALIDATION */
+.val{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}
+.badge{background:linear-gradient(180deg,#111a2e,#0c1220);border:1px solid var(--sel-line,#1f5b53);border-radius:var(--r4);padding:24px;display:flex;gap:16px;align-items:center}
+.badge .ic{width:46px;height:46px;flex:none;border-radius:11px;background:rgba(67,179,164,.12);display:grid;place-items:center;color:var(--accent);font-size:22px}
+.badge .bt{font-size:15px;font-weight:600}
+.badge .bs{font-size:13px;color:var(--ink2);margin-top:3px}
+.badge .bl{font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:7px}
+.builton{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);padding:24px}
+.builton .t{font-size:14px;font-weight:600;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:11px;color:var(--ink2);background:var(--panel3);border:1px solid var(--line);border-radius:999px;padding:6px 11px}
+@media(max-width:760px){.val{grid-template-columns:1fr}}
+
+/* CONTACT */
+.contact{background:
+  radial-gradient(800px 360px at 50% 120%, rgba(67,179,164,.10), transparent),
+  var(--panel2);border-top:1px solid var(--line);text-align:center}
+.contact h2{font-size:clamp(26px,3vw,36px);font-weight:700;letter-spacing:-.02em}
+.contact p{color:var(--ink2);margin:14px auto 26px;max-width:52ch}
+.contact .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--line);background:var(--panel2)}
+.footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px}
+.footer .f-links{display:flex;gap:22px;list-style:none}
+.footer .f-links a{color:var(--ink2);font-size:13px}
+.footer .meta{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:100%}
+</style>
 </head>
 <body>
 
-  <!-- Navigation -->
-  <nav class="nav" id="nav">
-    <div class="nav-container">
-      <a href="#hero" class="nav-logo">
-        <span class="logo-clima">Clima</span><span class="logo-iq">IQ</span>
-      </a>
-      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
-        <span></span><span></span><span></span>
-      </button>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="#crisis">The Crisis</a></li>
-        <li><a href="#platform">Platform</a></li>
-        <li><a href="#platform-apps">Portals</a></li>
-        <li><a href="#dashboards">Dashboards</a></li>
-        <li class="nav-dd">
-          <a href="firemap/index.html" class="nav-dd-toggle" aria-haspopup="true" aria-expanded="false">Interactive Maps ▾</a>
-          <ul class="nav-dd-menu">
-            <!-- 3D Fuels Explorer: /fuelmap REDIRECTS to fuelmap.climaiq.tech, a Cloudflare NAMED tunnel to the
-                 local fuels-modeling-service (docker-compose `cloudflared`). Stable URL, no rotation, but only
-                 live while that machine runs Docker. TEMPORARY until Option C (cloud-host the service) — see
-                 docs/research/3d_surface_fuels/FUELS_EXPLORER_HOSTING.md. -->
-            <li><a href="/fuelmap">🌲 3D Fuels Explorer<span class="dd-sub">Under-canopy 3D fuel structure · draw an AOI, live FastFuels</span></a></li>
-            <li><a href="/firemap">🔥 Fire Explorer<span class="dd-sub">Historical &amp; active fire map</span></a></li>
-            <!-- Static snapshot bundled the same way as /firemap: website/evacuation-planner/ + data/.
-                 Regenerate with scripts/export_evac_snapshot.py. -->
-            <li><a href="/evacuation-planner">🧭 Evacuation Planner<span class="dd-sub">Infrastructure impact + refuge / escape-route planning</span></a></li>
-          </ul>
-        </li>
-        <li><a href="#metrics">Metrics</a></li>
-        <li><a href="#validation">Validation</a></li>
-        <li><a href="videos/index.html">Videos</a></li>
-        <li><a href="#contact" class="nav-cta">Get In Touch</a></li>
-      </ul>
-    </div>
-  </nav>
+<!-- NAV -->
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="#top"><span class="mark">C</span><span class="word">Clima<span class="iq">IQ</span></span></a>
+  <ul class="nav-links">
+    <li><a href="#explorers">Explorer</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#evidence">Evidence</a></li>
+    <li class="nav-cta"><a class="btn primary" href="/explorer">Open Explorer →</a></li>
+  </ul>
+</div></nav>
 
-  <!-- Section 1: Hero -->
-  <section class="hero" id="hero">
-    <div id="particles-js" class="particles-bg"></div>
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <div class="hero-badge reveal">Wildfire Intelligence Platform</div>
-      <h1 class="hero-title reveal">
-        <span class="logo-clima">Clima</span><span class="logo-iq">IQ</span>
-      </h1>
-      <p class="hero-tagline reveal">AI-powered prediction before ignition.<br><span class="tagline-accent">Not reaction after.</span></p>
-      <div class="hero-stats reveal">
-        <div class="stat-badge">
-          <span class="stat-value" data-target="1.06" data-suffix="B" data-decimals="2">0</span>
-          <span class="stat-label">Records Processed</span>
-        </div>
-        <div class="stat-badge">
-          <span class="stat-value" data-target="92" data-suffix="%" data-decimals="0">0</span>
-          <span class="stat-label">Prediction Accuracy</span>
-        </div>
-        <div class="stat-badge">
-          <span class="stat-value" data-target="43" data-suffix="ms" data-decimals="0">0</span>
-          <span class="stat-label">Critical Alerts</span>
-        </div>
-      </div>
-      <a href="#platform" class="hero-cta reveal">
-        See How It Works
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
-      </a>
+<!-- HERO -->
+<header class="hero" id="top"><div class="wrap">
+  <div>
+    <div class="eyebrow">Fuel Intelligence Engine</div>
+    <h1>The land, read <span class="a">continuously.</span></h1>
+    <p class="lede">ClimaIQ fuses satellite, radar, and field measurements into an open, uncertainty-aware map of vegetation condition and change — explorable down to a single acre, with every value labeled by how it was known.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="/explorer">Open the Explorer →</a>
+      <a class="btn ghost" href="/explorer/utah">See Utah coverage</a>
     </div>
-    <div class="hero-scroll-indicator">
-      <div class="scroll-line"></div>
+    <div class="micro">Live tool · draw an area anywhere in the continental US · no sign-in</div>
+  </div>
+  <a class="frame" href="/explorer" aria-label="Open the Fuel Intelligence Explorer">
+    <div class="framebar">
+      <span class="dot" style="background:#ef4444"></span>
+      <span class="dot" style="background:#eab308"></span>
+      <span class="dot" style="background:#22c55e"></span>
+      <span class="furl">climaiq.tech/explorer</span>
+      <span class="open-hint">open ↗</span>
     </div>
-  </section>
+    <img src="assets/explorer-hero.jpg" alt="The ClimaIQ Fuel Intelligence Explorer showing a 3D surface-fuel reconstruction over Fort Stewart, Georgia, with the measured / derived / inferred evidence ladder.">
+  </a>
+</div></header>
 
-  <!-- Section 2: The Crisis -->
-  <section class="section crisis" id="crisis">
-    <div class="container">
-      <div class="section-label reveal">The Problem</div>
-      <h2 class="section-title reveal">Wildfires Are Outpacing<br>Our Ability to Respond</h2>
-      <p class="section-subtitle reveal">By the time we detect a wildfire, it's already too late. Current systems are reactive — they track fires after ignition. Communities need prediction, not just observation.</p>
-      <div class="crisis-grid">
-        <div class="crisis-card reveal">
-          <div class="crisis-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-          </div>
-          <div class="crisis-stat">
-            <span class="counter" data-target="50" data-prefix="$" data-suffix="B+">$0</span>
-          </div>
-          <p class="crisis-desc">Annual U.S. wildfire damages — and climbing every year</p>
-        </div>
-        <div class="crisis-card reveal">
-          <div class="crisis-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          </div>
-          <div class="crisis-stat">
-            <span class="counter" data-target="1.76" data-suffix="B tons" data-decimals="2">0</span>
-          </div>
-          <p class="crisis-desc">CO&#8322; released by wildfires in 2021 alone</p>
-        </div>
-        <div class="crisis-card reveal">
-          <div class="crisis-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-          </div>
-          <div class="crisis-stat">
-            <span class="counter" data-target="100" data-suffix="M+" data-decimals="0">0</span>
-          </div>
-          <p class="crisis-desc">Americans exposed to wildfire smoke health impacts annually</p>
-        </div>
-      </div>
-      <div class="crisis-callout reveal">
-        <p>The problem isn't data scarcity — it's data fragmentation. Fire agencies, satellite feeds, weather stations, and sensor networks operate in silos. By the time information is correlated, the fire has spread.</p>
-      </div>
-    </div>
-  </section>
+<!-- REAL FIGURES STRIP -->
+<section class="strip"><div class="wrap">
+  <div class="fig"><div class="v">1,368</div><div class="l">DWR Range Trend sites mapped</div></div>
+  <div class="fig"><div class="v">696</div><div class="l">Watershed Restoration projects</div></div>
+  <div class="fig"><div class="v">9<span class="u"> sensors</span></div><div class="l">lidar · NISAR · Sentinel · GEDI · EMIT · more</div></div>
+  <div class="fig"><div class="v">12<span class="u"> days</span></div><div class="l">NISAR radar revisit, every site</div></div>
+</div></section>
 
-  <!-- Section 3: The Platform -->
-  <section class="section platform" id="platform">
-    <div class="container">
-      <div class="section-label reveal">The Solution</div>
-      <h2 class="section-title reveal">One Platform.<br>Three Capabilities.</h2>
-      <p class="section-subtitle reveal">ClimaIQ unifies 26 data sources into a single intelligence layer — transforming scattered signals into actionable foresight.</p>
-      <div class="platform-grid">
-        <div class="platform-card reveal">
-          <div class="card-glow"></div>
-          <div class="card-icon predict-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </div>
-          <h3 class="card-title">Predict</h3>
-          <p class="card-desc">7-day fire risk forecasts powered by ensemble ML — CNN, LSTM, Random Forest, and physics-informed models working together.</p>
-          <div class="card-metric">
-            <span class="metric-value">92%</span>
-            <span class="metric-label">forecast accuracy</span>
-          </div>
-        </div>
-        <div class="platform-card reveal">
-          <div class="card-glow"></div>
-          <div class="card-icon detect-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <h3 class="card-title">Detect</h3>
-          <p class="card-desc">Sub-30-second satellite fire detection using multi-spectral CNN analysis across 7 spectral channels simultaneously.</p>
-          <div class="card-metric">
-            <span class="metric-value">&lt;30s</span>
-            <span class="metric-label">detection latency</span>
-          </div>
-        </div>
-        <div class="platform-card reveal">
-          <div class="card-glow"></div>
-          <div class="card-icon respond-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          </div>
-          <h3 class="card-title">Respond</h3>
-          <p class="card-desc">Real-time unified command intelligence — every fire agency, sensor, and satellite feed in one operational dashboard.</p>
-          <div class="card-metric">
-            <span class="metric-value">43ms</span>
-            <span class="metric-label">alert delivery</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- WHAT IT IS / EVIDENCE LADDER -->
+<section class="sec"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">What makes it different</div>
+    <h2>Every value carries how it was known.</h2>
+    <p>Most maps hand you a number with no idea whether it was measured on the ground or guessed by a model. ClimaIQ labels every layer on a four-level evidence ladder — so you always know what you can lean on.</p>
+  </div>
+  <div class="ladder">
+    <div class="lad"><div class="k a">A · Measured</div><div class="t">Ground truth</div><div class="d">Field-measured and validated — lidar, TLS scans, agency field reads.</div></div>
+    <div class="lad"><div class="k b">B · Derived</div><div class="t">National products</div><div class="d">Established satellite retrievals and published data products.</div></div>
+    <div class="lad"><div class="k c">C · Inferred</div><div class="t">Model estimate</div><div class="d">Predicted by the engine, inside a stated applicability domain.</div></div>
+    <div class="lad"><div class="k d">D · Roadmap</div><div class="t">Not yet loaded</div><div class="d">Known data source, not yet wired in — shown so nothing is hidden.</div></div>
+  </div>
+</div></section>
 
-  <!-- Section 3b: Platform Apps -->
-  <section class="section platform-apps" id="platform-apps">
-    <div class="container">
-      <div class="section-label reveal">Live Platform</div>
-      <h2 class="section-title reveal">5 Role-Based Interfaces.<br>One Unified System.</h2>
-      <p class="section-subtitle reveal">Each stakeholder gets a purpose-built interface — from fire chiefs commanding real-time operations to data scientists training ML models.</p>
-      <div class="apps-grid">
-        <a href="platform/index.html" class="app-card reveal">
-          <div class="app-card-icon" style="background:rgba(255,107,53,0.1);color:#ff6b35;">&#x1F310;</div>
-          <div class="app-card-title">Platform Portal</div>
-          <div class="app-card-desc">Central hub connecting all 14 microservices — storage, ingestion, ML, monitoring, and analytics in one view.</div>
-          <div class="app-card-status"><span class="app-status-dot"></span>All Services Healthy</div>
-          <span class="app-card-btn">Open Portal &rarr;</span>
-        </a>
-        <a href="platform/fire-chief.html" class="app-card reveal">
-          <div class="app-card-icon" style="background:rgba(242,73,92,0.1);color:#f2495c;">&#x1F692;</div>
-          <div class="app-card-title">Fire Chief Dashboard</div>
-          <div class="app-card-desc">Real-time command interface with interactive fire maps, resource tracking, weather alerts, and incident management.</div>
-          <div class="app-card-status"><span class="app-status-dot"></span>Live Monitoring</div>
-          <span class="app-card-btn">Open Dashboard &rarr;</span>
-        </a>
-        <a href="platform/analyst-portal.html" class="app-card reveal">
-          <div class="app-card-icon" style="background:rgba(87,148,242,0.1);color:#5794f2;">&#x1F4CA;</div>
-          <div class="app-card-title">Analyst Portal</div>
-          <div class="app-card-desc">Advanced analytics with 4 chart types, predictive modeling, geospatial intelligence, and custom report builder.</div>
-          <div class="app-card-status"><span class="app-status-dot"></span>2.4M Data Points</div>
-          <span class="app-card-btn">Open Portal &rarr;</span>
-        </a>
-        <a href="platform/scientist-workbench.html" class="app-card reveal">
-          <div class="app-card-icon" style="background:rgba(0,188,212,0.1);color:#00bcd4;">&#x1F52C;</div>
-          <div class="app-card-title">Scientist Workbench</div>
-          <div class="app-card-desc">ML pipeline with code editor, experiment notebooks, 7 research datasets, and Google FireBench integration.</div>
-          <div class="app-card-status"><span class="app-status-dot"></span>47 Active Experiments</div>
-          <span class="app-card-btn">Open Workbench &rarr;</span>
-        </a>
-        <a href="platform/admin-console.html" class="app-card reveal">
-          <div class="app-card-icon" style="background:rgba(255,167,38,0.1);color:#ffa726;">&#x2699;&#xFE0F;</div>
-          <div class="app-card-title">Admin Console</div>
-          <div class="app-card-desc">System administration — user management, security policies, service health monitoring, and audit logging.</div>
-          <div class="app-card-status"><span class="app-status-dot"></span>99.7% Uptime</div>
-          <span class="app-card-btn">Open Console &rarr;</span>
-        </a>
+<!-- TWO EXPLORERS -->
+<section class="sec" id="explorers" style="padding-top:0"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">The live tool</div>
+    <h2>Two ways in. One engine.</h2>
+    <p>Both run in your browser on public NASA and agency data — no account, no install.</p>
+  </div>
+  <div class="explorers">
+    <a class="exp" href="/explorer">
+      <img src="assets/explorer-hero.jpg" alt="Fuel Intelligence Explorer">
+      <div class="body">
+        <div class="tag">/explorer</div>
+        <h3>Fuel Intelligence Explorer</h3>
+        <p>Draw an area anywhere in the continental US. The engine queries every intersecting dataset — lidar, NISAR L-band, Sentinel, EMIT hyperspectral — and reconstructs 3D surface fuels, each layer tagged by evidence level.</p>
+        <span class="btn ghost">Open ↗</span>
       </div>
-    </div>
-  </section>
+    </a>
+    <a class="exp" href="/explorer/utah">
+      <img src="assets/explorer-utah.jpg" alt="Utah Coverage — AOI selection">
+      <div class="body">
+        <div class="tag">/explorer/utah</div>
+        <h3>Utah Coverage</h3>
+        <p>Every DWR Range Trend monitoring site and Watershed Restoration Initiative project in the state, with every satellite acquisition that observes them — the exact footprints, not assumed coverage.</p>
+        <span class="btn ghost">Open ↗</span>
+      </div>
+    </a>
+  </div>
+</div></section>
 
-  <!-- Section 3c: Live Dashboards -->
-  <section class="section" id="dashboards">
-    <div class="container">
-      <div class="section-label reveal">Monitoring</div>
-      <h2 class="section-title reveal">8 Live Dashboards.<br>Real-Time Intelligence.</h2>
-      <p class="section-subtitle reveal">Grafana-powered monitoring dashboards covering every layer of the platform — from data ingestion latency to storage tier costs to analytics usage.</p>
-      <div class="dashboards-grid">
-        <a href="dashboard/wildfire-overview.html" class="dash-card reveal">
-          <div class="dash-card-group">Operations</div>
-          <div class="dash-card-title">Wildfire Overview</div>
-          <div class="dash-card-desc">Active fires, detections, sensor readings, and incident tracking across California.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/system-performance.html" class="dash-card reveal">
-          <div class="dash-card-group">Operations</div>
-          <div class="dash-card-title">System Performance</div>
-          <div class="dash-card-desc">CPU, memory, throughput, and uptime metrics for all infrastructure components.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 6 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/ingestion-latency.html" class="dash-card reveal">
-          <div class="dash-card-group">Data Ingestion</div>
-          <div class="dash-card-title">Latency &amp; Fidelity</div>
-          <div class="dash-card-desc">p50/p95/p99 ingestion latency, validation rates, Kafka lag, and SLA compliance.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 11 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/latency-fidelity-enhanced.html" class="dash-card reveal">
-          <div class="dash-card-group">Data Ingestion</div>
-          <div class="dash-card-title">Enhanced Latency</div>
-          <div class="dash-card-desc">Per-connector breakdown with heatmaps, bar gauges, and source performance tables.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 13 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/storage-tiers.html" class="dash-card reveal">
-          <div class="dash-card-group">Data Storage</div>
-          <div class="dash-card-title">Storage Tiers</div>
-          <div class="dash-card-desc">HOT/WARM/COLD/ARCHIVE latency gauges, growth trends, and cost analysis.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 10 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/storage-lifecycle.html" class="dash-card reveal">
-          <div class="dash-card-group">Data Storage</div>
-          <div class="dash-card-title">Storage Lifecycle</div>
-          <div class="dash-card-desc">Data migration, cleanup candidates, retention policies, and quality by source.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/platform-health.html" class="dash-card reveal">
-          <div class="dash-card-group">Data Storage</div>
-          <div class="dash-card-title">Platform Health</div>
-          <div class="dash-card-desc">End-to-end health scores, real-time data flows, and security monitoring.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-        <a href="dashboard/analytics-platform.html" class="dash-card reveal">
-          <div class="dash-card-group">Analytics</div>
-          <div class="dash-card-title">Analytics Platform</div>
-          <div class="dash-card-desc">Role-based activity, platform distribution, query performance, and usage metrics.</div>
-          <div class="dash-card-panels"><span>&#x1F4CA; 9 panels</span><span>&#x23F1; 5s refresh</span></div>
-          <div class="dash-card-preview"></div>
-        </a>
-      </div>
+<!-- HOW IT WORKS -->
+<section class="sec" id="how" style="padding-top:0"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">How it works</div>
+    <h2>Two readings of the same land.</h2>
+    <p>Condition and change are different questions. ClimaIQ answers each with the observation suited to it.</p>
+  </div>
+  <div class="how">
+    <div class="howcard">
+      <div class="n">01 · CONDITION</div>
+      <h3>The <span class="a">archive</span> predicts where it stands.</h3>
+      <p>The accumulated satellite record estimates current condition — bare ground, shrub and tree canopy, herbaceous cover — wall-to-wall, including everywhere field crews can't reach, each prediction confined to a stated applicability domain.</p>
     </div>
-  </section>
+    <div class="howcard">
+      <div class="n">02 · CHANGE</div>
+      <h3>The <span class="c">radar</span> catches what moved.</h3>
+      <p>NISAR L-band radar, revisiting every site every 12 days, detects change between field visits — treatment, fire, or moisture — on observations the annual record can't yet see.</p>
+    </div>
+  </div>
+</div></section>
 
-  <!-- Section 4: AI Engine -->
-  <section class="section ai-engine" id="ai-engine">
-    <div class="container">
-      <div class="section-label reveal">Under the Hood</div>
-      <h2 class="section-title reveal">Ensemble AI Architecture</h2>
-      <p class="section-subtitle reveal">Four specialized models converge through a meta-learner — combining satellite imagery, temporal patterns, environmental features, and physics simulations.</p>
-      <div class="architecture-wrapper reveal">
-        <canvas id="architectureCanvas" class="architecture-canvas"></canvas>
-      </div>
-      <div class="ai-metrics reveal">
-        <div class="ai-metric">
-          <span class="ai-metric-value">92%</span>
-          <span class="ai-metric-label">Ensemble Accuracy</span>
-        </div>
-        <div class="ai-metric">
-          <span class="ai-metric-value">7-day</span>
-          <span class="ai-metric-label">Forecast Window</span>
-        </div>
-        <div class="ai-metric">
-          <span class="ai-metric-value">870ms</span>
-          <span class="ai-metric-label">Ingestion Latency</span>
-        </div>
-        <div class="ai-metric">
-          <span class="ai-metric-value">20+</span>
-          <span class="ai-metric-label">Engineered Features</span>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- EVIDENCE -->
+<section class="sec" id="evidence" style="padding-top:0"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">Evidence</div>
+    <h2>Measured against the field data.</h2>
+    <p>Held-out predictive skill on Utah DWR Range Trend sites that were not used to train the models — condition estimated from the satellite archive, scored against the crew's actual measurements.</p>
+  </div>
+  <div class="tbl">
+    <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R²</div><div class="cell">Evidence grade</div></div>
+    <div class="tr"><div class="cell nm">Herbaceous cover</div><div class="cell num">+0.73</div><div class="cell g">demonstrated</div></div>
+    <div class="tr"><div class="cell nm">Bare ground</div><div class="cell num">+0.61</div><div class="cell g">demonstrated</div></div>
+    <div class="tr"><div class="cell nm">Shrub canopy</div><div class="cell num">+0.46</div><div class="cell w">conditional</div></div>
+  </div>
+  <div class="note">Held-out validation, models trained 2018–2024, scored on a later season at sites excluded from training.</div>
 
-  <!-- Section 5: By The Numbers -->
-  <section class="section metrics" id="metrics">
-    <div class="container">
-      <div class="section-label reveal">By The Numbers</div>
-      <h2 class="section-title reveal">Performance That Speaks</h2>
-      <div class="metrics-grid">
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="1.06" data-suffix="B" data-decimals="2">0</span>
-          <span class="metric-text">Records Processed</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="99.94" data-suffix="%" data-decimals="2">0</span>
-          <span class="metric-text">Platform Uptime</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="26" data-decimals="0">0</span>
-          <span class="metric-text">Data Connectors</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="870" data-suffix="ms" data-decimals="0">0</span>
-          <span class="metric-text">Avg Ingestion</span>
-          <span class="metric-sub">345x faster than legacy</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="37" data-suffix="%" data-decimals="0">0</span>
-          <span class="metric-text">Faster Containment</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="43" data-suffix="ms" data-decimals="0">0</span>
-          <span class="metric-text">Critical Alerts</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number counter" data-target="0.13" data-prefix="$" data-decimals="2">0</span>
-          <span class="metric-text">Per Detection</span>
-        </div>
-        <div class="metric-card reveal">
-          <span class="metric-number zero-vuln">0</span>
-          <span class="metric-text">Critical Vulnerabilities</span>
-        </div>
+  <div class="val" style="margin-top:28px">
+    <a class="badge" href="https://myemail.constantcontact.com/CAL-FIRE-Advances-Wildfire-Resilience-and-Innovation-at-Red-Sky-Summit.html?soid=1128868940975&aid=zXu5Glf9FV0" target="_blank" rel="noopener">
+      <div class="ic">◆</div>
+      <div>
+        <div class="bt">2025 CAL FIRE Global Space-Based Data Challenge</div>
+        <div class="bs">Category winner — Data Consumption &amp; Analytics</div>
+        <div class="bl">Read the CAL FIRE announcement ↗</div>
+      </div>
+    </a>
+    <div class="builton">
+      <div class="t">Built entirely on public data</div>
+      <div class="chips">
+        <span class="chip">NISAR L-band</span><span class="chip">Sentinel-1/2</span><span class="chip">GEDI</span>
+        <span class="chip">HLS</span><span class="chip">EMIT</span><span class="chip">SMAP</span>
+        <span class="chip">3DEP lidar</span><span class="chip">DWR Range Trend</span><span class="chip">WRI projects</span>
       </div>
     </div>
-  </section>
+  </div>
+</div></section>
 
-  <!-- Section 6: Data Sources -->
-  <section class="section data-sources" id="data-sources">
-    <div class="container">
-      <div class="section-label reveal">Data Ecosystem</div>
-      <h2 class="section-title reveal">26 Sources. One Platform.</h2>
-      <p class="section-subtitle reveal">5 batch + 8 real-time + 13 streaming connectors — unified into a single intelligence layer.</p>
-      <div class="sources-visualization reveal">
-        <div class="sources-ring">
-          <div class="source-node" style="--angle: 0deg" data-label="NASA FIRMS">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 51deg" data-label="NOAA">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 102deg" data-label="Copernicus">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a16.2 16.2 0 014 10 16.2 16.2 0 01-4 10"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 153deg" data-label="USGS Landsat">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 204deg" data-label="EPA AirNow">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17.5 19H9a7 7 0 110-14h.5"/><path d="M22 10a5 5 0 00-10 0 5 5 0 005 5h5a5 5 0 000-10z"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 255deg" data-label="IoT Sensors">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5.12 19a7 7 0 0113.76 0"/><circle cx="12" cy="12" r="3"/><path d="M8.54 8.54a5 5 0 016.92 0"/><path d="M5.64 5.64a9 9 0 0112.72 0"/></svg>
-            </div>
-          </div>
-          <div class="source-node" style="--angle: 306deg" data-label="Historical DB">
-            <div class="node-inner">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
-            </div>
-          </div>
-          <!-- Center node -->
-          <div class="source-center">
-            <div class="center-pulse"></div>
-            <div class="center-inner">
-              <span class="logo-clima">C</span><span class="logo-iq">IQ</span>
-            </div>
-          </div>
-          <!-- Animated connection lines (CSS) -->
-          <svg class="connection-lines" viewBox="0 0 400 400">
-            <line class="conn-line" x1="200" y1="50" x2="200" y2="200"/>
-            <line class="conn-line" x1="343" y1="88" x2="200" y2="200"/>
-            <line class="conn-line" x1="350" y1="200" x2="200" y2="200"/>
-            <line class="conn-line" x1="300" y1="330" x2="200" y2="200"/>
-            <line class="conn-line" x1="200" y1="350" x2="200" y2="200"/>
-            <line class="conn-line" x1="80" y1="310" x2="200" y2="200"/>
-            <line class="conn-line" x1="57" y1="113" x2="200" y2="200"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </section>
+<!-- CONTACT -->
+<section class="sec contact"><div class="wrap">
+  <div class="eyebrow">Get in touch</div>
+  <h2>See your landscape in the engine.</h2>
+  <p>Open the explorer, or reach out to put your agency's monitoring network on the map.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="/explorer">Open the Explorer →</a>
+    <a class="btn ghost" href="mailto:ahmad@climaiq.tech">ahmad@climaiq.tech</a>
+  </div>
+</div></section>
 
-  <!-- Section 7: Validation & Impact -->
-  <section class="section validation" id="validation">
-    <div class="container">
-      <div class="section-label reveal">Proven Results</div>
-      <h2 class="section-title reveal">Validated. Quantified. Ready.</h2>
-      <a href="https://myemail.constantcontact.com/CAL-FIRE-Advances-Wildfire-Resilience-and-Innovation-at-Red-Sky-Summit.html?soid=1128868940975&aid=zXu5Glf9FV0"
-         target="_blank" rel="noopener" class="validation-badge-link reveal" title="Read the official CAL FIRE announcement">
-        <div class="validation-badge">
-          <div class="badge-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 15l-2 5l9-13h-5l2-5l-9 13h5z"/></svg>
-          </div>
-          <div class="badge-content">
-            <span class="badge-title">CAL FIRE — 2025 Global Space-Based Data Challenge</span>
-            <span class="badge-subtitle">Winner — 88% validation score across all categories</span>
-            <span class="badge-link-hint">Read the official CAL FIRE announcement ↗</span>
-          </div>
-        </div>
-      </a>
-      <div class="impact-timeline reveal">
-        <h3 class="timeline-heading">Projected Impact at Scale</h3>
-        <div class="timeline-track">
-          <div class="timeline-node">
-            <div class="timeline-year">Year 5</div>
-            <div class="timeline-stats">
-              <div class="tl-stat">
-                <span class="tl-value">5–15M MT</span>
-                <span class="tl-label">CO&#8322; prevented</span>
-              </div>
-              <div class="tl-stat">
-                <span class="tl-value">25–40M</span>
-                <span class="tl-label">people protected</span>
-              </div>
-            </div>
-          </div>
-          <div class="timeline-connector"></div>
-          <div class="timeline-node">
-            <div class="timeline-year">Year 10</div>
-            <div class="timeline-stats">
-              <div class="tl-stat">
-                <span class="tl-value">15–40M MT</span>
-                <span class="tl-label">CO&#8322; prevented</span>
-              </div>
-              <div class="tl-stat">
-                <span class="tl-value">100M+</span>
-                <span class="tl-label">people protected</span>
-              </div>
-            </div>
-          </div>
-          <div class="timeline-connector"></div>
-          <div class="timeline-node">
-            <div class="timeline-year">Year 20</div>
-            <div class="timeline-stats">
-              <div class="tl-stat">
-                <span class="tl-value">50–150M MT</span>
-                <span class="tl-label">CO&#8322; prevented (global)</span>
-              </div>
-              <div class="tl-stat">
-                <span class="tl-value">500M+</span>
-                <span class="tl-label">people protected</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="impact-quote reveal">
-        <p>"Every acre that doesn't burn is carbon that stays stored."</p>
-      </div>
-    </div>
-  </section>
+<!-- FOOTER -->
+<footer class="footer"><div class="wrap">
+  <a class="brand" href="#top"><span class="mark">C</span><span class="word">Clima<span class="iq">IQ</span></span></a>
+  <ul class="f-links">
+    <li><a href="/explorer">Explorer</a></li>
+    <li><a href="/explorer/utah">Utah</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="mailto:ahmad@climaiq.tech">Contact</a></li>
+  </ul>
+  <div class="meta">© 2026 ClimaIQ · Salt Lake City, UT · built on public NASA &amp; agency data</div>
+</div></footer>
 
-  <!-- Section 8: vs. The Competition -->
-  <section class="section competition" id="competition">
-    <div class="container">
-      <div class="section-label reveal">Competitive Edge</div>
-      <h2 class="section-title reveal">Not Just Different.<br>A Different Category.</h2>
-      <div class="comparison-table reveal">
-        <div class="comp-header">
-          <div class="comp-cell comp-feature"></div>
-          <div class="comp-cell comp-us">ClimaIQ</div>
-          <div class="comp-cell comp-them">Technosylva / Legacy</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">Approach</div>
-          <div class="comp-cell comp-us highlight">Predictive (before ignition)</div>
-          <div class="comp-cell comp-them">Reactive (after ignition)</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">AI Model</div>
-          <div class="comp-cell comp-us highlight">ML Ensemble (4 models)</div>
-          <div class="comp-cell comp-them">Physics-only</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">Annual Cost</div>
-          <div class="comp-cell comp-us highlight">$75K / year</div>
-          <div class="comp-cell comp-them">$500K+ / year</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">Data Latency</div>
-          <div class="comp-cell comp-us highlight">870ms real-time</div>
-          <div class="comp-cell comp-them">Manual review</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">Data Sources</div>
-          <div class="comp-cell comp-us highlight">26 unified connectors</div>
-          <div class="comp-cell comp-them">Siloed / limited</div>
-        </div>
-        <div class="comp-row">
-          <div class="comp-cell comp-feature">Forecast Window</div>
-          <div class="comp-cell comp-us highlight">7-day prediction</div>
-          <div class="comp-cell comp-them">Current conditions only</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 9: Team / Founder -->
-  <section class="section team" id="team">
-    <div class="container">
-      <div class="section-label reveal">The Builder</div>
-      <h2 class="section-title reveal">Built by Someone Who<br>Understands the Science</h2>
-      <div class="founder-card reveal">
-        <div class="founder-avatar">
-          <div class="avatar-placeholder">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-        </div>
-        <div class="founder-info">
-          <h3 class="founder-name">Ahmad Talaei</h3>
-          <p class="founder-title">Founder & Lead Engineer</p>
-          <p class="founder-degree">Ph.D. Atmospheric Science — University of Utah</p>
-          <div class="founder-credentials">
-            <div class="credential">
-              <span class="cred-value">$1.14M</span>
-              <span class="cred-label">Research funding secured</span>
-            </div>
-            <div class="credential">
-              <span class="cred-value">2</span>
-              <span class="cred-label">First-author publications</span>
-            </div>
-            <div class="credential">
-              <span class="cred-value">88%</span>
-              <span class="cred-label">CAL FIRE validation score</span>
-            </div>
-          </div>
-          <p class="founder-bio">Domain expertise in atmospheric science meets full-stack engineering. Every line of code is informed by the physics of fire behavior, atmospheric dynamics, and the operational reality of emergency response.</p>
-          <div class="founder-collaborators">
-            <span class="collab-label">Collaborators:</span>
-            <span class="collab-name">Earth Fire Alliance</span>
-            <span class="collab-sep">&bull;</span>
-            <span class="collab-name">Google Research</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Section 10: Contact / CTA -->
-  <section class="section contact" id="contact">
-    <div id="particles-js-footer" class="particles-bg particles-footer"></div>
-    <div class="container contact-content">
-      <div class="section-label reveal">What's Next</div>
-      <h2 class="contact-headline reveal">The data vacuum is coming.<br><span class="headline-accent">We already built the replacement.</span></h2>
-      <p class="contact-sub reveal">MesoWest — the backbone of U.S. weather data — sunsets December 2026. ClimaIQ is ready to fill the gap with something far more powerful.</p>
-      <div class="contact-actions reveal">
-        <a href="mailto:ahmad@climaiq.tech" class="contact-btn primary">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          ahmad@climaiq.tech
-        </a>
-        <a href="https://www.linkedin.com/in/ahmadtalaei" target="_blank" rel="noopener noreferrer" class="contact-btn secondary">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-          LinkedIn
-        </a>
-        <a href="https://climaiq.tech" class="contact-btn secondary">climaiq.tech</a>
-      </div>
-    </div>
-    <div class="footer">
-      <div class="container">
-        <p>&copy; 2026 ClimaIQ. All rights reserved.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script src="js/particles-config.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/architecture.js"></script>
 </body>
 </html>
