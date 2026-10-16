@@ -68,10 +68,18 @@ img{max-width:100%;display:block}
 @media(max-width:760px){.nav-links li:not(.nav-cta){display:none}}
 
 /* HERO */
-.hero{padding:70px 0 40px;background:
-  radial-gradient(1100px 460px at 72% -10%, rgba(67,179,164,.12), transparent),
-  radial-gradient(800px 420px at 10% 0%, rgba(94,200,242,.07), transparent),
-  var(--ground)}
+.hero{position:relative;overflow:hidden;padding:70px 0 40px;background:var(--ground)}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:#05070d}
+.hero-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(1100px 460px at 74% -8%, rgba(67,179,164,.10), transparent),
+  linear-gradient(90deg, rgba(10,14,23,.95), rgba(10,14,23,.72) 42%, rgba(10,14,23,.26) 100%),
+  linear-gradient(0deg, var(--ground), rgba(10,14,23,0) 46%)}
+.hero .wrap{position:relative;z-index:2}
+.hero-credit{position:absolute;right:16px;bottom:10px;z-index:2;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint)}
+.hero-credit a{color:var(--muted)}
+.hero-credit a:hover{color:var(--accent)}
+@media(prefers-reduced-motion:reduce){.hero-bg{display:none}}
 .hero .wrap{display:grid;grid-template-columns:1fr 1.18fr;gap:44px;align-items:center}
 .hero h1{font-size:clamp(38px,4.6vw,62px);font-weight:700;letter-spacing:-.025em;line-height:1.02;margin:16px 0 0}
 .hero h1 .a{color:var(--accent)}
@@ -171,7 +179,11 @@ img{max-width:100%;display:block}
 </div></nav>
 
 <!-- HERO -->
-<header class="hero" id="top"><div class="wrap">
+<header class="hero" id="top">
+<div class="hero-bg" aria-hidden="true"><canvas id="globe"></canvas></div>
+<div class="hero-scrim" aria-hidden="true"></div>
+<div class="hero-credit">Imagery: <a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs" target="_blank" rel="noopener">NASA GIBS · Blue Marble</a></div>
+<div class="wrap">
   <div>
     <div class="eyebrow">Fuel Intelligence Engine</div>
     <h1>The land, read <span class="a">continuously.</span></h1>
@@ -316,6 +328,98 @@ img{max-width:100%;display:block}
   </ul>
   <div class="meta">© 2026 ClimaIQ · Salt Lake City, UT · built on public NASA &amp; agency data</div>
 </div></footer>
+
+<!-- Rotating NASA Blue Marble globe — WebGL fragment-shader sphere, no libraries -->
+<script>
+(function(){
+  var canvas = document.getElementById('globe');
+  if(!canvas) return;
+  var gl = canvas.getContext('webgl', {alpha:true, premultipliedAlpha:false, antialias:true});
+  if(!gl){ canvas.style.display='none'; return; }
+  var vsrc = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.0,1.0);}';
+  var fsrc = [
+    'precision highp float;',
+    'uniform vec2 u_res; uniform vec2 u_center; uniform float u_radius; uniform float u_lon; uniform sampler2D u_tex;',
+    'const float PI=3.14159265359;',
+    'void main(){',
+    '  vec2 frag=vec2(gl_FragCoord.x, u_res.y-gl_FragCoord.y);',
+    '  vec2 d=(frag-u_center)/u_radius;',
+    '  float r2=dot(d,d);',
+    '  if(r2>1.0){ discard; }',
+    '  float z=sqrt(1.0-r2);',
+    '  vec3 P=vec3(d.x,-d.y,z);',
+    '  float tx=-0.31;',
+    '  mat3 Rx=mat3(1.0,0.0,0.0, 0.0,cos(tx),-sin(tx), 0.0,sin(tx),cos(tx));',
+    '  vec3 Pt=Rx*P;',
+    '  float cs=cos(u_lon), sn=sin(u_lon);',
+    '  vec3 Pr=vec3(Pt.x*cs+Pt.z*sn, Pt.y, -Pt.x*sn+Pt.z*cs);',
+    '  float lat=asin(clamp(Pr.y,-1.0,1.0));',
+    '  float lon=atan(Pr.x,Pr.z);',
+    '  vec2 uv=vec2(lon/(2.0*PI)+0.5, 0.5-lat/PI);',
+    '  vec3 col=texture2D(u_tex,uv).rgb;',
+    '  vec3 N=vec3(d.x,-d.y,z);',
+    '  vec3 L=normalize(vec3(-0.5,0.42,0.78));',
+    '  float diff=clamp(dot(N,L),0.0,1.0);',
+    '  col*=0.30+0.90*diff;',
+    '  col*=mix(0.55,1.0,z);',
+    '  float rim=smoothstep(0.80,1.0,r2);',
+    '  col+=vec3(0.26,0.70,0.64)*rim*0.45;',
+    '  float a=smoothstep(1.0,0.983,r2);',
+    '  gl_FragColor=vec4(col,a);',
+    '}'
+  ].join('\n');
+  function sh(t,s){var o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o;}
+  var prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  var buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  var loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  var uRes=gl.getUniformLocation(prog,'u_res'),uCenter=gl.getUniformLocation(prog,'u_center'),
+      uRadius=gl.getUniformLocation(prog,'u_radius'),uLon=gl.getUniformLocation(prog,'u_lon'),
+      uTex=gl.getUniformLocation(prog,'u_tex');
+  gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  var tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([6,10,18,255]));
+  var img=new Image();
+  img.onload=function(){ gl.bindTexture(gl.TEXTURE_2D,tex);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+    gl.generateMipmap(gl.TEXTURE_2D);
+  };
+  img.src='assets/bluemarble.jpg';
+  var dpr=Math.min(window.devicePixelRatio||1,2), W=0,H=0,cx=0,cy=0,rad=0;
+  function resize(){
+    var r=canvas.parentElement.getBoundingClientRect();
+    W=Math.max(1,r.width); H=Math.max(1,r.height);
+    canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    gl.viewport(0,0,canvas.width,canvas.height);
+    cx=W*(W<760?0.5:0.72); cy=H*(W<760?0.40:0.40);
+    rad=(W<760?Math.min(W,H)*0.55:H*0.66);
+  }
+  window.addEventListener('resize',resize); resize();
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var lon=-1.6,last=null;
+  function frame(t){
+    if(last===null)last=t; var dt=(t-last)/1000; last=t;
+    if(!reduce) lon+=dt*0.05;
+    gl.uniform2f(uRes,canvas.width,canvas.height);
+    gl.uniform2f(uCenter,cx*dpr,cy*dpr);
+    gl.uniform1f(uRadius,rad*dpr);
+    gl.uniform1f(uLon,lon);
+    gl.uniform1i(uTex,0);
+    gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
 
 </body>
 </html>
