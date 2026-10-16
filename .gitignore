@@ -1,0 +1,15 @@
+.vercel
+node_modules/
+
+# Local working files — never part of the deployed site
+body.json
+on
+*.lnk
+demos/
+Google Analytics/
+
+# Large source images — the site ships the optimized .jpg versions
+assets/explorer-hero.png
+assets/explorer-utah.png
+assets/*LinkedIn*
+assets/linkedin-banner.html
