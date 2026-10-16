@@ -68,18 +68,14 @@ img{max-width:100%;display:block}
 @media(max-width:760px){.nav-links li:not(.nav-cta){display:none}}
 
 /* HERO */
-.hero{position:relative;overflow:hidden;padding:70px 0 40px;background:var(--ground)}
-.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:#05070d}
-.hero-bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;background:
-  radial-gradient(1100px 460px at 74% -8%, rgba(67,179,164,.10), transparent),
-  linear-gradient(90deg, rgba(10,14,23,.95), rgba(10,14,23,.72) 42%, rgba(10,14,23,.26) 100%),
-  linear-gradient(0deg, var(--ground), rgba(10,14,23,0) 46%)}
-.hero .wrap{position:relative;z-index:2}
-.hero-credit{position:absolute;right:16px;bottom:10px;z-index:2;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--faint)}
-.hero-credit a{color:var(--muted)}
-.hero-credit a:hover{color:var(--accent)}
-@media(prefers-reduced-motion:reduce){.hero-bg{display:none}}
+.hero{position:relative;z-index:2;padding:70px 0 40px}
+#space{position:fixed;inset:0;z-index:0;pointer-events:none;background:#05070d}
+#space canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#scrim{position:fixed;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(1300px 1000px at 50% 40%, rgba(8,11,18,.46), rgba(5,7,13,.85) 76%)}
+#space-credit{position:fixed;right:14px;bottom:9px;z-index:3;font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--faint);pointer-events:none}
+nav,header,section,footer{position:relative;z-index:2}
+@media(prefers-reduced-motion:reduce){#sats{opacity:.55}}
 .hero .wrap{display:grid;grid-template-columns:1fr 1.18fr;gap:44px;align-items:center}
 .hero h1{font-size:clamp(38px,4.6vw,62px);font-weight:700;letter-spacing:-.025em;line-height:1.02;margin:16px 0 0}
 .hero h1 .a{color:var(--accent)}
@@ -97,16 +93,15 @@ img{max-width:100%;display:block}
 
 
 
-/* TWO EXPLORERS */
-.explorers{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.exp{background:var(--panel);border:1px solid var(--line);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh1);transition:.2s}
-.exp:hover{border-color:var(--accent);transform:translateY(-2px)}
-.exp img{width:100%;height:230px;object-fit:cover;object-position:top left;border-bottom:1px solid var(--line)}
-.exp .body{padding:20px}
-.exp .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
-.exp h3{font-size:18px;font-weight:600;margin:9px 0 0}
-.exp p{font-size:13.5px;color:var(--ink2);margin:8px 0 14px;line-height:1.55}
-@media(max-width:760px){.explorers{grid-template-columns:1fr}}
+/* UTAH FEATURE (hero-style) */
+.feature{padding:60px 0;position:relative;border-top:1px solid var(--line)}
+.feature .wrap{display:grid;grid-template-columns:1fr 1.18fr;gap:44px;align-items:center}
+.feature h2{font-size:clamp(32px,4vw,52px);font-weight:700;letter-spacing:-.025em;line-height:1.03;margin:16px 0 0}
+.feature h2 .a{color:var(--accent)}
+.feature .lede{color:var(--ink2);font-size:18px;line-height:1.6;margin:20px 0 28px;max-width:48ch}
+.feature .cta-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.feature .micro{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:22px;letter-spacing:.02em}
+@media(max-width:860px){.feature .wrap{grid-template-columns:1fr}}
 
 /* HOW IT WORKS */
 .how{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -151,14 +146,14 @@ img{max-width:100%;display:block}
 
 /* CONTACT */
 .contact{background:
-  radial-gradient(800px 360px at 50% 120%, rgba(67,179,164,.10), transparent),
-  var(--panel2);border-top:1px solid var(--line);text-align:center}
+  radial-gradient(800px 360px at 50% 120%, rgba(67,179,164,.12), transparent),
+  rgba(12,18,32,.5);border-top:1px solid var(--line);text-align:center}
 .contact h2{font-size:clamp(26px,3vw,36px);font-weight:700;letter-spacing:-.02em}
 .contact p{color:var(--ink2);margin:14px auto 26px;max-width:52ch}
 .contact .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
 
 /* FOOTER */
-.footer{border-top:1px solid var(--line);background:var(--panel2)}
+.footer{border-top:1px solid var(--line);background:rgba(12,18,32,.55)}
 .footer .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding-top:22px;padding-bottom:22px}
 .footer .f-links{display:flex;gap:22px;list-style:none}
 .footer .f-links a{color:var(--ink2);font-size:13px}
@@ -166,6 +161,11 @@ img{max-width:100%;display:block}
 </style>
 </head>
 <body>
+
+<!-- Whole-page living background: rotating NASA Blue Marble globe + orbiting satellites -->
+<div id="space" aria-hidden="true"><canvas id="globe"></canvas><canvas id="sats"></canvas></div>
+<div id="scrim" aria-hidden="true"></div>
+<div id="space-credit">Earth: NASA GIBS Blue Marble · satellite orbits representative</div>
 
 <!-- NAV -->
 <nav class="nav"><div class="wrap">
@@ -180,9 +180,6 @@ img{max-width:100%;display:block}
 
 <!-- HERO -->
 <header class="hero" id="top">
-<div class="hero-bg" aria-hidden="true"><canvas id="globe"></canvas></div>
-<div class="hero-scrim" aria-hidden="true"></div>
-<div class="hero-credit">Imagery: <a href="https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs" target="_blank" rel="noopener">NASA GIBS · Blue Marble</a></div>
 <div class="wrap">
   <div>
     <div class="eyebrow">Fuel Intelligence Engine</div>
@@ -190,7 +187,6 @@ img{max-width:100%;display:block}
     <p class="lede">ClimaIQ fuses satellite, radar, and field measurements into an open, uncertainty-aware map of vegetation condition and change — explorable down to a single acre, with every value labeled by how it was known.</p>
     <div class="cta-row">
       <a class="btn primary" href="/explorer">Open the Explorer →</a>
-      <a class="btn ghost" href="/explorer/utah">See Utah coverage</a>
     </div>
     <div class="micro">Live tool · draw an area anywhere in the continental US · no sign-in</div>
   </div>
@@ -206,33 +202,27 @@ img{max-width:100%;display:block}
   </a>
 </div></header>
 
-<!-- TWO EXPLORERS -->
-<section class="sec" id="explorers" style="padding-top:0"><div class="wrap">
-  <div class="sec-head">
-    <div class="eyebrow">The live tool</div>
-    <h2>Two ways in. One engine.</h2>
-    <p>Both run in your browser on public NASA and agency data — no account, no install.</p>
+<!-- UTAH FEATURE -->
+<section class="feature" id="utah"><div class="wrap">
+  <div>
+    <div class="eyebrow">Utah Coverage</div>
+    <h2>The whole state, <span class="a">on one map.</span></h2>
+    <p class="lede">Every DWR Range Trend monitoring site and Watershed Restoration Initiative project across Utah, with every satellite acquisition that actually observes them — the real footprints, not assumed coverage.</p>
+    <div class="cta-row">
+      <a class="btn primary" href="/explorer/utah">Open Utah coverage →</a>
+    </div>
+    <div class="micro">Live tool · 1,368 Range Trend sites · 696 WRI projects · no sign-in</div>
   </div>
-  <div class="explorers">
-    <a class="exp" href="/explorer">
-      <img src="assets/explorer-hero.jpg" alt="Fuel Intelligence Explorer">
-      <div class="body">
-        <div class="tag">/explorer</div>
-        <h3>Fuel Intelligence Explorer</h3>
-        <p>Draw an area anywhere in the continental US. The engine queries every intersecting dataset — lidar, NISAR L-band, Sentinel, EMIT hyperspectral — and reconstructs 3D surface fuels, each layer tagged by evidence level.</p>
-        <span class="btn ghost">Open ↗</span>
-      </div>
-    </a>
-    <a class="exp" href="/explorer/utah">
-      <img src="assets/explorer-utah.jpg" alt="Utah Coverage — AOI selection">
-      <div class="body">
-        <div class="tag">/explorer/utah</div>
-        <h3>Utah Coverage</h3>
-        <p>Every DWR Range Trend monitoring site and Watershed Restoration Initiative project in the state, with every satellite acquisition that observes them — the exact footprints, not assumed coverage.</p>
-        <span class="btn ghost">Open ↗</span>
-      </div>
-    </a>
-  </div>
+  <a class="frame" href="/explorer/utah" aria-label="Open Utah coverage">
+    <div class="framebar">
+      <span class="dot" style="background:#ef4444"></span>
+      <span class="dot" style="background:#eab308"></span>
+      <span class="dot" style="background:#22c55e"></span>
+      <span class="furl">climaiq.tech/explorer/utah</span>
+      <span class="open-hint">open ↗</span>
+    </div>
+    <img src="assets/explorer-utah.jpg" alt="Utah Coverage — every Range Trend site and WRI project across Utah with satellite coverage.">
+  </a>
 </div></section>
 
 <!-- HOW IT WORKS -->
@@ -398,20 +388,68 @@ img{max-width:100%;display:block}
     gl.generateMipmap(gl.TEXTURE_2D);
   };
   img.src='assets/bluemarble.jpg';
+
+  // ---- shared geometry + satellite overlay ----
+  var scanvas=document.getElementById('sats');
+  var ctx=scanvas?scanvas.getContext('2d'):null;
+  var TILT=-0.31;
   var dpr=Math.min(window.devicePixelRatio||1,2), W=0,H=0,cx=0,cy=0,rad=0;
   function resize(){
-    var r=canvas.parentElement.getBoundingClientRect();
-    W=Math.max(1,r.width); H=Math.max(1,r.height);
+    W=window.innerWidth; H=window.innerHeight;
     canvas.width=Math.round(W*dpr); canvas.height=Math.round(H*dpr);
+    if(scanvas){ scanvas.width=Math.round(W*dpr); scanvas.height=Math.round(H*dpr); }
     gl.viewport(0,0,canvas.width,canvas.height);
-    cx=W*(W<760?0.5:0.72); cy=H*(W<760?0.40:0.40);
-    rad=(W<760?Math.min(W,H)*0.55:H*0.66);
+    cx=W*0.5; cy=H*0.42; rad=Math.min(W,H)*0.46;
   }
   window.addEventListener('resize',resize); resize();
+
+  // real orbital inclination/altitude for the EO fleet ClimaIQ draws from; phase is representative
+  var SATS=[
+    {n:'NISAR',inc:98.4,alt:747,raan:18,ph:0.0,per:92},
+    {n:'SMAP',inc:98.1,alt:685,raan:66,ph:1.1,per:88},
+    {n:'Landsat 9',inc:98.2,alt:705,raan:115,ph:2.0,per:90},
+    {n:'Sentinel-1',inc:98.2,alt:693,raan:158,ph:3.0,per:89},
+    {n:'Sentinel-2',inc:98.6,alt:786,raan:205,ph:4.1,per:95},
+    {n:'Terra',inc:98.2,alt:705,raan:248,ph:5.0,per:90},
+    {n:'Aqua',inc:98.2,alt:705,raan:298,ph:0.6,per:90},
+    {n:'GRACE-FO',inc:89.0,alt:490,raan:338,ph:2.6,per:82},
+    {n:'OCO-2',inc:98.2,alt:705,raan:44,ph:3.6,per:90},
+    {n:'ISS',inc:51.6,alt:420,raan:92,ph:1.6,per:78}
+  ];
+  function opt(th,inc,raan){
+    var x=Math.cos(th), y=0.0, z=Math.sin(th);
+    var c=Math.cos(inc), s=Math.sin(inc); var y1=y*c-z*s, z1=y*s+z*c, x1=x;
+    var cn=Math.cos(raan), sn=Math.sin(raan); var x2=x1*cn+z1*sn, z2=-x1*sn+z1*cn, y2=y1;
+    var ct=Math.cos(TILT), st=Math.sin(TILT); var y3=y2*ct-z2*st, z3=y2*st+z2*ct, x3=x2;
+    return [x3,y3,z3];
+  }
+  function drawSats(tt){
+    if(!ctx) return;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    for(var k=0;k<SATS.length;k++){
+      var s=SATS[k], Rpx=rad*(1+s.alt/6371), inc=s.inc*Math.PI/180, raan=s.raan*Math.PI/180, N=150;
+      ctx.lineWidth=1;
+      for(var i=0;i<N;i++){
+        var a=opt(i/N*6.2832,inc,raan), b=opt((i+1)/N*6.2832,inc,raan);
+        var occ=(a[2]<0)&&((a[0]*a[0]+a[1]*a[1])*Rpx*Rpx<rad*rad);
+        ctx.strokeStyle=occ?'rgba(94,200,242,.05)':'rgba(94,200,242,.20)';
+        ctx.beginPath(); ctx.moveTo(cx+a[0]*Rpx,cy-a[1]*Rpx); ctx.lineTo(cx+b[0]*Rpx,cy-b[1]*Rpx); ctx.stroke();
+      }
+      var p=opt(s.ph+(tt/s.per)*6.2832,inc,raan), X=cx+p[0]*Rpx, Y=cy-p[1]*Rpx;
+      if(!((p[2]<0)&&((p[0]*p[0]+p[1]*p[1])*Rpx*Rpx<rad*rad))){
+        ctx.beginPath(); ctx.arc(X,Y,2.4,0,6.2832); ctx.fillStyle='#eef3fb'; ctx.fill();
+        ctx.beginPath(); ctx.arc(X,Y,5.2,0,6.2832); ctx.strokeStyle='rgba(67,179,164,.55)'; ctx.lineWidth=1; ctx.stroke();
+        ctx.font='600 11px ui-monospace,Menlo,Consolas,monospace'; ctx.fillStyle='rgba(230,237,247,.78)';
+        ctx.fillText(s.n, X+9, Y+3.5);
+      }
+    }
+  }
+
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var lon=-1.6,last=null;
+  var lon=-1.6,last=null,tacc=0;
   function frame(t){
-    if(last===null)last=t; var dt=(t-last)/1000; last=t;
+    if(last===null)last=t; var dt=(t-last)/1000; last=t; if(!reduce) tacc+=dt;
     if(!reduce) lon+=dt*0.05;
     gl.uniform2f(uRes,canvas.width,canvas.height);
     gl.uniform2f(uCenter,cx*dpr,cy*dpr);
@@ -420,6 +458,7 @@ img{max-width:100%;display:block}
     gl.uniform1i(uTex,0);
     gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
     gl.drawArrays(gl.TRIANGLES,0,3);
+    drawSats(tacc);
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
