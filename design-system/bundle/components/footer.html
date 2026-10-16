@@ -1,0 +1,33 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Footer</title>
+<style>
+:root{
+--ground:#0a0e17;--panel2:#0c1220;--line:#26314d;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--faint:#4a5878;--accent:#43b3a4;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:0}
+.ft{border-top:1px solid var(--line);background:var(--panel2);padding:28px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{font-family:var(--mono);font-size:14px}
+.iq{color:var(--accent)}
+.links{display:flex;gap:22px;list-style:none}
+.links a{color:var(--ink2);font-size:13px;text-decoration:none}
+.links a:hover{color:var(--ink)}
+.meta{font-family:var(--mono);font-size:10.5px;color:var(--faint);width:100%;margin-top:6px}
+</style></head>
+<body>
+<div class="ft">
+  <div class="brand">Clima<span class="iq">IQ</span></div>
+  <ul class="links">
+    <li><a href="/explorer">Explorer</a></li>
+    <li><a href="#">Platform</a></li>
+    <li><a href="#">Science</a></li>
+    <li><a href="mailto:ahmad@climaiq.tech">Contact</a></li>
+  </ul>
+  <div class="meta">© 2026 ClimaIQ · Salt Lake City, UT · built on public NASA &amp; agency data</div>
+</div>
+</body></html>

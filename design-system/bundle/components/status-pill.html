@@ -1,0 +1,31 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Status pill</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--line:#26314d;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;
+--good:#22c55e;--warn:#eab308;--bad:#ef4444;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:18px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:7px 13px;font-family:var(--mono);font-size:11.5px;letter-spacing:.03em;color:var(--ink2)}
+.led{width:8px;height:8px;border-radius:50%;position:relative}
+.led.g{background:var(--good);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.led.w{background:var(--warn);box-shadow:0 0 0 3px rgba(234,179,8,.18)}
+.led.b{background:var(--bad);box-shadow:0 0 0 3px rgba(239,68,68,.18)}
+</style></head>
+<body>
+<h1>Status pill · LED + mono label</h1>
+<div class="row">
+  <span class="pill"><span class="led g"></span>All services healthy</span>
+  <span class="pill"><span class="led g"></span>Live monitoring</span>
+  <span class="pill"><span class="led w"></span>Reprocessing · 2026 Q4</span>
+  <span class="pill"><span class="led b"></span>Tunnel offline</span>
+</div>
+</body></html>

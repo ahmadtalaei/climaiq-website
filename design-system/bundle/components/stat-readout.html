@@ -1,0 +1,30 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Stat readout</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--line:#26314d;
+--ink:#e6edf7;--muted:#7d8db0;--faint:#4a5878;--accent:#43b3a4;--data:#5ec8f2;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 16px 14px}
+.val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:30px;font-weight:600;letter-spacing:-.01em}
+.val .u{font-size:14px;color:var(--muted);margin-left:2px}
+.lab{font-size:12px;color:var(--muted);margin-top:6px}
+.sub{font-family:var(--mono);font-size:10px;color:var(--accent);margin-top:7px;letter-spacing:.04em}
+.tick{color:var(--data)}
+</style></head>
+<body>
+<h1>Stat readout · mono tabular</h1>
+<div class="grid">
+  <div class="stat"><div class="val">870<span class="u">ms</span></div><div class="lab">Avg ingestion</div><div class="sub">345× faster than legacy</div></div>
+  <div class="stat"><div class="val">99.92<span class="u">%</span></div><div class="lab">Validation rate</div><div class="sub">schema pass</div></div>
+  <div class="stat"><div class="val tick">26</div><div class="lab">Data connectors</div><div class="sub">batch · stream · real-time</div></div>
+  <div class="stat"><div class="val">1.06<span class="u">B</span></div><div class="lab">Records processed</div><div class="sub">to date</div></div>
+</div>
+</body></html>

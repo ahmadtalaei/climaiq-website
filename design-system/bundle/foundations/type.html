@@ -1,0 +1,40 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Typography</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--line:#26314d;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--faint:#4a5878;--accent:#43b3a4;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:22px}
+.spec{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;margin-bottom:4px}
+.block{border-bottom:1px solid var(--line);padding:16px 0}
+.display{font-size:52px;font-weight:700;letter-spacing:-.02em;line-height:1.02}
+.h2{font-size:28px;font-weight:600;letter-spacing:-.01em}
+.body{font-size:16px;color:var(--ink2);line-height:1.6;max-width:62ch}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.readout{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:34px;font-weight:600}
+.unit{font-size:14px;color:var(--muted)}
+</style></head>
+<body>
+<h1>Typography — marketing scale, instrument numerals</h1>
+
+<div class="block"><div class="spec">Display · sans · 52px / 700 / -.02em · clamp(40–72px) on page</div>
+<div class="display">Prediction before ignition.</div></div>
+
+<div class="block"><div class="spec">Heading · sans · 28px / 600</div>
+<div class="h2">One platform. The land, read continuously.</div></div>
+
+<div class="block"><div class="spec">Body · sans · 16px / 1.6 · max 62ch</div>
+<div class="body">Satellite measurements, radar change detection, and field data unified into one intelligence layer — with every prediction carrying a stated applicability domain and uncertainty.</div></div>
+
+<div class="block"><div class="spec">Eyebrow label · mono · 11px / .14em / uppercase · accent</div>
+<div class="label">Fuel Intelligence Engine</div></div>
+
+<div class="block"><div class="spec">Data readout · mono · tabular-nums — the instrument signature</div>
+<div class="readout">870<span class="unit">ms</span> &nbsp; 99.92<span class="unit">%</span> &nbsp; 1.06<span class="unit">B</span></div></div>
+</body></html>

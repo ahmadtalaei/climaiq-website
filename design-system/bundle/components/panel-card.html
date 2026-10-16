@@ -1,0 +1,32 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Panel card</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--panel3:#16203a;--line:#26314d;--line2:#334155;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--accent:#43b3a4;--data:#5ec8f2;
+--sh1:0 4px 16px rgba(0,0,0,.45);
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--sh1);
+  position:relative;overflow:hidden;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ic{width:38px;height:38px;border-radius:9px;background:var(--panel3);display:grid;place-items:center;margin-bottom:14px;
+  color:var(--accent);font-size:18px}
+.t{font-size:16px;font-weight:600}
+.d{font-size:13px;color:var(--ink2);line-height:1.55;margin-top:7px}
+.m{font-family:var(--mono);font-size:11px;color:var(--data);margin-top:14px;letter-spacing:.04em}
+</style></head>
+<body>
+<h1>Panel card · glass surface</h1>
+<div class="grid">
+  <div class="card"><div class="ic">◉</div><div class="t">Predict</div><div class="d">Seasonal condition surfaces from the accumulated satellite record, with a stated applicability domain.</div><div class="m">held-out R² +0.73</div></div>
+  <div class="card"><div class="ic">⧉</div><div class="t">Detect change</div><div class="d">NISAR radar departures between field visits — treatment, fire, and moisture, attributed.</div><div class="m">12-day revisit</div></div>
+  <div class="card"><div class="ic">◆</div><div class="t">Decide</div><div class="d">Condition maps and change alerts wired into the agency's real selection and monitoring workflow.</div><div class="m">uncertainty-aware</div></div>
+</div>
+</body></html>

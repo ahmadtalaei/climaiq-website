@@ -1,0 +1,65 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Hero — explorer-led</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--panel3:#16203a;--line:#26314d;--line2:#334155;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--faint:#4a5878;
+--accent:#43b3a4;--accent-ink:#06201c;--data:#5ec8f2;
+--sh2:0 20px 60px rgba(0,0,0,.6);
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:
+  radial-gradient(1000px 420px at 72% -10%, rgba(67,179,164,.12), transparent),
+  var(--ground);color:var(--ink);font-family:var(--sans);padding:40px}
+.wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:40px;align-items:center;max-width:1180px;margin:0 auto}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:16px}
+h1{font-size:clamp(36px,4vw,60px);font-weight:700;letter-spacing:-.02em;line-height:1.03}
+h1 .a{color:var(--accent)}
+p{color:var(--ink2);font-size:17px;line-height:1.6;margin:18px 0 26px;max-width:46ch}
+.btns{display:flex;gap:12px;align-items:center}
+.primary{font-family:var(--mono);font-size:13px;letter-spacing:.03em;background:var(--accent);color:var(--accent-ink);
+  padding:12px 18px;border-radius:8px;font-weight:600;text-decoration:none}
+.ghost{font-size:13px;color:var(--ink2);padding:12px 16px;border:1px solid var(--line2);border-radius:8px;text-decoration:none}
+/* framed explorer screenshot (mock) that links through */
+.frame{border:1px solid var(--line2);border-radius:12px;overflow:hidden;box-shadow:var(--sh2);background:var(--panel)}
+.framebar{display:flex;align-items:center;gap:6px;padding:9px 12px;border-bottom:1px solid var(--line);background:#0c1220}
+.dot{width:9px;height:9px;border-radius:50%}
+.url{margin-left:8px;font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.shot{height:300px;position:relative;background:
+  radial-gradient(140px 140px at 30% 45%, rgba(94,200,242,.18), transparent),
+  radial-gradient(180px 160px at 65% 60%, rgba(67,179,164,.16), transparent),
+  repeating-linear-gradient(0deg,#0c1322 0 1px,transparent 1px 34px),
+  repeating-linear-gradient(90deg,#0c1322 0 1px,transparent 1px 34px),
+  #0a0f1b}
+.tag{position:absolute;font-family:var(--mono);font-size:10px;padding:4px 7px;border-radius:5px;background:rgba(10,14,23,.8);border:1px solid var(--line);color:var(--ink2)}
+.legend{position:absolute;right:12px;bottom:12px;height:8px;width:120px;border-radius:4px;background:linear-gradient(90deg,#ef4444,#eab308,#22c55e)}
+</style></head>
+<body>
+<div class="wrap">
+  <div>
+    <div class="eyebrow">Fuel Intelligence Engine</div>
+    <h1>The land, read <span class="a">continuously.</span></h1>
+    <p>Satellite and radar observations fused with field monitoring — an open, uncertainty-aware map of vegetation condition and change. Explore it live.</p>
+    <div class="btns">
+      <a class="primary" href="/explorer">Open the Explorer →</a>
+      <a class="ghost" href="/explorer/utah">Utah coverage</a>
+    </div>
+  </div>
+  <a class="frame" href="/explorer" style="text-decoration:none">
+    <div class="framebar">
+      <span class="dot" style="background:#ef4444"></span>
+      <span class="dot" style="background:#eab308"></span>
+      <span class="dot" style="background:#22c55e"></span>
+      <span class="url">climaiq.tech/explorer</span>
+    </div>
+    <div class="shot">
+      <span class="tag" style="left:16px;top:14px;color:var(--data)">AOI · Unit 02</span>
+      <span class="tag" style="left:40%;top:52%">γ⁰ HH −8.6 dB</span>
+      <div class="legend"></div>
+    </div>
+  </a>
+</div>
+</body></html>

@@ -1,0 +1,55 @@
+<!-- @dsCard group="Foundations" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Colors</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--panel2:#0c1220;--panel3:#16203a;
+--line:#26314d;--line2:#334155;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--faint:#4a5878;
+--accent:#43b3a4;--accent-ink:#06201c;--data:#5ec8f2;
+--good:#22c55e;--warn:#eab308;--bad:#ef4444;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:20px}
+.group{margin-bottom:22px}
+.glabel{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.sw{width:118px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.chip{height:58px}
+.meta{padding:7px 9px}
+.name{font-size:11px;color:var(--ink2)}
+.hex{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+</style></head>
+<body>
+<h1>Color — ClimaIQ instrument palette</h1>
+
+<div class="group"><div class="glabel">Surfaces</div><div class="row">
+<div class="sw"><div class="chip" style="background:#0a0e17"></div><div class="meta"><div class="name">ground</div><div class="hex">#0a0e17</div></div></div>
+<div class="sw"><div class="chip" style="background:#0f1524"></div><div class="meta"><div class="name">panel</div><div class="hex">#0f1524</div></div></div>
+<div class="sw"><div class="chip" style="background:#0c1220"></div><div class="meta"><div class="name">panel-2</div><div class="hex">#0c1220</div></div></div>
+<div class="sw"><div class="chip" style="background:#16203a"></div><div class="meta"><div class="name">panel-3</div><div class="hex">#16203a</div></div></div>
+<div class="sw"><div class="chip" style="background:#26314d"></div><div class="meta"><div class="name">line</div><div class="hex">#26314d</div></div></div>
+</div></div>
+
+<div class="group"><div class="glabel">Text</div><div class="row">
+<div class="sw"><div class="chip" style="background:#e6edf7"></div><div class="meta"><div class="name">ink</div><div class="hex">#e6edf7</div></div></div>
+<div class="sw"><div class="chip" style="background:#c7d2e8"></div><div class="meta"><div class="name">ink-2</div><div class="hex">#c7d2e8</div></div></div>
+<div class="sw"><div class="chip" style="background:#7d8db0"></div><div class="meta"><div class="name">muted</div><div class="hex">#7d8db0</div></div></div>
+<div class="sw"><div class="chip" style="background:#4a5878"></div><div class="meta"><div class="name">faint</div><div class="hex">#4a5878</div></div></div>
+</div></div>
+
+<div class="group"><div class="glabel">Accent &amp; data</div><div class="row">
+<div class="sw"><div class="chip" style="background:#43b3a4"></div><div class="meta"><div class="name">accent (teal)</div><div class="hex">#43b3a4</div></div></div>
+<div class="sw"><div class="chip" style="background:#5ec8f2"></div><div class="meta"><div class="name">data (cyan)</div><div class="hex">#5ec8f2</div></div></div>
+</div></div>
+
+<div class="group"><div class="glabel">Status</div><div class="row">
+<div class="sw"><div class="chip" style="background:#22c55e"></div><div class="meta"><div class="name">good</div><div class="hex">#22c55e</div></div></div>
+<div class="sw"><div class="chip" style="background:#eab308"></div><div class="meta"><div class="name">warn</div><div class="hex">#eab308</div></div></div>
+<div class="sw"><div class="chip" style="background:#ef4444"></div><div class="meta"><div class="name">bad</div><div class="hex">#ef4444</div></div></div>
+<div class="sw"><div class="chip" style="background:linear-gradient(90deg,#ef4444,#eab308,#22c55e)"></div><div class="meta"><div class="name">risk ramp</div><div class="hex">red→amber→green</div></div></div>
+</div></div>
+</body></html>

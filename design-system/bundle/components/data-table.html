@@ -1,0 +1,34 @@
+<!-- @dsCard group="Components" -->
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Data table</title>
+<style>
+:root{
+--ground:#0a0e17;--panel:#0f1524;--panel2:#0c1220;--line:#26314d;
+--ink:#e6edf7;--ink2:#c7d2e8;--muted:#7d8db0;--accent:#43b3a4;--data:#5ec8f2;
+--good:#22c55e;--warn:#eab308;
+--sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);padding:28px}
+h1{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:18px}
+.tbl{width:100%;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-family:var(--mono);font-size:12px}
+.tr{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;border-bottom:1px solid var(--line)}
+.tr:last-child{border-bottom:none}
+.th{background:var(--panel2);color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.td,.th div{padding:10px 14px}
+.tr:not(.th):hover{background:#0c1322}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.g{color:var(--good)} .w{color:var(--warn)} .a{color:var(--data)}
+.name{color:var(--ink2)}
+</style></head>
+<body>
+<h1>Data table · dense mono rows</h1>
+<div class="tbl">
+  <div class="tr th"><div>Measurand</div><div class="num">Held-out R²</div><div class="num">MAE</div><div>Grade</div></div>
+  <div class="tr"><div class="td name">Bare ground</div><div class="td num a">+0.61</div><div class="td num">5.4</div><div class="td g">demonstrated</div></div>
+  <div class="tr"><div class="td name">Herbaceous cover</div><div class="td num a">+0.73</div><div class="td num">4.8</div><div class="td g">demonstrated</div></div>
+  <div class="tr"><div class="td name">Shrub canopy</div><div class="td num a">+0.46</div><div class="td num">6.1</div><div class="td w">conditional</div></div>
+  <div class="tr"><div class="td name">Tree intercept</div><div class="td num">+0.39</div><div class="td num">7.0</div><div class="td w">conditional</div></div>
+</div>
+</body></html>
