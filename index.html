@@ -123,13 +123,20 @@ nav,header,section,footer{position:relative;z-index:2}
 .g{color:var(--good)} .w{color:var(--warn)}
 .note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px}
 
-/* NASA FLEET EMBED */
-.fleet-frame{border:1px solid var(--line2);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh2);background:var(--panel)}
-.fleet-frame .framebar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line);background:var(--panel2)}
-.fleet-frame iframe{display:block;width:100%;height:560px;border:0;background:#05070d}
-.fleet-frame .op{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--accent)}
-.fleet-frame .op:hover{color:var(--accent-hi)}
-@media(max-width:760px){.fleet-frame iframe{height:420px}}
+/* predicted-maps figure */
+.figure{margin-top:6px;border:1px solid var(--line);border-radius:var(--r3);overflow:hidden;background:var(--panel)}
+.figure img{width:100%;display:block}
+.figure figcaption{font-family:var(--mono);font-size:11px;color:var(--muted);padding:12px 16px;border-top:1px solid var(--line);line-height:1.55}
+.figure figcaption b{color:var(--ink2);font-weight:600}
+/* nav Open-Explorer dropdown */
+.nav-dd{position:relative}
+.nav-dd-toggle{cursor:pointer}
+.nav-dd-menu{display:none;position:absolute;top:100%;right:0;min-width:280px;background:#0f1524;border:1px solid var(--line2);border-top:7px solid transparent;background-clip:padding-box;border-radius:10px;padding:6px;box-shadow:var(--sh2);z-index:60}
+.nav-dd:hover .nav-dd-menu,.nav-dd:focus-within .nav-dd-menu,.nav-dd.open .nav-dd-menu{display:block}
+.nav-dd-menu a{display:block;padding:10px 12px;border-radius:7px;text-decoration:none}
+.nav-dd-menu a:hover{background:var(--panel3)}
+.nav-dd-menu a strong{display:block;font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600}
+.nav-dd-menu a span{display:block;font-size:11.5px;color:var(--muted);margin-top:3px}
 
 /* VALIDATION */
 .val{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}
@@ -171,10 +178,15 @@ nav,header,section,footer{position:relative;z-index:2}
 <nav class="nav"><div class="wrap">
   <a class="brand" href="#top"><span class="mark">C</span><span class="word">Clima<span class="iq">IQ</span></span></a>
   <ul class="nav-links">
-    <li><a href="#explorers">Explorer</a></li>
     <li><a href="#how">How it works</a></li>
     <li><a href="#evidence">Evidence</a></li>
-    <li class="nav-cta"><a class="btn primary" href="/explorer">Open Explorer →</a></li>
+    <li class="nav-cta nav-dd">
+      <button class="btn primary nav-dd-toggle" aria-haspopup="true" aria-expanded="false">Open Explorer ▾</button>
+      <div class="nav-dd-menu">
+        <a href="/explorer"><strong>Nationwide →</strong><span>Fuel Intelligence Engine · draw an area anywhere in the continental US</span></a>
+        <a href="/explorer/utah"><strong>Utah coverage →</strong><span>Every Range Trend site &amp; WRI project across the state</span></a>
+      </div>
+    </li>
   </ul>
 </div></nav>
 
@@ -236,34 +248,14 @@ nav,header,section,footer{position:relative;z-index:2}
     <div class="howcard">
       <div class="n">01 · CONDITION</div>
       <h3>The <span class="a">archive</span> predicts where it stands.</h3>
-      <p>The accumulated satellite record estimates current condition — bare ground, shrub and tree canopy, herbaceous cover — wall-to-wall, including everywhere field crews can't reach, each prediction confined to a stated applicability domain.</p>
+      <p>Google's AlphaEarth embeddings — a learned summary of the accumulated satellite record — estimate current condition: bare ground, shrub and tree canopy, herbaceous cover, total vegetation. Wall-to-wall, including everywhere field crews can't reach, each prediction confined to a stated applicability domain.</p>
     </div>
     <div class="howcard">
       <div class="n">02 · CHANGE</div>
       <h3>The <span class="c">radar</span> catches what moved.</h3>
-      <p>NISAR L-band radar, revisiting every site every 12 days, detects change between field visits — treatment, fire, or moisture — on observations the annual record can't yet see.</p>
+      <p>NASA's NISAR L-band radar, revisiting every site every 12 days, detects change between field visits — treatment, fire, or moisture — on observations the annual record can't yet see.</p>
     </div>
   </div>
-</div></section>
-
-<!-- NASA LIVE FLEET -->
-<section class="sec" id="fleet" style="padding-top:0"><div class="wrap">
-  <div class="sec-head">
-    <div class="eyebrow">The fleet overhead</div>
-    <h2>The satellites feeding the engine — live.</h2>
-    <p>NASA's Earth-observing fleet, tracked in real time. The same kind of missions ClimaIQ draws from — NISAR, Landsat, Sentinel, SMAP and more — orbiting now.</p>
-  </div>
-  <div class="fleet-frame">
-    <div class="framebar">
-      <span class="dot" style="background:#ef4444"></span>
-      <span class="dot" style="background:#eab308"></span>
-      <span class="dot" style="background:#22c55e"></span>
-      <span class="furl">eyes.nasa.gov/apps/earth</span>
-      <a class="op" href="https://eyes.nasa.gov/apps/earth/#/vital-signs/visibleEarth/visible-earth" target="_blank" rel="noopener">open in new tab ↗</a>
-    </div>
-    <iframe src="https://eyes.nasa.gov/apps/earth/#/vital-signs/visibleEarth/visible-earth" title="NASA Eyes on the Earth — live Earth-observing fleet" loading="lazy"></iframe>
-  </div>
-  <div class="note" style="margin-top:10px">Live visualization: NASA Eyes on the Earth (eyes.nasa.gov), used under NASA's open media terms. ClimaIQ is independent and not affiliated with or endorsed by NASA.</div>
 </div></section>
 
 <!-- EVIDENCE -->
@@ -271,15 +263,19 @@ nav,header,section,footer{position:relative;z-index:2}
   <div class="sec-head">
     <div class="eyebrow">Evidence</div>
     <h2>Measured against the field data.</h2>
-    <p>Held-out predictive skill on Utah DWR Range Trend sites that were not used to train the models — condition estimated from the satellite archive, scored against the crew's actual measurements.</p>
+    <p>Held-out predictive skill on Utah DWR Range Trend sites that were not used to train the models — condition estimated from Google's AlphaEarth embeddings, scored against the crew's actual measurements.</p>
   </div>
+  <figure class="figure">
+    <img src="assets/predicted-maps.jpg" alt="Three maps of a Utah tile showing predicted bare ground, shrub canopy, and herbaceous cover at 10 meter scale, wall to wall, with numbered Range Trend sites.">
+    <figcaption><b>Predicted condition, wall to wall.</b> Bare ground, shrub canopy, and herbaceous cover across a Utah tile at 10 meter scale, estimated from Google's AlphaEarth embeddings (2024 vintage). Gray = outside the applicability domain; numbered points are DWR Range Trend monitoring sites.</figcaption>
+  </figure>
   <div class="tbl">
-    <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R² (10 m)</div><div class="cell">Evidence grade</div></div>
+    <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R²</div><div class="cell">Evidence grade</div></div>
     <div class="tr"><div class="cell nm">Herbaceous cover</div><div class="cell num">+0.73</div><div class="cell g">demonstrated</div></div>
     <div class="tr"><div class="cell nm">Bare ground</div><div class="cell num">+0.61</div><div class="cell g">demonstrated</div></div>
     <div class="tr"><div class="cell nm">Shrub canopy</div><div class="cell num">+0.46</div><div class="cell w">conditional</div></div>
   </div>
-  <div class="note">Held-out validation, models trained 2018–2024, scored on a later season at sites excluded from training.</div>
+  <div class="note">Held-out validation at 10 meter scale, models trained 2018–2024, scored on a later season at sites excluded from training.</div>
 
   <div class="val" style="margin-top:28px">
     <a class="badge" href="https://myemail.constantcontact.com/CAL-FIRE-Advances-Wildfire-Resilience-and-Innovation-at-Red-Sky-Summit.html?soid=1128868940975&aid=zXu5Glf9FV0" target="_blank" rel="noopener">
@@ -307,7 +303,8 @@ nav,header,section,footer{position:relative;z-index:2}
   <h2>See your landscape in the engine.</h2>
   <p>Open the explorer, or reach out to put your agency's monitoring network on the map.</p>
   <div class="cta-row">
-    <a class="btn primary" href="/explorer">Open the Explorer →</a>
+    <a class="btn primary" href="/explorer">Open nationwide →</a>
+    <a class="btn ghost" href="/explorer/utah">Open Utah coverage →</a>
     <a class="btn ghost" href="mailto:ahmad@climaiq.tech">ahmad@climaiq.tech</a>
   </div>
 </div></section>
@@ -323,6 +320,19 @@ nav,header,section,footer{position:relative;z-index:2}
   </ul>
   <div class="meta">© 2026 ClimaIQ · Salt Lake City, UT · built on public NASA &amp; agency data</div>
 </div></footer>
+
+<!-- Open-Explorer dropdown toggle (click/touch; hover+focus handled in CSS) -->
+<script>
+document.querySelectorAll('.nav-dd-toggle').forEach(function(b){
+  b.addEventListener('click',function(e){e.preventDefault();
+    var dd=b.closest('.nav-dd'); dd.classList.toggle('open');
+    b.setAttribute('aria-expanded', dd.classList.contains('open'));
+  });
+});
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.nav-dd')) document.querySelectorAll('.nav-dd.open').forEach(function(d){d.classList.remove('open');});
+});
+</script>
 
 <!-- Rotating NASA Blue Marble globe — WebGL fragment-shader sphere, no libraries -->
 <script>
