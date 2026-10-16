@@ -69,8 +69,8 @@ img{max-width:100%;display:block}
 
 /* HERO */
 .hero{position:relative;z-index:2;padding:70px 0 40px}
-#space{position:fixed;inset:0;z-index:0;pointer-events:none;background:#05070d}
-#space canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#space{position:fixed;inset:0;z-index:0;pointer-events:none;background:#05070d;overflow:hidden}
+#space iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;transform:scale(1.38);transform-origin:50% 45%}
 #scrim{position:fixed;inset:0;z-index:1;pointer-events:none;background:
   radial-gradient(1300px 1000px at 50% 40%, rgba(8,11,18,.46), rgba(5,7,13,.85) 76%)}
 #space-credit{position:fixed;right:14px;bottom:9px;z-index:3;font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--faint);pointer-events:none}
@@ -170,9 +170,9 @@ nav,header,section,footer{position:relative;z-index:2}
 <body>
 
 <!-- Whole-page living background: rotating NASA Blue Marble globe + orbiting satellites -->
-<div id="space" aria-hidden="true"><canvas id="globe"></canvas><canvas id="sats"></canvas></div>
+<div id="space" aria-hidden="true"><iframe id="eyes" src="https://eyes.nasa.gov/apps/earth/#/vital-signs/visibleEarth/visible-earth" title="NASA Eyes on the Earth — live Earth-observing fleet" tabindex="-1" referrerpolicy="no-referrer"></iframe></div>
 <div id="scrim" aria-hidden="true"></div>
-<div id="space-credit">Earth: NASA GIBS Blue Marble · satellite orbits representative</div>
+<div id="space-credit">Live view: NASA Eyes on the Earth · ClimaIQ is independent, not affiliated with NASA</div>
 
 <!-- NAV -->
 <nav class="nav"><div class="wrap">
@@ -198,7 +198,7 @@ nav,header,section,footer{position:relative;z-index:2}
     <h1>The land, read <span class="a">continuously.</span></h1>
     <p class="lede">ClimaIQ fuses satellite, radar, and field measurements into an open, uncertainty-aware map of vegetation condition and change — explorable down to a single acre, with every value labeled by how it was known.</p>
     <div class="cta-row">
-      <a class="btn primary" href="/explorer">Open the Explorer →</a>
+      <a class="btn primary" href="/explorer">Open the Engine →</a>
     </div>
     <div class="micro">Live tool · draw an area anywhere in the continental US · no sign-in</div>
   </div>
@@ -272,7 +272,9 @@ nav,header,section,footer{position:relative;z-index:2}
   <div class="tbl">
     <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R²</div><div class="cell">Evidence grade</div></div>
     <div class="tr"><div class="cell nm">Herbaceous cover</div><div class="cell num">+0.73</div><div class="cell g">demonstrated</div></div>
+    <div class="tr"><div class="cell nm">Total vegetation</div><div class="cell num">+0.71</div><div class="cell g">demonstrated</div></div>
     <div class="tr"><div class="cell nm">Bare ground</div><div class="cell num">+0.61</div><div class="cell g">demonstrated</div></div>
+    <div class="tr"><div class="cell nm">Tree canopy</div><div class="cell num">+0.53</div><div class="cell w">conditional</div></div>
     <div class="tr"><div class="cell nm">Shrub canopy</div><div class="cell num">+0.46</div><div class="cell w">conditional</div></div>
   </div>
   <div class="note">Held-out validation at 10 meter scale, models trained 2018–2024, scored on a later season at sites excluded from training.</div>
@@ -303,9 +305,7 @@ nav,header,section,footer{position:relative;z-index:2}
   <h2>See your landscape in the engine.</h2>
   <p>Open the explorer, or reach out to put your agency's monitoring network on the map.</p>
   <div class="cta-row">
-    <a class="btn primary" href="/explorer">Open nationwide →</a>
-    <a class="btn ghost" href="/explorer/utah">Open Utah coverage →</a>
-    <a class="btn ghost" href="mailto:ahmad@climaiq.tech">ahmad@climaiq.tech</a>
+    <a class="btn primary" href="mailto:ahmad@climaiq.tech">ahmad@climaiq.tech</a>
   </div>
 </div></section>
 
