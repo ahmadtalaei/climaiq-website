@@ -96,14 +96,6 @@ img{max-width:100%;display:block}
 @media(max-width:860px){.hero .wrap{grid-template-columns:1fr}}
 
 
-/* EVIDENCE LADDER */
-.ladder{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
-.lad{background:var(--panel);border:1px solid var(--line);border-radius:var(--r3);padding:18px}
-.lad .k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
-.lad .k.a{color:var(--good)} .lad .k.b{color:var(--accent)} .lad .k.c{color:var(--data)} .lad .k.d{color:var(--muted)}
-.lad .t{font-size:15px;font-weight:600;margin-top:8px}
-.lad .d{font-size:13px;color:var(--ink2);margin-top:5px}
-@media(max-width:760px){.ladder{grid-template-columns:repeat(2,1fr)}}
 
 /* TWO EXPLORERS */
 .explorers{display:grid;grid-template-columns:1fr 1fr;gap:18px}
@@ -135,6 +127,14 @@ img{max-width:100%;display:block}
 .nm{color:var(--ink2)}
 .g{color:var(--good)} .w{color:var(--warn)}
 .note{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:12px}
+
+/* NASA FLEET EMBED */
+.fleet-frame{border:1px solid var(--line2);border-radius:var(--r4);overflow:hidden;box-shadow:var(--sh2);background:var(--panel)}
+.fleet-frame .framebar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.fleet-frame iframe{display:block;width:100%;height:560px;border:0;background:#05070d}
+.fleet-frame .op{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+.fleet-frame .op:hover{color:var(--accent-hi)}
+@media(max-width:760px){.fleet-frame iframe{height:420px}}
 
 /* VALIDATION */
 .val{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch}
@@ -206,21 +206,6 @@ img{max-width:100%;display:block}
   </a>
 </div></header>
 
-<!-- WHAT IT IS / EVIDENCE LADDER -->
-<section class="sec"><div class="wrap">
-  <div class="sec-head">
-    <div class="eyebrow">What makes it different</div>
-    <h2>Every value carries how it was known.</h2>
-    <p>Most maps hand you a number with no idea whether it was measured on the ground or guessed by a model. ClimaIQ labels every layer on a four-level evidence ladder — so you always know what you can lean on.</p>
-  </div>
-  <div class="ladder">
-    <div class="lad"><div class="k a">A · Measured</div><div class="t">Ground truth</div><div class="d">Field-measured and validated — lidar, TLS scans, agency field reads.</div></div>
-    <div class="lad"><div class="k b">B · Derived</div><div class="t">National products</div><div class="d">Established satellite retrievals and published data products.</div></div>
-    <div class="lad"><div class="k c">C · Inferred</div><div class="t">Model estimate</div><div class="d">Predicted by the engine, inside a stated applicability domain.</div></div>
-    <div class="lad"><div class="k d">D · Roadmap</div><div class="t">Not yet loaded</div><div class="d">Known data source, not yet wired in — shown so nothing is hidden.</div></div>
-  </div>
-</div></section>
-
 <!-- TWO EXPLORERS -->
 <section class="sec" id="explorers" style="padding-top:0"><div class="wrap">
   <div class="sec-head">
@@ -271,6 +256,26 @@ img{max-width:100%;display:block}
   </div>
 </div></section>
 
+<!-- NASA LIVE FLEET -->
+<section class="sec" id="fleet" style="padding-top:0"><div class="wrap">
+  <div class="sec-head">
+    <div class="eyebrow">The fleet overhead</div>
+    <h2>The satellites feeding the engine — live.</h2>
+    <p>NASA's Earth-observing fleet, tracked in real time. The same kind of missions ClimaIQ draws from — NISAR, Landsat, Sentinel, SMAP and more — orbiting now.</p>
+  </div>
+  <div class="fleet-frame">
+    <div class="framebar">
+      <span class="dot" style="background:#ef4444"></span>
+      <span class="dot" style="background:#eab308"></span>
+      <span class="dot" style="background:#22c55e"></span>
+      <span class="furl">eyes.nasa.gov/apps/earth</span>
+      <a class="op" href="https://eyes.nasa.gov/apps/earth/#/vital-signs/visibleEarth/visible-earth" target="_blank" rel="noopener">open in new tab ↗</a>
+    </div>
+    <iframe src="https://eyes.nasa.gov/apps/earth/#/vital-signs/visibleEarth/visible-earth" title="NASA Eyes on the Earth — live Earth-observing fleet" loading="lazy"></iframe>
+  </div>
+  <div class="note" style="margin-top:10px">Live visualization: NASA Eyes on the Earth (eyes.nasa.gov), used under NASA's open media terms. ClimaIQ is independent and not affiliated with or endorsed by NASA.</div>
+</div></section>
+
 <!-- EVIDENCE -->
 <section class="sec" id="evidence" style="padding-top:0"><div class="wrap">
   <div class="sec-head">
@@ -279,7 +284,7 @@ img{max-width:100%;display:block}
     <p>Held-out predictive skill on Utah DWR Range Trend sites that were not used to train the models — condition estimated from the satellite archive, scored against the crew's actual measurements.</p>
   </div>
   <div class="tbl">
-    <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R²</div><div class="cell">Evidence grade</div></div>
+    <div class="tr h"><div class="cell">Field measurand</div><div class="cell num">Held-out R² (10 m)</div><div class="cell">Evidence grade</div></div>
     <div class="tr"><div class="cell nm">Herbaceous cover</div><div class="cell num">+0.73</div><div class="cell g">demonstrated</div></div>
     <div class="tr"><div class="cell nm">Bare ground</div><div class="cell num">+0.61</div><div class="cell g">demonstrated</div></div>
     <div class="tr"><div class="cell nm">Shrub canopy</div><div class="cell num">+0.46</div><div class="cell w">conditional</div></div>
